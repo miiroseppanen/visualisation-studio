@@ -33,12 +33,27 @@ export default function GridFieldPage() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    // Set canvas size to match container
+    // Set canvas size to match container with proper DPR handling
     const resizeCanvas = () => {
       const container = canvas.parentElement
       if (container) {
-        canvas.width = container.clientWidth
-        canvas.height = container.clientHeight
+        const dpr = window.devicePixelRatio || 1
+        const rect = container.getBoundingClientRect()
+        
+        // Set the canvas size in CSS pixels
+        canvas.style.width = rect.width + 'px'
+        canvas.style.height = rect.height + 'px'
+        
+        // Set the canvas size in device pixels
+        canvas.width = rect.width * dpr
+        canvas.height = rect.height * dpr
+        
+        // Scale the drawing context so everything draws at the correct size
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.setTransform(1, 0, 0, 1, 0, 0) // Reset transform
+          ctx.scale(dpr, dpr)
+        }
       }
     }
 
@@ -46,8 +61,9 @@ export default function GridFieldPage() {
     window.addEventListener('resize', resizeCanvas)
 
     const lines: GridLine[] = []
-    const cols = Math.ceil(canvas.width / gridSpacing)
-    const rows = Math.ceil(canvas.height / gridSpacing)
+    const rect = canvas.getBoundingClientRect()
+    const cols = Math.ceil(rect.width / gridSpacing)
+    const rows = Math.ceil(rect.height / gridSpacing)
 
     for (let i = 0; i <= cols; i++) {
       for (let j = 0; j <= rows; j++) {

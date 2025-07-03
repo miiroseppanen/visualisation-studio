@@ -47,12 +47,27 @@ export default function FlowFieldPage() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    // Set canvas size to match container
+    // Set canvas size to match container with proper DPR handling
     const resizeCanvas = () => {
       const container = canvas.parentElement
       if (container) {
-        canvas.width = container.clientWidth
-        canvas.height = container.clientHeight
+        const dpr = window.devicePixelRatio || 1
+        const rect = container.getBoundingClientRect()
+        
+        // Set the canvas size in CSS pixels
+        canvas.style.width = rect.width + 'px'
+        canvas.style.height = rect.height + 'px'
+        
+        // Set the canvas size in device pixels
+        canvas.width = rect.width * dpr
+        canvas.height = rect.height * dpr
+        
+        // Scale the drawing context so everything draws at the correct size
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.setTransform(1, 0, 0, 1, 0, 0) // Reset transform
+          ctx.scale(dpr, dpr)
+        }
       }
     }
 
@@ -60,11 +75,12 @@ export default function FlowFieldPage() {
     window.addEventListener('resize', resizeCanvas)
 
     // Initialize particles with canvas size
+    const rect = canvas.getBoundingClientRect()
     const newParticles: Particle[] = []
     for (let i = 0; i < particleCount; i++) {
       newParticles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
+        x: Math.random() * rect.width,
+        y: Math.random() * rect.height,
         vx: 0,
         vy: 0,
         life: particleLife
@@ -123,8 +139,9 @@ export default function FlowFieldPage() {
         
         // Wrap around edges
         const canvas = canvasRef.current
-        const canvasWidth = canvas?.width || 800
-        const canvasHeight = canvas?.height || 600
+        const rect = canvas?.getBoundingClientRect()
+        const canvasWidth = rect?.width || 800
+        const canvasHeight = rect?.height || 600
         const wrappedX = newX < 0 ? canvasWidth : newX > canvasWidth ? 0 : newX
         const wrappedY = newY < 0 ? canvasHeight : newY > canvasHeight ? 0 : newY
         
@@ -134,8 +151,9 @@ export default function FlowFieldPage() {
         // Reset particle if life is over
         if (newLife <= 0) {
           const canvas = canvasRef.current
-          const canvasWidth = canvas?.width || 800
-          const canvasHeight = canvas?.height || 600
+          const rect = canvas?.getBoundingClientRect()
+          const canvasWidth = rect?.width || 800
+          const canvasHeight = rect?.height || 600
           return {
             x: Math.random() * canvasWidth,
             y: Math.random() * canvasHeight,
@@ -184,9 +202,10 @@ export default function FlowFieldPage() {
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'
       ctx.lineWidth = 1
       
+      const rect = canvas.getBoundingClientRect()
       const step = 40
-      for (let i = 0; i < canvas.width; i += step) {
-        for (let j = 0; j < canvas.height; j += step) {
+      for (let i = 0; i < rect.width; i += step) {
+        for (let j = 0; j < rect.height; j += step) {
           const field = calculateField(i, j)
           const length = Math.sqrt(field.fx * field.fx + field.fy * field.fy)
           
