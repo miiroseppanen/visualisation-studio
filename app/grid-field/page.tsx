@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Download, RotateCcw, Settings, Plus, Trash2, Play, Pause, ChevronDown } from 'lucide-react'
+import { Download, RotateCcw, Settings, Plus, Trash2, Play, Pause, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
@@ -462,10 +462,10 @@ export default function GridFieldPage() {
             <div>
               <button
                 onClick={() => setGridSettingsExpanded(!gridSettingsExpanded)}
-                className="flex items-center justify-between w-full text-left"
+                className="flex items-center w-full text-left"
               >
+                <ChevronRight className={`w-4 h-4 mr-2 transition-transform ${gridSettingsExpanded ? 'rotate-90' : 'rotate-0'}`} />
                 <h3 className="text-base font-medium">Grid Settings</h3>
-                <ChevronDown className={`w-4 h-4 transition-transform ${gridSettingsExpanded ? 'rotate-180' : ''}`} />
               </button>
               {gridSettingsExpanded && (
                 <div className="space-y-4 pl-4 mt-4">
@@ -529,10 +529,10 @@ export default function GridFieldPage() {
             <div>
               <button
                 onClick={() => setDefaultDirectionExpanded(!defaultDirectionExpanded)}
-                className="flex items-center justify-between w-full text-left"
+                className="flex items-center w-full text-left"
               >
+                <ChevronRight className={`w-4 h-4 mr-2 transition-transform ${defaultDirectionExpanded ? 'rotate-90' : 'rotate-0'}`} />
                 <h3 className="text-base font-medium">Default Direction</h3>
-                <ChevronDown className={`w-4 h-4 transition-transform ${defaultDirectionExpanded ? 'rotate-180' : ''}`} />
               </button>
               {defaultDirectionExpanded && (
                 <div className="space-y-4 pl-4 mt-4">
@@ -586,10 +586,10 @@ export default function GridFieldPage() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => setPolesExpanded(!polesExpanded)}
-                  className="flex items-center justify-between flex-1 text-left"
+                  className="flex items-center flex-1 text-left"
                 >
+                  <ChevronRight className={`w-4 h-4 mr-2 transition-transform ${polesExpanded ? 'rotate-90' : 'rotate-0'}`} />
                   <h3 className="text-base font-medium">Poles ({poles.length})</h3>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${polesExpanded ? 'rotate-180' : ''}`} />
                 </button>
                 <Button variant="outline" size="sm" onClick={addPole} className="ml-2">
                   <Plus className="w-4 h-4" />
@@ -652,10 +652,10 @@ export default function GridFieldPage() {
             <div>
               <button
                 onClick={() => setAnimationExpanded(!animationExpanded)}
-                className="flex items-center justify-between w-full text-left"
+                className="flex items-center w-full text-left"
               >
+                <ChevronRight className={`w-4 h-4 mr-2 transition-transform ${animationExpanded ? 'rotate-90' : 'rotate-0'}`} />
                 <h3 className="text-base font-medium">Animation</h3>
-                <ChevronDown className={`w-4 h-4 transition-transform ${animationExpanded ? 'rotate-180' : ''}`} />
               </button>
               {animationExpanded && (
                 <div className="space-y-4 pl-4 mt-4">
