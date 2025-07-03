@@ -34,13 +34,17 @@ const visualizations: VisualizationOption[] = [
   }
 ]
 
-export default function VisualizationNav() {
+interface VisualizationNavProps {
+  actionButtons?: React.ReactNode
+}
+
+export default function VisualizationNav({ actionButtons }: VisualizationNavProps) {
   const pathname = usePathname()
   const currentVisualization = visualizations.find(v => v.path === pathname)
 
   return (
     <header className="border-b border-border/40">
-      <div className="container mx-auto px-4 py-4">
+      <div className="w-full px-8 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" asChild>
@@ -81,6 +85,12 @@ export default function VisualizationNav() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          {actionButtons && (
+            <div className="flex items-center space-x-2">
+              {actionButtons}
+            </div>
+          )}
         </div>
       </div>
     </header>

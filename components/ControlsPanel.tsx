@@ -17,7 +17,7 @@ export default function ControlsPanel({ children, title = "Controls" }: Controls
       {/* Panel */}
       <div
         className={cn(
-          "fixed top-4 right-4 bottom-4 z-50 pointer-events-none"
+          "fixed top-24 right-4 bottom-4 z-50 pointer-events-none"
         )}
       >
         <div
@@ -43,7 +43,7 @@ export default function ControlsPanel({ children, title = "Controls" }: Controls
       </div>
 
       {/* Button - Always visible, positioned outside the panel */}
-      <div className="fixed top-8 right-8 z-[60] pointer-events-auto">
+      <div className="fixed top-28 right-8 z-[60] pointer-events-auto">
         <button
           className="bg-background/40 backdrop-blur-xs border border-border/20 rounded-full p-3 hover:bg-background/60 transition-colors shadow-lg"
           onClick={() => setOpen(!open)}

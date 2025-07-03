@@ -324,7 +324,20 @@ export default function GridFieldPage() {
 
   return (
     <div className="h-screen bg-background flex flex-col">
-      <VisualizationNav />
+      <VisualizationNav 
+        actionButtons={
+          <>
+            <Button variant="ghost" size="sm" onClick={resetToDefaults}>
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Reset
+            </Button>
+            <Button size="sm" onClick={exportSVG}>
+              <Download className="w-4 h-4 mr-2" />
+              SVG
+            </Button>
+          </>
+        }
+      />
 
       <div className="flex-1 flex">
         {/* Canvas - Fullscreen */}
@@ -473,20 +486,6 @@ export default function GridFieldPage() {
                   <div className="text-sm text-muted-foreground">{lineLength}px</div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Fixed Action Buttons at Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-background/30 backdrop-blur-lg border-t border-border/20 p-4">
-            <div className="flex items-center justify-end space-x-2">
-              <Button variant="outline" size="sm" onClick={resetToDefaults}>
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
-              </Button>
-              <Button size="sm" onClick={exportSVG}>
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
             </div>
           </div>
         </ControlsPanel>
