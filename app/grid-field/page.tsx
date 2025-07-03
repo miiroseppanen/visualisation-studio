@@ -217,70 +217,68 @@ export default function GridFieldPage() {
 
         {/* Floating Controls Panel */}
         <ControlsPanel title="Grid Field Controls">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pole Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Pole Strength</Label>
-                <Slider
-                  value={[poleStrength]}
-                  onValueChange={([value]) => setPoleStrength(value)}
-                  max={200}
-                  min={0}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="text-sm text-muted-foreground">{poleStrength}</div>
-              </div>
+                    <div className="space-y-8">
+            <div>
+              <h3 className="text-base font-medium mb-4">Pole Settings</h3>
+              <div className="space-y-4 pl-4">
+                <div className="space-y-2">
+                  <Label>Pole Strength</Label>
+                  <Slider
+                    value={[poleStrength]}
+                    onValueChange={([value]) => setPoleStrength(value)}
+                    max={200}
+                    min={0}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="text-sm text-muted-foreground">{poleStrength}</div>
+                </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="showPole"
-                  checked={showPole}
-                  onCheckedChange={(checked) => setShowPole(checked as boolean)}
-                />
-                <Label htmlFor="showPole">Show Pole</Label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="showPole"
+                    checked={showPole}
+                    onCheckedChange={(checked) => setShowPole(checked as boolean)}
+                  />
+                  <Label htmlFor="showPole">Show Pole</Label>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Grid Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Grid Spacing</Label>
-                <Slider
-                  value={[gridSpacing]}
-                  onValueChange={([value]) => setGridSpacing(value)}
-                  max={60}
-                  min={10}
-                  step={5}
-                  className="w-full"
-                />
-                <div className="text-sm text-muted-foreground">{gridSpacing}px</div>
-              </div>
+            <div>
+              <h3 className="text-base font-medium mb-4">Grid Settings</h3>
+              <div className="space-y-4 pl-4">
+                <div className="space-y-2">
+                  <Label>Grid Spacing</Label>
+                  <Slider
+                    value={[gridSpacing]}
+                    onValueChange={([value]) => setGridSpacing(value)}
+                    max={60}
+                    min={10}
+                    step={5}
+                    className="w-full"
+                  />
+                  <div className="text-sm text-muted-foreground">{gridSpacing}px</div>
+                </div>
 
-              <div className="space-y-2">
-                <Label>Line Length</Label>
-                <Slider
-                  value={[lineLength]}
-                  onValueChange={([value]) => setLineLength(value)}
-                  max={50}
-                  min={5}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="text-sm text-muted-foreground">{lineLength}px</div>
+                <div className="space-y-2">
+                  <Label>Line Length</Label>
+                  <Slider
+                    value={[lineLength]}
+                    onValueChange={([value]) => setLineLength(value)}
+                    max={50}
+                    min={5}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="text-sm text-muted-foreground">{lineLength}px</div>
+                </div>
               </div>
-            </CardContent>
-                    </Card>
+            </div>
+          </div>
 
           {/* Fixed Action Buttons at Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 p-4">
+          <div className="absolute bottom-0 left-0 right-0 bg-background/30 backdrop-blur-lg border-t border-border/20 p-4">
             <div className="flex items-center justify-end space-x-2">
               <Button variant="outline" size="sm" onClick={resetToDefaults}>
                 <RotateCcw className="w-4 h-4 mr-2" />

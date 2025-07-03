@@ -1064,6 +1064,11 @@ video {
   margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
   margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));
 }
+.space-y-8 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(2rem * var(--tw-space-y-reverse));
+}
 .overflow-hidden {
   overflow: hidden;
 }
@@ -1140,6 +1145,9 @@ video {
 .border-primary {
   border-color: hsl(var(--primary));
 }
+.border-border\/20 {
+  border-color: hsl(var(--border) / 0.2);
+}
 .bg-background {
   background-color: hsl(var(--background));
 }
@@ -1212,6 +1220,18 @@ video {
 }
 .bg-background\/90 {
   background-color: hsl(var(--background) / 0.9);
+}
+.bg-background\/40 {
+  background-color: hsl(var(--background) / 0.4);
+}
+.bg-background\/60 {
+  background-color: hsl(var(--background) / 0.6);
+}
+.bg-background\/20 {
+  background-color: hsl(var(--background) / 0.2);
+}
+.bg-background\/30 {
+  background-color: hsl(var(--background) / 0.3);
 }
 .bg-gradient-to-br {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
@@ -1317,6 +1337,9 @@ video {
 }
 .pb-20 {
   padding-bottom: 5rem;
+}
+.pl-4 {
+  padding-left: 1rem;
 }
 .text-center {
   text-align: center;
@@ -1495,6 +1518,11 @@ video {
 }
 .backdrop-blur-lg {
   --tw-backdrop-blur: blur(16px);
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+}
+.backdrop-blur-xl {
+  --tw-backdrop-blur: blur(24px);
   -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
   backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
 }
@@ -1678,6 +1706,14 @@ canvas {
 
 .hover\:bg-primary\/10:hover {
   background-color: hsl(var(--primary) / 0.1);
+}
+
+.hover\:bg-background\/80:hover {
+  background-color: hsl(var(--background) / 0.8);
+}
+
+.hover\:bg-background\/50:hover {
+  background-color: hsl(var(--background) / 0.5);
 }
 
 .hover\:text-accent-foreground:hover {
