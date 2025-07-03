@@ -15,6 +15,15 @@ interface GridLine {
   y: number
   angle: number
   length: number
+  // Bezier curve control points
+  startX: number
+  startY: number
+  controlX1: number
+  controlY1: number
+  controlX2: number
+  controlY2: number
+  endX: number
+  endY: number
 }
 
 interface Pole {
@@ -30,7 +39,7 @@ export default function GridFieldPage() {
   const animationRef = useRef<number>()
   const [gridLines, setGridLines] = useState<GridLine[]>([])
   const [poles, setPoles] = useState<Pole[]>([
-    { id: '1', x: 400, y: 300, strength: 100, color: '#000000' }
+    { id: '1', x: 400, y: 300, strength: 25, color: '#000000' }
   ])
   const [gridSpacing, setGridSpacing] = useState(30)
   const [lineLength, setLineLength] = useState(20)
@@ -41,20 +50,82 @@ export default function GridFieldPage() {
   
   // Animation state
   const [isAnimating, setIsAnimating] = useState(true)
-  const [windStrength, setWindStrength] = useState(0.1)
+  const [windStrength, setWindStrength] = useState(0.3)
   const [windSpeed, setWindSpeed] = useState(0.3)
   const [time, setTime] = useState(0)
 
   // Default direction controls
   const [enableDefaultDirection, setEnableDefaultDirection] = useState(true)
   const [defaultDirectionAngle, setDefaultDirectionAngle] = useState(0) // 0 = right, 90 = down, etc.
-  const [defaultDirectionStrength, setDefaultDirectionStrength] = useState(0.02)
+  const [defaultDirectionStrength, setDefaultDirectionStrength] = useState(0.005)
+
+  // Curve controls
+  const [curveStiffness, setCurveStiffness] = useState(0.3) // 0 = rigid, 1 = very flexible
+
+  // Polarity controls
+  const [attractToPoles, setAttractToPoles] = useState(true) // true = attract, false = repel
 
   // Panel section collapse state
   const [gridSettingsExpanded, setGridSettingsExpanded] = useState(true)
   const [defaultDirectionExpanded, setDefaultDirectionExpanded] = useState(true)
   const [polesExpanded, setPolesExpanded] = useState(true)
   const [animationExpanded, setAnimationExpanded] = useState(true)
+
+  // Calculate field at any point
+  const calculateFieldAt = (x: number, y: number) => {
+    let fieldX = 0
+    let fieldY = 0
+    
+    // Apply default direction if enabled
+    if (enableDefaultDirection) {
+      const angleRad = (defaultDirectionAngle * Math.PI) / 180
+      fieldX = Math.cos(angleRad) * defaultDirectionStrength
+      fieldY = Math.sin(angleRad) * defaultDirectionStrength
+    }
+
+    // Calculate influence from each pole
+    poles.forEach(pole => {
+      const dx = pole.x - x
+      const dy = pole.y - y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      
+      if (distance > 1) { // Avoid division by zero
+        // Calculate force strength with gentler falloff
+        const forceStrength = (pole.strength * 0.01) / (distance * 0.1 + 1)
+        
+        // Calculate unit vector - direction depends on polarity
+        let unitX, unitY
+        if (attractToPoles) {
+          // Attract: point toward the pole
+          unitX = dx / distance
+          unitY = dy / distance
+        } else {
+          // Repel: point away from the pole
+          unitX = -dx / distance
+          unitY = -dy / distance
+        }
+        
+        // Apply force in the calculated direction
+        fieldX += unitX * forceStrength
+        fieldY += unitY * forceStrength
+      }
+    })
+
+    // Add subtle wind fidgeting effect
+    const windX = (
+      Math.cos(time * 0.5 + x * 0.003 + y * 0.002) * 0.6 +
+      Math.cos(time * 0.3 + x * 0.001 - y * 0.001) * 0.4
+    ) * windStrength * 0.02
+    const windY = (
+      Math.sin(time * 0.4 + x * 0.002 + y * 0.003) * 0.6 +
+      Math.sin(time * 0.6 + y * 0.001 - x * 0.001) * 0.4
+    ) * windStrength * 0.02
+    
+    fieldX += windX
+    fieldY += windY
+
+    return { fieldX, fieldY, angle: Math.atan2(fieldY, fieldX) }
+  }
 
   // Generate unique ID for new poles
   const generateId = () => Math.random().toString(36).substr(2, 9)
@@ -65,7 +136,7 @@ export default function GridFieldPage() {
       id: generateId(),
       x: 200 + Math.random() * 400,
       y: 150 + Math.random() * 300,
-      strength: 100,
+      strength: 25,
       color: `hsl(${Math.random() * 360}, 70%, 50%)`
     }
     setPoles([...poles, newPole])
@@ -147,52 +218,38 @@ export default function GridFieldPage() {
           const x = i * gridSpacing
           const y = j * gridSpacing
 
-          // Initialize field with configurable default direction
-          let fieldX = 0
-          let fieldY = 0
+          const { fieldX, fieldY, angle } = calculateFieldAt(x, y)
           
-          // Apply default direction if enabled
-          if (enableDefaultDirection) {
-            const angleRad = (defaultDirectionAngle * Math.PI) / 180
-            fieldX = Math.cos(angleRad) * defaultDirectionStrength
-            fieldY = Math.sin(angleRad) * defaultDirectionStrength
-          }
-
-          // Calculate influence from each pole
-          poles.forEach(pole => {
-            const dx = pole.x - x
-            const dy = pole.y - y
-            const distance = Math.sqrt(dx * dx + dy * dy)
-            
-            if (distance > 1) { // Avoid division by zero
-              // Calculate force strength with gentler falloff
-              const forceStrength = (pole.strength * 0.01) / (distance * 0.1 + 1)
-              
-              // Calculate unit vector pointing toward the pole
-              const unitX = dx / distance
-              const unitY = dy / distance
-              
-              // Apply force in the direction of the pole
-              fieldX += unitX * forceStrength
-              fieldY += unitY * forceStrength
-            }
-          })
-
-          // Add gentle wind effect
-          const windX = Math.cos(time * 0.3 + x * 0.01) * windStrength * 0.02
-          const windY = Math.sin(time * 0.3 + y * 0.01) * windStrength * 0.02
+          // Sample field at points along the line to create smooth curves
+          const midX = x + Math.cos(angle) * lineLength * 0.5
+          const midY = y + Math.sin(angle) * lineLength * 0.5
+          const endX = x + Math.cos(angle) * lineLength
+          const endY = y + Math.sin(angle) * lineLength
           
-          fieldX += windX
-          fieldY += windY
-
-          // Calculate final angle - always use the field vector
-          const finalAngle = Math.atan2(fieldY, fieldX)
+          // Get field directions at intermediate points for curve calculation
+          const { angle: midAngle } = calculateFieldAt(midX, midY)
+          const { angle: endAngle } = calculateFieldAt(endX, endY)
+          
+          // Create control points that follow the field curvature
+          const curveStrength = lineLength * curveStiffness // How much the curve bends
+          const controlX1 = x + Math.cos(angle) * lineLength * 0.33 + Math.cos(angle + Math.PI/2) * Math.sin((midAngle - angle) * 0.5) * curveStrength
+          const controlY1 = y + Math.sin(angle) * lineLength * 0.33 + Math.sin(angle + Math.PI/2) * Math.sin((midAngle - angle) * 0.5) * curveStrength
+          const controlX2 = x + Math.cos(angle) * lineLength * 0.67 + Math.cos(endAngle + Math.PI/2) * Math.sin((endAngle - midAngle) * 0.5) * curveStrength
+          const controlY2 = y + Math.sin(angle) * lineLength * 0.67 + Math.sin(endAngle + Math.PI/2) * Math.sin((endAngle - midAngle) * 0.5) * curveStrength
 
           lines.push({
             x,
             y,
-            angle: finalAngle,
-            length: lineLength
+            angle: angle,
+            length: lineLength,
+            startX: x,
+            startY: y,
+            controlX1,
+            controlY1,
+            controlX2,
+            controlY2,
+            endX,
+            endY
           })
         }
       }
@@ -208,52 +265,38 @@ export default function GridFieldPage() {
           const x = col * gridSpacing + (row % 2) * (gridSpacing / 2)
           const y = row * triangleHeight
 
-          // Initialize field with configurable default direction
-          let fieldX = 0
-          let fieldY = 0
+          const { fieldX, fieldY, angle } = calculateFieldAt(x, y)
           
-          // Apply default direction if enabled
-          if (enableDefaultDirection) {
-            const angleRad = (defaultDirectionAngle * Math.PI) / 180
-            fieldX = Math.cos(angleRad) * defaultDirectionStrength
-            fieldY = Math.sin(angleRad) * defaultDirectionStrength
-          }
-
-          // Calculate influence from each pole
-          poles.forEach(pole => {
-            const dx = pole.x - x
-            const dy = pole.y - y
-            const distance = Math.sqrt(dx * dx + dy * dy)
-            
-            if (distance > 1) { // Avoid division by zero
-              // Calculate force strength with gentler falloff
-              const forceStrength = (pole.strength * 0.01) / (distance * 0.1 + 1)
-              
-              // Calculate unit vector pointing toward the pole
-              const unitX = dx / distance
-              const unitY = dy / distance
-              
-              // Apply force in the direction of the pole
-              fieldX += unitX * forceStrength
-              fieldY += unitY * forceStrength
-            }
-          })
-
-          // Add gentle wind effect
-          const windX = Math.cos(time * 0.3 + x * 0.01) * windStrength * 0.02
-          const windY = Math.sin(time * 0.3 + y * 0.01) * windStrength * 0.02
+          // Sample field at points along the line to create smooth curves
+          const midX = x + Math.cos(angle) * lineLength * 0.5
+          const midY = y + Math.sin(angle) * lineLength * 0.5
+          const endX = x + Math.cos(angle) * lineLength
+          const endY = y + Math.sin(angle) * lineLength
           
-          fieldX += windX
-          fieldY += windY
-
-          // Calculate final angle - always use the field vector
-          const finalAngle = Math.atan2(fieldY, fieldX)
+          // Get field directions at intermediate points for curve calculation
+          const { angle: midAngle } = calculateFieldAt(midX, midY)
+          const { angle: endAngle } = calculateFieldAt(endX, endY)
+          
+          // Create control points that follow the field curvature
+          const curveStrength = lineLength * curveStiffness // How much the curve bends
+          const controlX1 = x + Math.cos(angle) * lineLength * 0.33 + Math.cos(angle + Math.PI/2) * Math.sin((midAngle - angle) * 0.5) * curveStrength
+          const controlY1 = y + Math.sin(angle) * lineLength * 0.33 + Math.sin(angle + Math.PI/2) * Math.sin((midAngle - angle) * 0.5) * curveStrength
+          const controlX2 = x + Math.cos(angle) * lineLength * 0.67 + Math.cos(endAngle + Math.PI/2) * Math.sin((endAngle - midAngle) * 0.5) * curveStrength
+          const controlY2 = y + Math.sin(angle) * lineLength * 0.67 + Math.sin(endAngle + Math.PI/2) * Math.sin((endAngle - midAngle) * 0.5) * curveStrength
 
           lines.push({
             x,
             y,
-            angle: finalAngle,
-            length: lineLength
+            angle: angle,
+            length: lineLength,
+            startX: x,
+            startY: y,
+            controlX1,
+            controlY1,
+            controlX2,
+            controlY2,
+            endX,
+            endY
           })
         }
       }
@@ -262,7 +305,7 @@ export default function GridFieldPage() {
     setGridLines(lines)
 
     return () => window.removeEventListener('resize', resizeCanvas)
-  }, [poles, gridSpacing, lineLength, gridType, time, windStrength, enableDefaultDirection, defaultDirectionAngle, defaultDirectionStrength])
+  }, [poles, gridSpacing, lineLength, gridType, time, windStrength, enableDefaultDirection, defaultDirectionAngle, defaultDirectionStrength, curveStiffness, attractToPoles])
 
   // Draw grid
   useEffect(() => {
@@ -275,18 +318,19 @@ export default function GridFieldPage() {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Draw grid lines
+    // Draw curved grid lines using Bezier curves
     ctx.strokeStyle = '#000'
     ctx.lineWidth = 1
     ctx.lineCap = 'round'
 
     gridLines.forEach(line => {
-      const endX = line.x + Math.cos(line.angle) * line.length
-      const endY = line.y + Math.sin(line.angle) * line.length
-
       ctx.beginPath()
-      ctx.moveTo(line.x, line.y)
-      ctx.lineTo(endX, endY)
+      ctx.moveTo(line.startX, line.startY)
+      ctx.bezierCurveTo(
+        line.controlX1, line.controlY1,
+        line.controlX2, line.controlY2,
+        line.endX, line.endY
+      )
       ctx.stroke()
     })
 
@@ -342,7 +386,7 @@ export default function GridFieldPage() {
         id: generateId(),
         x,
         y,
-        strength: 100,
+        strength: 25,
         color: `hsl(${Math.random() * 360}, 70%, 50%)`
       }
       setPoles([...poles, newPole])
@@ -375,16 +419,14 @@ export default function GridFieldPage() {
       <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <style>
-            .grid-line { stroke: #000; stroke-width: 1; stroke-linecap: round; }
+            .grid-line { stroke: #000; stroke-width: 1; stroke-linecap: round; fill: none; }
             .pole { fill: var(--pole-color); }
             .pole-ring { stroke: var(--pole-color); stroke-width: 2; stroke-dasharray: 5,5; fill: none; }
           </style>
         </defs>
-        ${gridLines.map(line => {
-          const endX = line.x + Math.cos(line.angle) * line.length
-          const endY = line.y + Math.sin(line.angle) * line.length
-          return `<line class="grid-line" x1="${line.x}" y1="${line.y}" x2="${endX}" y2="${endY}" />`
-        }).join('')}
+        ${gridLines.map(line => 
+          `<path class="grid-line" d="M ${line.startX} ${line.startY} C ${line.controlX1} ${line.controlY1}, ${line.controlX2} ${line.controlY2}, ${line.endX} ${line.endY}" />`
+        ).join('')}
         ${showPoles ? poles.map(pole => `
           <g style="--pole-color: ${pole.color}">
             <circle class="pole" cx="${pole.x}" cy="${pole.y}" r="8" />
@@ -405,17 +447,19 @@ export default function GridFieldPage() {
 
   // Reset to defaults
   const resetToDefaults = () => {
-    setPoles([{ id: '1', x: 400, y: 300, strength: 100, color: '#000000' }])
+    setPoles([{ id: '1', x: 400, y: 300, strength: 25, color: '#000000' }])
     setGridSpacing(30)
     setLineLength(20)
     setGridType('rectangular')
     setShowPoles(true)
-    setWindStrength(0.1)
+    setWindStrength(0.3)
     setWindSpeed(0.3)
     setIsAnimating(true)
     setEnableDefaultDirection(true)
     setDefaultDirectionAngle(0)
-    setDefaultDirectionStrength(0.02)
+    setDefaultDirectionStrength(0.005)
+    setCurveStiffness(0.3)
+    setAttractToPoles(true)
     // Reset expanded states
     setGridSettingsExpanded(true)
     setDefaultDirectionExpanded(true)
@@ -519,6 +563,21 @@ export default function GridFieldPage() {
                       max={100}
                       min={5}
                       step={1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Curve Stiffness</Label>
+                      <div className="text-sm text-muted-foreground">{(curveStiffness * 100).toFixed(0)}%</div>
+                    </div>
+                    <Slider
+                      value={[curveStiffness]}
+                      onValueChange={([value]) => setCurveStiffness(value)}
+                      max={1}
+                      min={0}
+                      step={0.05}
                       className="w-full"
                     />
                   </div>
@@ -644,6 +703,18 @@ export default function GridFieldPage() {
                       onCheckedChange={(checked) => setShowPoles(checked as boolean)}
                     />
                     <Label htmlFor="showPoles">Show Poles</Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="attractToPoles"
+                      checked={attractToPoles}
+                      onCheckedChange={(checked) => setAttractToPoles(checked as boolean)}
+                    />
+                    <Label htmlFor="attractToPoles">Attract to Poles</Label>
+                    <div className="text-xs text-muted-foreground ml-2">
+                      {attractToPoles ? '(Magnetic)' : '(Electric)'}
+                    </div>
                   </div>
                 </div>
               )}
