@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import VisualizationNav from '@/components/VisualizationNav'
+import ControlsPanel from '@/components/ControlsPanel'
 
 interface GridLine {
   x: number
@@ -214,86 +215,84 @@ export default function GridFieldPage() {
           </div>
         </div>
 
-        {/* Controls Panel */}
-        <div className="w-80 border-l border-border bg-background/95 backdrop-blur-sm overflow-y-auto">
-          <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-normal">Controls</h2>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" onClick={resetToDefaults}>
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset
-                </Button>
-                <Button size="sm" onClick={exportSVG}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
+        {/* Floating Controls Panel */}
+        <ControlsPanel title="Grid Field Controls">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pole Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Pole Strength</Label>
+                <Slider
+                  value={[poleStrength]}
+                  onValueChange={([value]) => setPoleStrength(value)}
+                  max={200}
+                  min={0}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="text-sm text-muted-foreground">{poleStrength}</div>
               </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="showPole"
+                  checked={showPole}
+                  onCheckedChange={(checked) => setShowPole(checked as boolean)}
+                />
+                <Label htmlFor="showPole">Show Pole</Label>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Grid Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Grid Spacing</Label>
+                <Slider
+                  value={[gridSpacing]}
+                  onValueChange={([value]) => setGridSpacing(value)}
+                  max={60}
+                  min={10}
+                  step={5}
+                  className="w-full"
+                />
+                <div className="text-sm text-muted-foreground">{gridSpacing}px</div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Line Length</Label>
+                <Slider
+                  value={[lineLength]}
+                  onValueChange={([value]) => setLineLength(value)}
+                  max={50}
+                  min={5}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="text-sm text-muted-foreground">{lineLength}px</div>
+              </div>
+            </CardContent>
+                    </Card>
+
+          {/* Fixed Action Buttons at Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 p-4">
+            <div className="flex items-center justify-end space-x-2">
+              <Button variant="outline" size="sm" onClick={resetToDefaults}>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset
+              </Button>
+              <Button size="sm" onClick={exportSVG}>
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
             </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Pole Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Pole Strength</Label>
-                  <Slider
-                    value={[poleStrength]}
-                    onValueChange={([value]) => setPoleStrength(value)}
-                    max={200}
-                    min={0}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{poleStrength}</div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="showPole"
-                    checked={showPole}
-                    onCheckedChange={(checked) => setShowPole(checked as boolean)}
-                  />
-                  <Label htmlFor="showPole">Show Pole</Label>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Grid Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Grid Spacing</Label>
-                  <Slider
-                    value={[gridSpacing]}
-                    onValueChange={([value]) => setGridSpacing(value)}
-                    max={60}
-                    min={10}
-                    step={5}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{gridSpacing}px</div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Line Length</Label>
-                  <Slider
-                    value={[lineLength]}
-                    onValueChange={([value]) => setLineLength(value)}
-                    max={50}
-                    min={5}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{lineLength}px</div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
-        </div>
+        </ControlsPanel>
       </div>
     </div>
   )

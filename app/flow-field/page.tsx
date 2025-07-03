@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import VisualizationNav from '@/components/VisualizationNav'
+import ControlsPanel from '@/components/ControlsPanel'
 
 interface MagneticPole {
   id: string
@@ -349,138 +350,136 @@ export default function FlowFieldPage() {
           )}
         </div>
 
-        {/* Controls Panel */}
-        <div className="w-80 border-l border-border bg-background/95 backdrop-blur-sm overflow-y-auto">
-          <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-normal">Controls</h2>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" onClick={resetToDefaults}>
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset
+        {/* Floating Controls Panel */}
+        <ControlsPanel title="Flow Field Controls">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pole Management</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex space-x-2">
+                <Button
+                  variant={selectedPoleType === 'north' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedPoleType('north')}
+                >
+                  North
                 </Button>
-                <Button size="sm" onClick={exportSVG}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
+                <Button
+                  variant={selectedPoleType === 'south' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedPoleType('south')}
+                >
+                  South
                 </Button>
               </div>
-            </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAddingPole(!isAddingPole)}
+                className="w-full"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {isAddingPole ? 'Cancel' : 'Add Pole'}
+              </Button>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Pole Management</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex space-x-2">
-                  <Button
-                    variant={selectedPoleType === 'north' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedPoleType('north')}
-                  >
-                    North
-                  </Button>
-                  <Button
-                    variant={selectedPoleType === 'south' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedPoleType('south')}
-                  >
-                    South
-                  </Button>
-                </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsAddingPole(!isAddingPole)}
+              <div className="space-y-3">
+                {poles.map(pole => (
+                  <div key={pole.id} className="flex items-center space-x-2 p-2 border rounded">
+                    <div className={`w-3 h-3 rounded-full ${pole.type === 'north' ? 'bg-black' : 'bg-white border border-black'}`} />
+                    <span className="text-sm flex-1">{pole.type}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removePole(pole.id)}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="showPoles"
+                  checked={showPoles}
+                  onCheckedChange={(checked) => setShowPoles(checked as boolean)}
+                />
+                <Label htmlFor="showPoles">Show Poles</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="showFieldLines"
+                  checked={showFieldLines}
+                  onCheckedChange={(checked) => setShowFieldLines(checked as boolean)}
+                />
+                <Label htmlFor="showFieldLines">Show Field Lines</Label>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Particle Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Particle Count</Label>
+                <Slider
+                  value={[particleCount]}
+                  onValueChange={([value]) => setParticleCount(value)}
+                  max={500}
+                  min={10}
+                  step={10}
                   className="w-full"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {isAddingPole ? 'Cancel' : 'Add Pole'}
-                </Button>
+                />
+                <div className="text-sm text-muted-foreground">{particleCount}</div>
+              </div>
 
-                <div className="space-y-3">
-                  {poles.map(pole => (
-                    <div key={pole.id} className="flex items-center space-x-2 p-2 border rounded">
-                      <div className={`w-3 h-3 rounded-full ${pole.type === 'north' ? 'bg-black' : 'bg-white border border-black'}`} />
-                      <span className="text-sm flex-1">{pole.type}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removePole(pole.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+              <div className="space-y-2">
+                <Label>Particle Speed</Label>
+                <Slider
+                  value={[particleSpeed]}
+                  onValueChange={([value]) => setParticleSpeed(value)}
+                  max={10}
+                  min={0.1}
+                  step={0.1}
+                  className="w-full"
+                />
+                <div className="text-sm text-muted-foreground">{particleSpeed}</div>
+              </div>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="showPoles"
-                    checked={showPoles}
-                    onCheckedChange={(checked) => setShowPoles(checked as boolean)}
-                  />
-                  <Label htmlFor="showPoles">Show Poles</Label>
-                </div>
+              <div className="space-y-2">
+                <Label>Particle Life</Label>
+                <Slider
+                  value={[particleLife]}
+                  onValueChange={([value]) => setParticleLife(value)}
+                  max={200}
+                  min={20}
+                  step={10}
+                  className="w-full"
+                />
+                <div className="text-sm text-muted-foreground">{particleLife}</div>
+              </div>
+            </CardContent>
+          </Card>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="showFieldLines"
-                    checked={showFieldLines}
-                    onCheckedChange={(checked) => setShowFieldLines(checked as boolean)}
-                  />
-                  <Label htmlFor="showFieldLines">Show Field Lines</Label>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Particle Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Particle Count</Label>
-                  <Slider
-                    value={[particleCount]}
-                    onValueChange={([value]) => setParticleCount(value)}
-                    max={500}
-                    min={10}
-                    step={10}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{particleCount}</div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Particle Speed</Label>
-                  <Slider
-                    value={[particleSpeed]}
-                    onValueChange={([value]) => setParticleSpeed(value)}
-                    max={10}
-                    min={0.1}
-                    step={0.1}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{particleSpeed}</div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Particle Life</Label>
-                  <Slider
-                    value={[particleLife]}
-                    onValueChange={([value]) => setParticleLife(value)}
-                    max={200}
-                    min={20}
-                    step={10}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{particleLife}</div>
-                </div>
-              </CardContent>
-            </Card>
+                    {/* Fixed Action Buttons at Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 p-4">
+            <div className="flex items-center justify-end space-x-2">
+              <Button variant="outline" size="sm" onClick={resetToDefaults}>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset
+              </Button>
+              <Button size="sm" onClick={exportSVG}>
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            </div>
           </div>
-        </div>
+        </ControlsPanel>
       </div>
     </div>
   )

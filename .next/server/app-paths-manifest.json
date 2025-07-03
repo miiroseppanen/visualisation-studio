@@ -1,5 +1,5 @@
 {
-  "/page": "app/page.js",
   "/grid-field/page": "app/grid-field/page.js",
-  "/flow-field/page": "app/flow-field/page.js"
+  "/flow-field/page": "app/flow-field/page.js",
+  "/page": "app/page.js"
 }
