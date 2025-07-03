@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ChevronRight, ChevronLeft } from "lucide-react"
+import { Settings, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ControlsPanelProps {
@@ -22,20 +22,22 @@ export default function ControlsPanel({ children, title = "Controls" }: Controls
       >
         <div
           className={cn(
-            "relative h-full w-80 max-w-[90vw] rounded-md shadow-xl border border-border/20 bg-background/30 backdrop-blur-sm transition-transform duration-300 flex flex-col pointer-events-auto",
+            "relative h-full w-80 max-w-[90vw] rounded-md border border-border/20 transition-all duration-300 flex flex-col pointer-events-auto",
+            "shadow-lg hover:shadow-2xl",
+            "bg-background/15 hover:bg-background/95 backdrop-blur-sm hover:backdrop-blur-md",
             open ? "translate-x-0" : "translate-x-full",
-            "hover:shadow-2xl overflow-hidden"
+            "overflow-hidden"
           )}
         >
           {/* Top Bar */}
-          <div className="flex items-center justify-between p-4 border-b border-border/20 bg-background/40 backdrop-blur-xs">
+          <div className="flex items-center justify-between p-4 border-b border-border/20 bg-background/20 hover:bg-background/90 backdrop-blur-xs hover:backdrop-blur-md transition-all duration-300">
             {open && <h2 className="text-lg font-normal">{title}</h2>}
             <div className="ml-auto w-8 h-8"></div> {/* Spacer for button */}
           </div>
           
           {/* Content */}
           {open && (
-            <div className="flex-1 overflow-y-auto p-6 pb-20 bg-background/30 backdrop-blur-sm">
+            <div className="flex-1 overflow-y-auto p-6 pb-20 bg-background/10 hover:bg-background/80 backdrop-blur-sm hover:backdrop-blur-md transition-all duration-300">
               {children}
             </div>
           )}
@@ -45,15 +47,15 @@ export default function ControlsPanel({ children, title = "Controls" }: Controls
       {/* Button - Always visible, positioned outside the panel */}
       <div className="fixed top-28 right-8 z-[60] pointer-events-auto">
         <button
-          className="bg-background/40 backdrop-blur-xs border border-border/20 rounded-full p-3 hover:bg-background/60 transition-colors shadow-lg"
+          className="bg-background/20 hover:bg-background/90 backdrop-blur-xs hover:backdrop-blur-md border border-border/20 rounded-full p-3 transition-all duration-300 shadow-lg hover:shadow-xl"
           onClick={() => setOpen(!open)}
-          aria-label={open ? "Minimize controls" : "Show controls"}
+          aria-label={open ? "Close controls" : "Open controls"}
           tabIndex={0}
         >
           {open ? (
-            <ChevronRight className="w-4 h-4" />
+            <X className="w-4 h-4" />
           ) : (
-            <ChevronLeft className="w-4 h-4" />
+            <Settings className="w-4 h-4" />
           )}
         </button>
       </div>
