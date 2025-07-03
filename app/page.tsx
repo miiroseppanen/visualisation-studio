@@ -110,40 +110,40 @@ const visualizations = [
     title: 'Grid Field',
     path: '/grid-field',
     icon: Grid3X3,
-    description: 'Create structured line fields that respond to magnetic poles with precise geometric control.',
-    features: ['Magnetic pole interaction', 'Customizable line patterns', 'Real-time field updates'],
+    description: 'Generate structured geometric patterns perfect for packaging backgrounds and brand textures.',
+    features: ['Precise grid control', 'Dynamic line patterns', 'Scalable geometry'],
     preview: GridFieldPreview
   },
   {
     title: 'Flow Field',
     path: '/flow-field',
     icon: Magnet,
-    description: 'Design flowing magnetic field illustrations with dynamic particle systems.',
-    features: ['Interactive magnetic poles', 'Particle flow visualization', 'Field line generation'],
+    description: 'Create flowing, organic patterns ideal for modern brand identities and packaging wraps.',
+    features: ['Fluid motion patterns', 'Particle trail effects', 'Organic flow lines'],
     preview: FlowFieldPreview
   },
   {
     title: 'Turbulence',
     path: '/turbulence',
     icon: Wind,
-    description: 'Explore turbulent flow patterns with vortices, noise, and complex fluid dynamics.',
-    features: ['Multiple turbulence sources', 'Streamline visualization', 'Noise-based variation'],
+    description: 'Design complex swirling patterns and textures for premium packaging and brand elements.',
+    features: ['Vortex pattern generation', 'Turbulent textures', 'Noise-based variation'],
     preview: TurbulencePreview
   },
   {
     title: 'Topography',
     path: '/topography',
     icon: Mountain,
-    description: 'Generate precise topographic contour lines from elevation points and terrain features.',
-    features: ['Elevation point control', 'Contour line generation', 'Terrain visualization'],
+    description: 'Build layered contour patterns for sophisticated packaging design and brand depth.',
+    features: ['Layered contour lines', 'Elevation-based patterns', 'Depth visualization'],
     preview: TopographyPreview
   },
   {
     title: 'Circular Field',
     path: '/circular-field',
     icon: Radio,
-    description: 'Visualize circular magnetic field lines around poles with concentric ring patterns.',
-    features: ['Concentric circle generation', 'Pole interaction effects', 'Animation controls'],
+    description: 'Craft concentric ring patterns and radial designs for logos and circular packaging.',
+    features: ['Concentric ring systems', 'Radial pattern control', 'Circular compositions'],
     preview: CircularFieldPreview
   }
 ]
@@ -184,8 +184,8 @@ export default function HomePage() {
             <span className="block text-muted-foreground font-light">Studio</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-16 leading-relaxed max-w-3xl">
-            Professional tools for creating precise scientific and mathematical visualizations. 
-            Build interactive field patterns, flow dynamics, and topographic maps with real-time controls.
+            Professional pattern generation toolkit for creative branding and packaging design. 
+            Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.
           </p>
           <div className="flex flex-col sm:flex-row gap-6">
             <Button asChild size="lg" className="group w-fit text-base px-8 py-3">
@@ -206,9 +206,9 @@ export default function HomePage() {
       {/* Tools Section */}
       <section id="tools" className="container mx-auto px-8 py-32">
         <div className="mb-20">
-          <h3 className="text-4xl font-normal mb-6">Visualization Tools</h3>
+          <h3 className="text-4xl font-normal mb-6">Pattern Generation Tools</h3>
           <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed">
-            Five specialized tools for creating professional scientific and mathematical visualizations
+            Five specialized tools for creating unique patterns and textures for branding and packaging design
           </p>
         </div>
 
@@ -262,12 +262,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Principles Section */}
+      {/* Built for Creators Section */}
       <section className="container mx-auto px-8 py-32">
         <div className="mb-20">
-          <h3 className="text-4xl font-normal mb-6">Design Principles</h3>
+          <h3 className="text-4xl font-normal mb-6">Perfect for Creative Professionals</h3>
           <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed">
-            Built with precision, clarity, and functionality at the core
+            From brand identity to packaging design, create distinctive patterns that set your work apart
           </p>
         </div>
 
@@ -276,27 +276,27 @@ export default function HomePage() {
             <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-primary" />
             </div>
-            <h4 className="font-normal text-xl">Real-time Feedback</h4>
+            <h4 className="font-normal text-xl">Brand Designers</h4>
             <p className="text-muted-foreground leading-relaxed text-lg">
-              Immediate visual response to parameter changes enables rapid iteration and precise control.
+              Develop unique visual languages and pattern systems that strengthen brand identity and recognition.
             </p>
           </div>
           <div className="space-y-6">
             <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
               <Download className="w-6 h-6 text-primary" />
             </div>
-            <h4 className="font-normal text-xl">Vector Output</h4>
+            <h4 className="font-normal text-xl">Packaging Designers</h4>
             <p className="text-muted-foreground leading-relaxed text-lg">
-              Export high-quality SVG files that scale infinitely while maintaining crisp lines and precision.
+              Create distinctive textures and patterns that make products stand out on shelves and enhance unboxing experiences.
             </p>
           </div>
           <div className="space-y-6">
             <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
               <Play className="w-6 h-6 text-primary" />
             </div>
-            <h4 className="font-normal text-xl">Interactive Control</h4>
+            <h4 className="font-normal text-xl">Creative Agencies</h4>
             <p className="text-muted-foreground leading-relaxed text-lg">
-              Direct manipulation of visual elements provides intuitive workflow and immediate understanding.
+              Generate custom pattern libraries and visual assets that deliver unique solutions for every client project.
             </p>
           </div>
         </div>
@@ -312,9 +312,14 @@ export default function HomePage() {
               </div>
               <p className="text-muted-foreground">Visualization Studio</p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Precision tools for scientific visualization
-            </p>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">
+                Pattern generation toolkit for creative branding
+              </p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                Vibecoded by Miiro at H23 Agency
+              </p>
+            </div>
           </div>
         </div>
       </footer>

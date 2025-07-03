@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -20,16 +20,17 @@ export function DisplaySettings({
 }: DisplaySettingsProps) {
   return (
     <div className="space-y-4">
-      <Button
-        variant="ghost"
+      <button
         onClick={onToggle}
-        className="w-full justify-between p-0 h-auto font-normal"
+        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
       >
-        <span className="text-sm font-medium">Display Settings</span>
-        <ChevronRight 
-          className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
-        />
-      </Button>
+        {isExpanded ? (
+          <ChevronDown className="h-4 w-4" />
+        ) : (
+          <ChevronRight className="h-4 w-4" />
+        )}
+        Display Settings
+      </button>
 
       {isExpanded && (
         <div className="space-y-4 pl-4">

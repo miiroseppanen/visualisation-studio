@@ -1,10 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { Download, RotateCcw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import VisualizationNav from '@/components/VisualizationNav'
-import ControlsPanel from '@/components/ControlsPanel'
+import VisualizationLayout from '@/components/layout/VisualizationLayout'
 import GridSettings from '@/components/grid-field/GridSettings'
 import PoleControls from '@/components/grid-field/PoleControls'
 import AnimationControls from '@/components/grid-field/AnimationControls'
@@ -212,76 +209,57 @@ export default function GridFieldPage() {
   }
 
   return (
-    <div className="h-screen bg-background flex flex-col">
-      <VisualizationNav 
-        actionButtons={
-          <>
-            <Button variant="ghost" size="sm" onClick={resetAllSettings}>
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Reset
-            </Button>
-            <Button size="sm" onClick={exportSVG}>
-              <Download className="w-4 h-4 mr-2" />
-              SVG
-            </Button>
-          </>
-        }
-      />
-
-      <div className="flex-1 flex">
-        {/* Canvas - Fullscreen */}
-        <div className="flex-1 relative">
-          <canvas
-            ref={canvasRef}
-            className="w-full h-full cursor-crosshair"
-            onMouseDown={handleCanvasMouseDown}
-            onMouseMove={handleCanvasMouseMove}
-            onMouseUp={handleCanvasMouseUp}
-            onMouseLeave={handleCanvasMouseUp}
-            onWheel={handleWheel}
+    <VisualizationLayout
+      onReset={resetAllSettings}
+      onExportSVG={exportSVG}
+      statusContent={
+        <>
+          Mode: {polaritySettings.attractToPoles ? 'Magnetic' : 'Electric'} | 
+          Poles: {poles.length} | 
+          Zoom: {Math.round(zoomSettings.level * 100)}%
+        </>
+      }
+      helpText="Click to add pole, drag to move • Wheel to zoom • Toggle individual pole polarity in controls"
+      settingsContent={
+        <div className="space-y-8">
+          <GridSettings
+            gridSettings={gridSettings}
+            zoomSettings={zoomSettings}
+            expanded={panelState.gridSettingsExpanded}
+            onToggleExpanded={() => updatePanelState({ gridSettingsExpanded: !panelState.gridSettingsExpanded })}
+            onUpdateGrid={updateGridSettings}
+            onUpdateZoom={updateZoomSettings}
           />
-          <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
-            Mode: {polaritySettings.attractToPoles ? 'Magnetic' : 'Electric'} | 
-            Poles: {poles.length} | 
-            Zoom: {Math.round(zoomSettings.level * 100)}%
-          </div>
-          <div className="absolute bottom-4 left-4 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
-            Click to add pole, drag to move • Wheel to zoom • Toggle individual pole polarity in controls
-          </div>
+
+          <PoleControls
+            poles={poles}
+            polaritySettings={polaritySettings}
+            showPoles={gridSettings.showPoles}
+            expanded={panelState.polesExpanded}
+            onToggleExpanded={() => updatePanelState({ polesExpanded: !panelState.polesExpanded })}
+            onSetPoles={setPoles}
+            onUpdatePolarity={updatePolaritySettings}
+            onToggleShowPoles={(show) => updateGridSettings({ showPoles: show })}
+          />
+
+          <AnimationControls
+            animationSettings={animationSettings}
+            expanded={panelState.animationExpanded}
+            onToggleExpanded={() => updatePanelState({ animationExpanded: !panelState.animationExpanded })}
+            onUpdateAnimation={updateAnimationSettings}
+          />
         </div>
-
-        {/* Floating Controls Panel */}
-        <ControlsPanel title="Grid Field Controls">
-          <div className="space-y-8">
-            <GridSettings
-              gridSettings={gridSettings}
-              zoomSettings={zoomSettings}
-              expanded={panelState.gridSettingsExpanded}
-              onToggleExpanded={() => updatePanelState({ gridSettingsExpanded: !panelState.gridSettingsExpanded })}
-              onUpdateGrid={updateGridSettings}
-              onUpdateZoom={updateZoomSettings}
-            />
-
-            <PoleControls
-              poles={poles}
-              polaritySettings={polaritySettings}
-              showPoles={gridSettings.showPoles}
-              expanded={panelState.polesExpanded}
-              onToggleExpanded={() => updatePanelState({ polesExpanded: !panelState.polesExpanded })}
-              onSetPoles={setPoles}
-              onUpdatePolarity={updatePolaritySettings}
-              onToggleShowPoles={(show) => updateGridSettings({ showPoles: show })}
-            />
-
-            <AnimationControls
-              animationSettings={animationSettings}
-              expanded={panelState.animationExpanded}
-              onToggleExpanded={() => updatePanelState({ animationExpanded: !panelState.animationExpanded })}
-              onUpdateAnimation={updateAnimationSettings}
-            />
-          </div>
-        </ControlsPanel>
-      </div>
-    </div>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full cursor-crosshair"
+        onMouseDown={handleCanvasMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleCanvasMouseUp}
+        onMouseLeave={handleCanvasMouseUp}
+        onWheel={handleWheel}
+      />
+    </VisualizationLayout>
   )
 }

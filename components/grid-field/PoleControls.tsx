@@ -1,11 +1,12 @@
 "use client"
 
 import React from 'react'
-import { ChevronRight, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import type { Pole, PolaritySettings } from '@/lib/types'
 import { generatePoleId, generatePoleName, renumberPoles } from '@/lib/physics'
 import { 
@@ -62,29 +63,14 @@ export default function PoleControls({
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <button
-          className="flex items-center flex-1 text-left"
-          onClick={onToggleExpanded}
-        >
-          <ChevronRight 
-            className={`w-4 h-4 mr-2 transition-transform ${expanded ? 'rotate-90' : ''}`}
-          />
-          <h3 className="text-base font-medium">Poles ({poles.length})</h3>
-        </button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="ml-2"
-          onClick={addPole}
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
-      </div>
-
-      {expanded && (
-        <div className="space-y-4 pl-4 mt-4">
+    <div className="flex items-center justify-between">
+      <CollapsibleSection
+        title={`Poles (${poles.length})`}
+        expanded={expanded}
+        onToggle={onToggleExpanded}
+        className="flex-1"
+      >
+        <div className="space-y-4">
           {/* Individual Pole Controls */}
           {poles.map((pole, index) => (
             <div key={pole.id} className="space-y-3 p-3 border rounded-lg">
@@ -160,7 +146,16 @@ export default function PoleControls({
             </div>
           </div>
         </div>
-      )}
+      </CollapsibleSection>
+      
+      <Button
+        variant="outline"
+        size="sm"
+        className="ml-2"
+        onClick={addPole}
+      >
+        <Plus className="w-4 h-4" />
+      </Button>
     </div>
   )
 } 

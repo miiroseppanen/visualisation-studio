@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
-import { ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import type { FlowSettings, NoiseSettings } from '@/lib/types'
 import type { TurbulencePanelState } from '@/lib/types'
 
@@ -42,13 +42,15 @@ export function FlowControls({
       {/* Base Flow Settings */}
       <div>
         <button
-          className="flex items-center w-full text-left"
+          className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
           onClick={toggleFlowExpanded}
         >
-          <ChevronRight 
-            className={`w-4 h-4 mr-2 transition-transform ${panelState.flowSettingsExpanded ? 'rotate-90' : ''}`}
-          />
-          <h3 className="text-base font-medium">Base Flow</h3>
+          {panelState.flowSettingsExpanded ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+          Base Flow
         </button>
 
         {panelState.flowSettingsExpanded && (
@@ -113,13 +115,15 @@ export function FlowControls({
       {/* Noise Settings */}
       <div>
         <button
-          className="flex items-center w-full text-left"
+          className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
           onClick={toggleNoiseExpanded}
         >
-          <ChevronRight 
-            className={`w-4 h-4 mr-2 transition-transform ${panelState.noiseExpanded ? 'rotate-90' : ''}`}
-          />
-          <h3 className="text-base font-medium">Turbulence Noise</h3>
+          {panelState.noiseExpanded ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+          Turbulence Noise
         </button>
 
         {panelState.noiseExpanded && (

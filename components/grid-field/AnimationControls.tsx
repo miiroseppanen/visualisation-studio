@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react'
-import { ChevronRight, Play, Pause } from 'lucide-react'
+import { ChevronDown, ChevronRight, Play, Pause } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -29,13 +29,15 @@ export default function AnimationControls({
   return (
     <div>
       <button
-        className="flex items-center w-full text-left"
+        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
         onClick={onToggleExpanded}
       >
-        <ChevronRight 
-          className={`w-4 h-4 mr-2 transition-transform ${expanded ? 'rotate-90' : ''}`}
-        />
-        <h3 className="text-base font-medium">Animation</h3>
+        {expanded ? (
+          <ChevronDown className="h-4 w-4" />
+        ) : (
+          <ChevronRight className="h-4 w-4" />
+        )}
+        Animation
       </button>
 
       {expanded && (
