@@ -67,76 +67,76 @@ export default function HomePage() {
 
         <div className="grid md:grid-cols-2 gap-12 max-w-5xl">
           {/* Grid Field Card */}
-          <Card className="group hover:shadow-sm transition-all duration-200 border-border/30 hover:border-border/60">
-            <CardHeader className="pb-6">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-8 h-8 bg-primary/10 rounded-sm flex items-center justify-center">
-                  <Grid3X3 className="w-4 h-4 text-primary" />
+          <Link href="/grid-field" className="block">
+            <Card className="group hover:shadow-sm transition-all duration-200 border-border/30 hover:border-border/60 cursor-pointer">
+              <CardHeader className="pb-6">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-8 h-8 bg-primary/10 rounded-sm flex items-center justify-center">
+                    <Grid3X3 className="w-4 h-4 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg font-normal">Grid Field</CardTitle>
                 </div>
-                <CardTitle className="text-lg font-normal">Grid Field</CardTitle>
-              </div>
-              <CardDescription className="text-base leading-relaxed">
-                Create a field of lines that respond to magnetic poles. 
-                Each line is pulled toward the direction you set.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="aspect-video bg-muted/30 rounded-sm grid-field-preview flex items-center justify-center">
-                <div className="flex items-center space-x-3">
-                  <Grid3X3 className="w-8 h-8 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">Interactive Grid Preview</p>
+                <CardDescription className="text-base leading-relaxed">
+                  Create a field of lines that respond to magnetic poles. 
+                  Each line is pulled toward the direction you set.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="aspect-video bg-muted/30 rounded-sm grid-field-preview flex items-center justify-center">
+                  <div className="flex items-center space-x-3">
+                    <Grid3X3 className="w-8 h-8 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">Interactive Grid Preview</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <Code className="w-4 h-4" />
-                  <span>SVG-based</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                    <Code className="w-4 h-4" />
+                    <span>SVG-based</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                    <Play className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <span>Open Grid Field</span>
+                  </div>
                 </div>
-                <Button asChild variant="outline" className="group">
-                  <Link href="/grid-field">
-                    <Play className="w-4 h-4 mr-2 group-hover:translate-x-0.5 transition-transform" />
-                    Open Grid Field
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
 
           {/* Flow Field Card */}
-          <Card className="group hover:shadow-sm transition-all duration-200 border-border/30 hover:border-border/60">
-            <CardHeader className="pb-6">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-8 h-8 bg-primary/10 rounded-sm flex items-center justify-center">
-                  <Magnet className="w-4 h-4 text-primary" />
+          <Link href="/flow-field" className="block">
+            <Card className="group hover:shadow-sm transition-all duration-200 border-border/30 hover:border-border/60 cursor-pointer">
+              <CardHeader className="pb-6">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-8 h-8 bg-primary/10 rounded-sm flex items-center justify-center">
+                    <Magnet className="w-4 h-4 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg font-normal">Flow Field</CardTitle>
                 </div>
-                <CardTitle className="text-lg font-normal">Flow Field</CardTitle>
-              </div>
-              <CardDescription className="text-base leading-relaxed">
-                Design magnetic field illustrations with custom poles and 
-                interactive particle systems.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="aspect-video bg-muted/30 rounded-sm magnetic-field-preview flex items-center justify-center">
-                <div className="flex items-center space-x-3">
-                  <Magnet className="w-8 h-8 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">Magnetic Field Preview</p>
+                <CardDescription className="text-base leading-relaxed">
+                  Design magnetic field illustrations with custom poles and 
+                  interactive particle systems.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="aspect-video bg-muted/30 rounded-sm magnetic-field-preview flex items-center justify-center">
+                  <div className="flex items-center space-x-3">
+                    <Magnet className="w-8 h-8 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">Magnetic Field Preview</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <Code className="w-4 h-4" />
-                  <span>SVG-based</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                    <Code className="w-4 h-4" />
+                    <span>SVG-based</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                    <Play className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <span>Open Flow Field</span>
+                  </div>
                 </div>
-                <Button asChild variant="outline" className="group">
-                  <Link href="/flow-field">
-                    <Play className="w-4 h-4 mr-2 group-hover:translate-x-0.5 transition-transform" />
-                    Open Flow Field
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </section>
 

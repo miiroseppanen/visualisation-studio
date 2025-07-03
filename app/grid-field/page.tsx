@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, Download, RotateCcw, Settings, Grid3X3 } from 'lucide-react'
+import { Download, RotateCcw, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import VisualizationNav from '@/components/VisualizationNav'
 
 interface GridLine {
   x: number
@@ -27,12 +27,24 @@ export default function GridFieldPage() {
   const [showPole, setShowPole] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
 
-  // Generate grid lines
+  // Set canvas size and generate grid lines
   useEffect(() => {
-    const lines: GridLine[] = []
     const canvas = canvasRef.current
     if (!canvas) return
 
+    // Set canvas size to match container
+    const resizeCanvas = () => {
+      const container = canvas.parentElement
+      if (container) {
+        canvas.width = container.clientWidth
+        canvas.height = container.clientHeight
+      }
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    const lines: GridLine[] = []
     const cols = Math.ceil(canvas.width / gridSpacing)
     const rows = Math.ceil(canvas.height / gridSpacing)
 
@@ -61,6 +73,8 @@ export default function GridFieldPage() {
     }
 
     setGridLines(lines)
+
+    return () => window.removeEventListener('resize', resizeCanvas)
   }, [poleX, poleY, poleStrength, gridSpacing, lineLength])
 
   // Draw grid
@@ -181,70 +195,42 @@ export default function GridFieldPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Link>
-              </Button>
-              <div className="flex items-center space-x-2">
-                <Grid3X3 className="w-5 h-5" />
-                <h1 className="text-lg font-semibold">Grid Field</h1>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={resetToDefaults}>
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
-              </Button>
-              <Button size="sm" onClick={exportSVG}>
-                <Download className="w-4 h-4 mr-2" />
-                Export SVG
-              </Button>
-            </div>
+    <div className="h-screen bg-background flex flex-col">
+      <VisualizationNav />
+
+      <div className="flex-1 flex">
+        {/* Canvas - Fullscreen */}
+        <div className="flex-1 relative">
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full cursor-crosshair"
+            onMouseDown={handleCanvasMouseDown}
+            onMouseMove={handleCanvasMouseMove}
+            onMouseUp={handleCanvasMouseUp}
+            onMouseLeave={handleCanvasMouseUp}
+          />
+          <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
+            Click and drag to move pole
           </div>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Canvas */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-4 h-4" />
-                  <span>Grid Field Canvas</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="relative">
-                  <canvas
-                    ref={canvasRef}
-                    width={800}
-                    height={600}
-                    className="w-full h-auto border border-border rounded-lg cursor-crosshair"
-                    onMouseDown={handleCanvasMouseDown}
-                    onMouseMove={handleCanvasMouseMove}
-                    onMouseUp={handleCanvasMouseUp}
-                    onMouseLeave={handleCanvasMouseUp}
-                  />
-                  <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
-                    Click and drag to move pole
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        {/* Controls Panel */}
+        <div className="w-80 border-l border-border bg-background/95 backdrop-blur-sm overflow-y-auto">
+          <div className="p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-normal">Controls</h2>
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" onClick={resetToDefaults}>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reset
+                </Button>
+                <Button size="sm" onClick={exportSVG}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+              </div>
+            </div>
 
-          {/* Controls */}
-          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Pole Settings</CardTitle>
@@ -304,18 +290,6 @@ export default function GridFieldPage() {
                   />
                   <div className="text-sm text-muted-foreground">{lineLength}px</div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Export</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={exportSVG} className="w-full">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download SVG
-                </Button>
               </CardContent>
             </Card>
           </div>

@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, Download, RotateCcw, Settings, Magnet, Plus, Trash2 } from 'lucide-react'
+import { Download, RotateCcw, Settings, Magnet, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import VisualizationNav from '@/components/VisualizationNav'
 
 interface MagneticPole {
   id: string
@@ -41,19 +41,37 @@ export default function FlowFieldPage() {
   const [isAddingPole, setIsAddingPole] = useState(false)
   const [selectedPoleType, setSelectedPoleType] = useState<'north' | 'south'>('north')
 
-  // Initialize particles
+  // Set canvas size and initialize particles
   useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    // Set canvas size to match container
+    const resizeCanvas = () => {
+      const container = canvas.parentElement
+      if (container) {
+        canvas.width = container.clientWidth
+        canvas.height = container.clientHeight
+      }
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    // Initialize particles with canvas size
     const newParticles: Particle[] = []
     for (let i = 0; i < particleCount; i++) {
       newParticles.push({
-        x: Math.random() * 800,
-        y: Math.random() * 600,
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
         vx: 0,
         vy: 0,
         life: particleLife
       })
     }
     setParticles(newParticles)
+
+    return () => window.removeEventListener('resize', resizeCanvas)
   }, [particleCount, particleLife])
 
   // Calculate magnetic field at a point
@@ -103,17 +121,23 @@ export default function FlowFieldPage() {
         const newY = particle.y + finalVy
         
         // Wrap around edges
-        const wrappedX = newX < 0 ? 800 : newX > 800 ? 0 : newX
-        const wrappedY = newY < 0 ? 600 : newY > 600 ? 0 : newY
+        const canvas = canvasRef.current
+        const canvasWidth = canvas?.width || 800
+        const canvasHeight = canvas?.height || 600
+        const wrappedX = newX < 0 ? canvasWidth : newX > canvasWidth ? 0 : newX
+        const wrappedY = newY < 0 ? canvasHeight : newY > canvasHeight ? 0 : newY
         
         // Decrease life
         const newLife = particle.life - 1
         
         // Reset particle if life is over
         if (newLife <= 0) {
+          const canvas = canvasRef.current
+          const canvasWidth = canvas?.width || 800
+          const canvasHeight = canvas?.height || 600
           return {
-            x: Math.random() * 800,
-            y: Math.random() * 600,
+            x: Math.random() * canvasWidth,
+            y: Math.random() * canvasHeight,
             vx: 0,
             vy: 0,
             life: particleLife
@@ -159,8 +183,9 @@ export default function FlowFieldPage() {
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'
       ctx.lineWidth = 1
       
-      for (let i = 0; i < 800; i += 40) {
-        for (let j = 0; j < 600; j += 40) {
+      const step = 40
+      for (let i = 0; i < canvas.width; i += step) {
+        for (let j = 0; j < canvas.height; j += step) {
           const field = calculateField(i, j)
           const length = Math.sqrt(field.fx * field.fx + field.fy * field.fy)
           
@@ -306,69 +331,41 @@ export default function FlowFieldPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Link>
-              </Button>
+    <div className="h-screen bg-background flex flex-col">
+      <VisualizationNav />
+
+      <div className="flex-1 flex">
+        {/* Canvas - Fullscreen */}
+        <div className="flex-1 relative">
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full cursor-crosshair"
+            onClick={handleCanvasClick}
+          />
+          {isAddingPole && (
+            <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
+              Click to add {selectedPoleType} pole
+            </div>
+          )}
+        </div>
+
+        {/* Controls Panel */}
+        <div className="w-80 border-l border-border bg-background/95 backdrop-blur-sm overflow-y-auto">
+          <div className="p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-normal">Controls</h2>
               <div className="flex items-center space-x-2">
-                <Magnet className="w-5 h-5" />
-                <h1 className="text-lg font-semibold">Flow Field</h1>
+                <Button variant="outline" size="sm" onClick={resetToDefaults}>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reset
+                </Button>
+                <Button size="sm" onClick={exportSVG}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={resetToDefaults}>
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
-              </Button>
-              <Button size="sm" onClick={exportSVG}>
-                <Download className="w-4 h-4 mr-2" />
-                Export SVG
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Canvas */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-4 h-4" />
-                  <span>Flow Field Canvas</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="relative">
-                  <canvas
-                    ref={canvasRef}
-                    width={800}
-                    height={600}
-                    className="w-full h-auto border border-border rounded-lg cursor-crosshair"
-                    onClick={handleCanvasClick}
-                  />
-                  {isAddingPole && (
-                    <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
-                      Click to add {selectedPoleType} pole
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Controls */}
-          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Pole Management</CardTitle>
@@ -480,18 +477,6 @@ export default function FlowFieldPage() {
                   />
                   <div className="text-sm text-muted-foreground">{particleLife}</div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Export</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={exportSVG} className="w-full">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download SVG
-                </Button>
               </CardContent>
             </Card>
           </div>
