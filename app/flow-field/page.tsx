@@ -1,14 +1,15 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Download, RotateCcw, Settings, Magnet, Plus, Trash2 } from 'lucide-react'
+import { Download, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Slider } from '@/components/ui/slider'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import VisualizationNav from '@/components/VisualizationNav'
 import ControlsPanel from '@/components/ControlsPanel'
+import PoleControls from '@/components/flow-field/PoleControls'
+import ParticleSettings from '@/components/flow-field/ParticleSettings'
+import { AnimationControls } from '@/components/flow-field/AnimationControls'
+import type { FlowFieldAnimationSettings, FlowFieldPanelState } from '@/lib/types'
+import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 
 interface MagneticPole {
   id: string
@@ -35,12 +36,30 @@ export default function FlowFieldPage() {
   ])
   const [particles, setParticles] = useState<Particle[]>([])
   const [particleCount, setParticleCount] = useState(100)
-  const [particleSpeed, setParticleSpeed] = useState(2)
-  const [particleLife, setParticleLife] = useState(100)
   const [showPoles, setShowPoles] = useState(true)
   const [showFieldLines, setShowFieldLines] = useState(true)
   const [isAddingPole, setIsAddingPole] = useState(false)
   const [selectedPoleType, setSelectedPoleType] = useState<'north' | 'south'>('north')
+  const [isDragging, setIsDragging] = useState(false)
+  const [draggedPoleId, setDraggedPoleId] = useState<string | null>(null)
+  const [zoomLevel, setZoomLevel] = useState(1)
+  
+  // Animation settings
+  const [animationSettings, setAnimationSettings] = useState<FlowFieldAnimationSettings>({
+    isAnimating: true,
+    particleSpeed: 2,
+    particleLife: 100,
+    flowIntensity: 1.0,
+    time: 0
+  })
+  
+  // Panel state for collapsible sections
+  const [panelState, setPanelState] = useState<FlowFieldPanelState>({
+    fieldSettingsExpanded: true,
+    polesExpanded: true,
+    particleSettingsExpanded: true,
+    animationExpanded: false
+  })
 
   // Set canvas size and initialize particles
   useEffect(() => {
@@ -83,13 +102,13 @@ export default function FlowFieldPage() {
         y: Math.random() * rect.height,
         vx: 0,
         vy: 0,
-        life: particleLife
+        life: animationSettings.particleLife
       })
     }
     setParticles(newParticles)
 
     return () => window.removeEventListener('resize', resizeCanvas)
-  }, [particleCount, particleLife])
+  }, [particleCount, animationSettings.particleLife])
 
   // Calculate magnetic field at a point
   const calculateField = (x: number, y: number) => {
@@ -124,12 +143,13 @@ export default function FlowFieldPage() {
         const field = calculateField(particle.x, particle.y)
         
         // Update velocity
-        const newVx = particle.vx + field.fx * 0.1
-        const newVy = particle.vy + field.fy * 0.1
+        const intensityFactor = animationSettings.flowIntensity * 0.1
+        const newVx = particle.vx + field.fx * intensityFactor
+        const newVy = particle.vy + field.fy * intensityFactor
         
         // Limit speed
         const speed = Math.sqrt(newVx * newVx + newVy * newVy)
-        const maxSpeed = particleSpeed
+        const maxSpeed = animationSettings.particleSpeed
         const finalVx = speed > maxSpeed ? (newVx / speed) * maxSpeed : newVx
         const finalVy = speed > maxSpeed ? (newVy / speed) * maxSpeed : newVy
         
@@ -159,7 +179,7 @@ export default function FlowFieldPage() {
             y: Math.random() * canvasHeight,
             vx: 0,
             vy: 0,
-            life: particleLife
+            life: animationSettings.particleLife
           }
         }
         
@@ -176,15 +196,28 @@ export default function FlowFieldPage() {
     animationRef.current = requestAnimationFrame(animate)
   }
 
-  // Start animation
+  // Animation loop with time tracking
   useEffect(() => {
-    animate()
+    if (animationSettings.isAnimating) {
+      const startTime = Date.now()
+      const animateWithTime = () => {
+        const currentTime = Date.now() - startTime
+        setAnimationSettings(prev => ({ ...prev, time: currentTime }))
+        animate()
+      }
+      animateWithTime()
+    } else {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+    
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [particleSpeed, particleLife, poles])
+  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.particleLife, poles])
 
   // Draw everything
   useEffect(() => {
@@ -226,7 +259,7 @@ export default function FlowFieldPage() {
     // Draw particles
     ctx.fillStyle = '#000'
     particles.forEach(particle => {
-      const alpha = particle.life / particleLife
+      const alpha = particle.life / animationSettings.particleLife
       ctx.globalAlpha = alpha
       ctx.beginPath()
       ctx.arc(particle.x, particle.y, 2, 0, 2 * Math.PI)
@@ -256,9 +289,42 @@ export default function FlowFieldPage() {
     }
   }, [particles, poles, showPoles, showFieldLines])
 
-  // Handle canvas click for adding poles
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isAddingPole) return
+  // Handle canvas mouse down for adding/dragging poles
+  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+
+    // Check if clicking on an existing pole for dragging
+    const clickedPole = poles.find(pole => {
+      const distance = Math.sqrt((x - pole.x) ** 2 + (y - pole.y) ** 2)
+      return distance <= 15 // Click radius
+    })
+
+    if (clickedPole) {
+      setIsDragging(true)
+      setDraggedPoleId(clickedPole.id)
+    } else {
+      // Add new pole at click location
+      const newPole: MagneticPole = {
+        id: Date.now().toString(),
+        x,
+        y,
+        strength: 100,
+        type: selectedPoleType
+      }
+      setPoles(prev => [...prev, newPole])
+      setIsDragging(true)
+      setDraggedPoleId(newPole.id)
+    }
+  }
+
+  // Handle canvas mouse move for dragging poles
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging || !draggedPoleId) return
 
     const canvas = canvasRef.current
     if (!canvas) return
@@ -267,16 +333,26 @@ export default function FlowFieldPage() {
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
 
-    const newPole: MagneticPole = {
-      id: Date.now().toString(),
-      x,
-      y,
-      strength: 100,
-      type: selectedPoleType
-    }
+    setPoles(prev => prev.map(pole => 
+      pole.id === draggedPoleId ? { ...pole, x, y } : pole
+    ))
+  }
 
-    setPoles(prev => [...prev, newPole])
-    setIsAddingPole(false)
+  // Handle canvas mouse up to stop dragging
+  const handleCanvasMouseUp = () => {
+    setIsDragging(false)
+    setDraggedPoleId(null)
+  }
+
+  // Handle wheel zoom
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    
+    const deltaY = e.deltaY
+    const zoomChange = -deltaY * ZOOM_SENSITIVITY
+    
+    const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
+    setZoomLevel(newZoom)
   }
 
   // Remove pole
@@ -343,8 +419,13 @@ export default function FlowFieldPage() {
       { id: '2', x: 600, y: 300, strength: 100, type: 'south' }
     ])
     setParticleCount(100)
-    setParticleSpeed(2)
-    setParticleLife(100)
+    setAnimationSettings({
+      isAnimating: true,
+      particleSpeed: 2,
+      particleLife: 100,
+      flowIntensity: 1.0,
+      time: 0
+    })
     setShowPoles(true)
     setShowFieldLines(true)
     setIsAddingPole(false)
@@ -352,7 +433,20 @@ export default function FlowFieldPage() {
 
   return (
     <div className="h-screen bg-background flex flex-col">
-      <VisualizationNav />
+      <VisualizationNav 
+        actionButtons={
+          <>
+            <Button variant="ghost" size="sm" onClick={resetToDefaults}>
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Reset
+            </Button>
+            <Button size="sm" onClick={exportSVG}>
+              <Download className="w-4 h-4 mr-2" />
+              SVG
+            </Button>
+          </>
+        }
+      />
 
       <div className="flex-1 flex">
         {/* Canvas - Fullscreen */}
@@ -360,141 +454,59 @@ export default function FlowFieldPage() {
           <canvas
             ref={canvasRef}
             className="w-full h-full cursor-crosshair"
-            onClick={handleCanvasClick}
+            onMouseDown={handleCanvasMouseDown}
+            onMouseMove={handleCanvasMouseMove}
+            onMouseUp={handleCanvasMouseUp}
+            onMouseLeave={handleCanvasMouseUp}
+            onWheel={handleWheel}
           />
-          {isAddingPole && (
-            <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
-              Click to add {selectedPoleType} pole
-            </div>
-          )}
+          <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
+            Mode: Flow Simulation | 
+            Poles: {poles.length} | 
+            Particles: {particleCount} | 
+            Zoom: {Math.round(zoomLevel * 100)}%
+          </div>
+          <div className="absolute bottom-4 left-4 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+            Click to add pole, drag to move • Wheel to zoom • Use controls to adjust settings
+          </div>
         </div>
 
         {/* Floating Controls Panel */}
         <ControlsPanel title="Flow Field Controls">
           <div className="space-y-8">
-            <div>
-              <h3 className="text-base font-medium mb-4">Pole Management</h3>
-              <div className="space-y-4 pl-4">
-                <div className="flex space-x-2">
-                  <Button
-                    variant={selectedPoleType === 'north' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedPoleType('north')}
-                  >
-                    North
-                  </Button>
-                  <Button
-                    variant={selectedPoleType === 'south' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedPoleType('south')}
-                  >
-                    South
-                  </Button>
-                </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsAddingPole(!isAddingPole)}
-                  className="w-full"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {isAddingPole ? 'Cancel' : 'Add Pole'}
-                </Button>
+            <PoleControls
+              poles={poles}
+              selectedPoleType={selectedPoleType}
+              isAddingPole={isAddingPole}
+              showPoles={showPoles}
+              showFieldLines={showFieldLines}
+              expanded={panelState.polesExpanded}
+              onToggleExpanded={() => setPanelState(prev => ({ ...prev, polesExpanded: !prev.polesExpanded }))}
+              onSetSelectedPoleType={setSelectedPoleType}
+              onSetIsAddingPole={setIsAddingPole}
+              onRemovePole={removePole}
+              onSetShowPoles={setShowPoles}
+              onSetShowFieldLines={setShowFieldLines}
+            />
 
-                <div className="space-y-3">
-                  {poles.map(pole => (
-                    <div key={pole.id} className="flex items-center space-x-2 p-2 border rounded">
-                      <div className={`w-3 h-3 rounded-full ${pole.type === 'north' ? 'bg-black' : 'bg-white border border-black'}`} />
-                      <span className="text-sm flex-1">{pole.type}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removePole(pole.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+            <ParticleSettings
+              particleCount={particleCount}
+              particleSpeed={animationSettings.particleSpeed}
+              particleLife={animationSettings.particleLife}
+              expanded={panelState.particleSettingsExpanded}
+              onToggleExpanded={() => setPanelState(prev => ({ ...prev, particleSettingsExpanded: !prev.particleSettingsExpanded }))}
+              onSetParticleCount={setParticleCount}
+              onSetParticleSpeed={(speed) => setAnimationSettings(prev => ({ ...prev, particleSpeed: speed }))}
+              onSetParticleLife={(life) => setAnimationSettings(prev => ({ ...prev, particleLife: life }))}
+            />
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="showPoles"
-                    checked={showPoles}
-                    onCheckedChange={(checked) => setShowPoles(checked as boolean)}
-                  />
-                  <Label htmlFor="showPoles">Show Poles</Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="showFieldLines"
-                    checked={showFieldLines}
-                    onCheckedChange={(checked) => setShowFieldLines(checked as boolean)}
-                  />
-                  <Label htmlFor="showFieldLines">Show Field Lines</Label>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-base font-medium mb-4">Particle Settings</h3>
-              <div className="space-y-4 pl-4">
-                <div className="space-y-2">
-                  <Label>Particle Count</Label>
-                  <Slider
-                    value={[particleCount]}
-                    onValueChange={([value]) => setParticleCount(value)}
-                    max={500}
-                    min={10}
-                    step={10}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{particleCount}</div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Particle Speed</Label>
-                  <Slider
-                    value={[particleSpeed]}
-                    onValueChange={([value]) => setParticleSpeed(value)}
-                    max={10}
-                    min={0.1}
-                    step={0.1}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{particleSpeed}</div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Particle Life</Label>
-                  <Slider
-                    value={[particleLife]}
-                    onValueChange={([value]) => setParticleLife(value)}
-                    max={200}
-                    min={20}
-                    step={10}
-                    className="w-full"
-                  />
-                  <div className="text-sm text-muted-foreground">{particleLife}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-                    {/* Fixed Action Buttons at Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-background/30 backdrop-blur-lg border-t border-border/20 p-4">
-            <div className="flex items-center justify-end space-x-2">
-              <Button variant="outline" size="sm" onClick={resetToDefaults}>
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
-              </Button>
-              <Button size="sm" onClick={exportSVG}>
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-            </div>
+            <AnimationControls
+              settings={animationSettings}
+              onSettingsChange={(updates) => setAnimationSettings(prev => ({ ...prev, ...updates }))}
+              onReset={resetToDefaults}
+              expanded={panelState.animationExpanded}
+              onToggleExpanded={() => setPanelState(prev => ({ ...prev, animationExpanded: !prev.animationExpanded }))}
+            />
           </div>
         </ControlsPanel>
       </div>

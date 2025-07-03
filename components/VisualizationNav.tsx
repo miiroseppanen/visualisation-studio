@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ArrowLeft, ChevronDown, Grid3X3, Magnet } from 'lucide-react'
+import { ArrowLeft, ChevronDown, Grid3X3, Magnet, Wind, Mountain, Radio } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -31,6 +31,24 @@ const visualizations: VisualizationOption[] = [
     path: '/flow-field',
     icon: <Magnet className="w-4 h-4" />,
     description: 'Design magnetic field illustrations with custom poles'
+  },
+  {
+    name: 'Turbulence',
+    path: '/turbulence',
+    icon: <Wind className="w-4 h-4" />,
+    description: 'Explore turbulent flow fields with vortices and noise'
+  },
+  {
+    name: 'Topography',
+    path: '/topography',
+    icon: <Mountain className="w-4 h-4" />,
+    description: 'Generate topographic contour lines from elevation points'
+  },
+  {
+    name: 'Circular Field',
+    path: '/circular-field',
+    icon: <Radio className="w-4 h-4" />,
+    description: 'Visualize circular field lines around magnetic poles'
   }
 ]
 
