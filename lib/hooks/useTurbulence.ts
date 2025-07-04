@@ -8,13 +8,14 @@ import type {
   TurbulencePanelState 
 } from '../types'
 import type { TurbulenceSource } from '../turbulence-physics'
-import { generateSourceId, generateSourceName } from '../turbulence-physics'
+import { generateSourceId, generateSourceName, createFlowingParticle, updateFlowingParticle, shouldResetParticle, resetFlowingParticle } from '../turbulence-physics'
 import { 
   DEFAULT_TURBULENCE_LINE_COUNT, 
   DEFAULT_TURBULENCE_LINE_LENGTH,
   DEFAULT_STREAMLINE_STEPS,
   DEFAULT_STREAMLINE_STEP_SIZE
 } from '../constants'
+import type { FlowingParticle } from '../types'
 
 // Turbulence-specific types that extend the base visualization types
 interface TurbulenceVisualizationSettings extends TurbulenceSettings {
@@ -33,6 +34,7 @@ const DEFAULT_TURBULENCE_SETTINGS: TurbulenceSettings = {
   lineLength: DEFAULT_TURBULENCE_LINE_LENGTH,
   showSources: true,
   streamlineMode: false,
+  flowingMode: false,
   streamlineSteps: DEFAULT_STREAMLINE_STEPS,
   streamlineStepSize: DEFAULT_STREAMLINE_STEP_SIZE,
   sources: [],
@@ -69,8 +71,8 @@ const DEFAULT_PANEL_STATE: TurbulencePanelState = {
 }
 
 export function useTurbulence() {
-  // Remove local sources state
-  // const [sources, setSources] = useState<TurbulenceSource[]>([])
+  // Flowing particles state
+  const [particles, setParticles] = useState<FlowingParticle[]>([])
 
   // Use the unified visualization hook with turbulence-specific configuration
   const visualization = useVisualization<
@@ -163,12 +165,68 @@ export function useTurbulence() {
     visualization.updateSettings({ sources: [] })
   }, [])
 
+  // Particle management functions
+  const initializeParticles = useCallback((count: number) => {
+    const newParticles: FlowingParticle[] = []
+    const canvasWidth = visualization.canvasSize?.width || 800
+    const canvasHeight = visualization.canvasSize?.height || 600
+    
+    for (let i = 0; i < count; i++) {
+      newParticles.push(createFlowingParticle(
+        Math.random() * canvasWidth,
+        Math.random() * canvasHeight,
+        200, // maxLife
+        50   // maxTrailLength
+      ))
+    }
+    setParticles(newParticles)
+  }, [visualization.canvasSize])
+
+  const updateParticles = useCallback((deltaTime: number) => {
+    if (!visualization.settings.flowingMode) return
+
+    setParticles(prevParticles => {
+      const canvasWidth = visualization.canvasSize?.width || 800
+      const canvasHeight = visualization.canvasSize?.height || 600
+      
+      return prevParticles.map(particle => {
+        // Update particle
+        const updatedParticle = updateFlowingParticle(
+          particle,
+          visualization.settings.sources || [],
+          visualization.settings.noiseSettings,
+          visualization.settings.flowSettings,
+          visualization.animationSettings.time,
+          visualization.animationSettings.speed,
+          canvasWidth,
+          canvasHeight
+        )
+
+        // Check if particle should be reset
+        if (shouldResetParticle(updatedParticle, canvasWidth, canvasHeight)) {
+          return resetFlowingParticle(updatedParticle, canvasWidth, canvasHeight)
+        }
+
+        return updatedParticle
+      })
+    })
+  }, [
+    visualization.settings.flowingMode,
+    visualization.settings.sources,
+    visualization.settings.noiseSettings,
+    visualization.settings.flowSettings,
+    visualization.animationSettings.time,
+    visualization.animationSettings.speed,
+    visualization.canvasSize
+  ])
+
   // Extract nested settings for backward compatibility (memoized to prevent infinite loops)
   const turbulenceSettings: TurbulenceSettings = useMemo(() => ({
     lineCount: visualization.settings.lineCount,
     lineLength: visualization.settings.lineLength,
     showSources: visualization.settings.showSources,
     streamlineMode: visualization.settings.streamlineMode,
+    flowingMode: visualization.settings.flowingMode || false,
     streamlineSteps: visualization.settings.streamlineSteps || DEFAULT_STREAMLINE_STEPS,
     streamlineStepSize: visualization.settings.streamlineStepSize || DEFAULT_STREAMLINE_STEP_SIZE,
     sources: visualization.settings.sources || [],
@@ -177,6 +235,7 @@ export function useTurbulence() {
     visualization.settings.lineLength,
     visualization.settings.showSources,
     visualization.settings.streamlineMode,
+    visualization.settings.flowingMode,
     visualization.settings.streamlineSteps,
     visualization.settings.streamlineStepSize,
     visualization.settings.sources,
@@ -259,6 +318,11 @@ export function useTurbulence() {
     updateSource,
     moveSource,
     clearAllSources,
+    
+    // Particle management
+    particles,
+    initializeParticles,
+    updateParticles,
     
     // Interaction handlers
     handleMouseDown,

@@ -53,17 +53,43 @@ export function TurbulenceSettings({
           {/* Visualization Mode */}
           <div className="space-y-2">
             <Label className="text-sm">Visualization Mode</Label>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="streamline-mode"
-                checked={settings.streamlineMode}
-                onCheckedChange={(checked) =>
-                  onSettingsChange({ streamlineMode: checked as boolean })
-                }
-              />
-              <Label htmlFor="streamline-mode" className="text-sm">
-                Streamlines (unchecked = Vector Field)
-              </Label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="streamline-mode"
+                  checked={settings.streamlineMode}
+                  onCheckedChange={(checked) =>
+                    onSettingsChange({ streamlineMode: checked as boolean, flowingMode: false })
+                  }
+                />
+                <Label htmlFor="streamline-mode" className="text-sm">
+                  Streamlines
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="flowing-mode"
+                  checked={settings.flowingMode}
+                  onCheckedChange={(checked) =>
+                    onSettingsChange({ flowingMode: checked as boolean, streamlineMode: false })
+                  }
+                />
+                <Label htmlFor="flowing-mode" className="text-sm">
+                  Flowing Particles
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="vector-mode"
+                  checked={!settings.streamlineMode && !settings.flowingMode}
+                  onCheckedChange={(checked) =>
+                    onSettingsChange({ streamlineMode: false, flowingMode: false })
+                  }
+                />
+                <Label htmlFor="vector-mode" className="text-sm">
+                  Static Vector Field
+                </Label>
+              </div>
             </div>
           </div>
 

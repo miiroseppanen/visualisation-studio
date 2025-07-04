@@ -1,4 +1,4 @@
-import type { FieldVector } from './types'
+import type { FieldVector, FlowingParticle } from './types'
 
 export interface TurbulenceSource {
   id: string
@@ -185,4 +185,116 @@ export function generateSourceName(type: TurbulenceSource['type'], count: number
     uniform: 'Flow'
   }
   return `${typeNames[type]} ${count + 1}`
+}
+
+/**
+ * Generate a unique ID for flowing particles
+ */
+export function generateParticleId(): string {
+  return Math.random().toString(36).substr(2, 9)
+}
+
+/**
+ * Create a new flowing particle
+ */
+export function createFlowingParticle(
+  x: number, 
+  y: number, 
+  maxLife: number = 200,
+  maxTrailLength: number = 50
+): FlowingParticle {
+  return {
+    id: generateParticleId(),
+    x,
+    y,
+    vx: 0,
+    vy: 0,
+    life: maxLife,
+    maxLife,
+    age: 0,
+    trail: [{ x, y }],
+    maxTrailLength
+  }
+}
+
+/**
+ * Update a flowing particle based on the turbulence field
+ */
+export function updateFlowingParticle(
+  particle: FlowingParticle,
+  sources: TurbulenceSource[],
+  noiseSettings: NoiseSettings,
+  flowSettings: FlowSettings,
+  time: number,
+  speed: number = 1.0,
+  canvasWidth: number = 1200,
+  canvasHeight: number = 800
+): FlowingParticle {
+  // Calculate field at particle position
+  const field = calculateTurbulenceAt(particle.x, particle.y, sources, noiseSettings, flowSettings, time)
+  
+  // Update velocity based on field
+  const magnitude = Math.sqrt(field.fieldX * field.fieldX + field.fieldY * field.fieldY)
+  if (magnitude > 0.01) {
+    particle.vx += (field.fieldX / magnitude) * speed * 0.1
+    particle.vy += (field.fieldY / magnitude) * speed * 0.1
+  }
+  
+  // Apply damping
+  particle.vx *= 0.98
+  particle.vy *= 0.98
+  
+  // Update position
+  particle.x += particle.vx
+  particle.y += particle.vy
+  
+  // Update trail
+  particle.trail.push({ x: particle.x, y: particle.y })
+  if (particle.trail.length > particle.maxTrailLength) {
+    particle.trail.shift()
+  }
+  
+  // Update life and age
+  particle.life -= 1
+  particle.age += 1
+  
+  return particle
+}
+
+/**
+ * Check if particle should be reset (out of bounds or dead)
+ */
+export function shouldResetParticle(
+  particle: FlowingParticle,
+  canvasWidth: number = 1200,
+  canvasHeight: number = 800
+): boolean {
+  return (
+    particle.life <= 0 ||
+    particle.x < 0 || 
+    particle.x > canvasWidth ||
+    particle.y < 0 || 
+    particle.y > canvasHeight ||
+    particle.age > particle.maxLife * 2
+  )
+}
+
+/**
+ * Reset particle to a new random position
+ */
+export function resetFlowingParticle(
+  particle: FlowingParticle,
+  canvasWidth: number = 1200,
+  canvasHeight: number = 800
+): FlowingParticle {
+  return {
+    ...particle,
+    x: Math.random() * canvasWidth,
+    y: Math.random() * canvasHeight,
+    vx: 0,
+    vy: 0,
+    life: particle.maxLife,
+    age: 0,
+    trail: []
+  }
 } 

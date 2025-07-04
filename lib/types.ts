@@ -23,6 +23,20 @@ export interface StreamLine {
   opacity?: number
 }
 
+// Flowing particle for turbulence animation
+export interface FlowingParticle {
+  id: string
+  x: number
+  y: number
+  vx: number
+  vy: number
+  life: number
+  maxLife: number
+  age: number
+  trail: { x: number; y: number }[]
+  maxTrailLength: number
+}
+
 export interface Pole {
   id: string
   name: string
@@ -52,6 +66,7 @@ export interface TurbulenceSettings {
   lineLength: number
   showSources: boolean
   streamlineMode: boolean // true for streamlines, false for grid vectors
+  flowingMode: boolean // true for flowing particles, false for static vectors
   streamlineSteps: number // Number of steps for streamlines
   streamlineStepSize: number // Step size for streamlines
   sources: TurbulenceSource[]

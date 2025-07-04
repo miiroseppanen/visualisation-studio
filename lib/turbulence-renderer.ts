@@ -1,4 +1,4 @@
-import type { TurbulenceSettings, NoiseSettings, FlowSettings, TurbulenceAnimationSettings } from './types'
+import type { TurbulenceSettings, NoiseSettings, FlowSettings, TurbulenceAnimationSettings, FlowingParticle } from './types'
 import type { TurbulenceSource } from './turbulence-physics'
 import { calculateTurbulenceAt, generateStreamline } from './turbulence-physics'
 
@@ -52,12 +52,15 @@ export class TurbulenceRenderer {
     turbulenceSettings: TurbulenceSettings,
     noiseSettings: NoiseSettings,
     flowSettings: FlowSettings,
-    animationSettings: TurbulenceAnimationSettings
+    animationSettings: TurbulenceAnimationSettings,
+    particles?: FlowingParticle[]
   ): void {
     this.clear()
 
     if (turbulenceSettings.streamlineMode) {
       this.renderStreamlines(sources, turbulenceSettings, noiseSettings, flowSettings, animationSettings)
+    } else if (turbulenceSettings.flowingMode && particles && particles.length > 0) {
+      this.renderFlowingParticles(particles, animationSettings)
     } else {
       this.renderVectorField(sources, turbulenceSettings, noiseSettings, flowSettings, animationSettings)
     }
@@ -160,6 +163,36 @@ export class TurbulenceRenderer {
         this.ctx.stroke()
       }
     }
+
+    this.ctx.globalAlpha = 1
+  }
+
+  private renderFlowingParticles(
+    particles: FlowingParticle[],
+    animationSettings: TurbulenceAnimationSettings
+  ): void {
+    this.ctx.strokeStyle = '#000000'
+    this.ctx.lineWidth = 1.0
+    this.ctx.globalAlpha = 0.8
+
+    particles.forEach(particle => {
+      if (particle.trail.length < 2) return
+
+      // Draw particle trail with fade effect
+      this.ctx.beginPath()
+      this.ctx.moveTo(particle.trail[0].x, particle.trail[0].y)
+
+      for (let i = 1; i < particle.trail.length; i++) {
+        const point = particle.trail[i]
+        const progress = i / particle.trail.length
+        const alpha = 0.1 + (progress * 0.7) // Fade from 0.1 to 0.8
+        
+        this.ctx.globalAlpha = alpha
+        this.ctx.lineTo(point.x, point.y)
+      }
+
+      this.ctx.stroke()
+    })
 
     this.ctx.globalAlpha = 1
   }
