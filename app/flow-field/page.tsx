@@ -317,16 +317,27 @@ export default function FlowFieldPage() {
     setDraggedPoleId(null)
   }
 
-  // Handle wheel zoom
-  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
+  // Wheel event handler (direct DOM listener to avoid passive event issues)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !isClient) return
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      
+      const deltaY = e.deltaY
+      const zoomChange = -deltaY * ZOOM_SENSITIVITY
+      
+      const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
+      setZoomLevel(newZoom)
+    }
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
     
-    const deltaY = e.deltaY
-    const zoomChange = -deltaY * ZOOM_SENSITIVITY
-    
-    const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
-    setZoomLevel(newZoom)
-  }
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel)
+    }
+  }, [isClient, zoomLevel])
 
   // Remove pole
   const removePole = (id: string) => {
@@ -457,7 +468,6 @@ export default function FlowFieldPage() {
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}
         onMouseLeave={handleCanvasMouseUp}
-        onWheel={handleWheel}
       />
     </VisualizationLayout>
   )

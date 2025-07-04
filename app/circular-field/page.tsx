@@ -68,6 +68,28 @@ export default function CircularFieldPage() {
     rendererRef.current.renderCircularField(poles, fieldLines, displaySettings)
   }, [poles, fieldLines, displaySettings])
 
+  // Wheel event handler (direct DOM listener to avoid passive event issues)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      
+      const deltaY = e.deltaY
+      const zoomChange = -deltaY * ZOOM_SENSITIVITY
+      
+      const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
+      setZoomLevel(newZoom)
+    }
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
+    
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel)
+    }
+  }, [zoomLevel])
+
   // Mouse event handlers
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     if (!rendererRef.current) return
@@ -104,17 +126,6 @@ export default function CircularFieldPage() {
     if (!rendererRef.current) return
     const coords = rendererRef.current.getCanvasCoordinates(e.clientX, e.clientY)
     handleDoubleClick(coords.x, coords.y)
-  }
-
-  // Handle wheel zoom
-  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
-    
-    const deltaY = e.deltaY
-    const zoomChange = -deltaY * ZOOM_SENSITIVITY
-    
-    const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
-    setZoomLevel(newZoom)
   }
 
   // Export as SVG
@@ -199,7 +210,6 @@ export default function CircularFieldPage() {
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
       />
     </VisualizationLayout>
   )

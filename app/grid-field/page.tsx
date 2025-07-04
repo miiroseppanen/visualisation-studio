@@ -328,6 +328,28 @@ export default function GridFieldPage() {
     )
   }, [gridLines, poles, gridSettings, zoomSettings.level])
 
+  // Wheel event handler (direct DOM listener to avoid passive event issues)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      
+      const deltaY = e.deltaY
+      const zoomChange = -deltaY * ZOOM_SENSITIVITY
+      
+      const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomSettings.level + zoomChange))
+      updateZoomSettings({ level: newZoom })
+    }
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
+    
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel)
+    }
+  }, [zoomSettings.level, updateZoomSettings])
+
   // Mouse event handlers
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
@@ -373,16 +395,6 @@ export default function GridFieldPage() {
   const handleCanvasMouseUp = () => {
     setIsDragging(false)
     setDraggedPoleId(null)
-  }
-
-  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
-    
-    const deltaY = e.deltaY
-    const zoomChange = -deltaY * ZOOM_SENSITIVITY
-    
-    const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomSettings.level + zoomChange))
-    updateZoomSettings({ level: newZoom })
   }
 
   const exportSVG = () => {
@@ -450,7 +462,6 @@ export default function GridFieldPage() {
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}
         onMouseLeave={handleCanvasMouseUp}
-        onWheel={handleWheel}
       />
     </VisualizationLayout>
   )
