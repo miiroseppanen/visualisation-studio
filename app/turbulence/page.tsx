@@ -15,6 +15,7 @@ export default function TurbulencePage() {
   const rendererRef = useRef<TurbulenceRenderer | null>(null)
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
+  const zoomLevelRef = useRef(zoomLevel)
 
   const {
     canvasRef,
@@ -89,6 +90,11 @@ export default function TurbulencePage() {
     }
   }, [isClient, turbulenceSettings.flowingMode, turbulenceSettings.lineCount, initializeParticles])
 
+  // Update zoom level ref when zoom level changes
+  useEffect(() => {
+    zoomLevelRef.current = zoomLevel
+  }, [zoomLevel])
+
   // Animation loop for flowing particles
   useEffect(() => {
     if (!isClient || !animationSettings.isAnimating || !turbulenceSettings.flowingMode) return
@@ -115,7 +121,7 @@ export default function TurbulencePage() {
           flowSettings,
           animationSettings,
           particles,
-          zoomLevel
+          zoomLevelRef.current
         )
       }
 
@@ -169,7 +175,7 @@ export default function TurbulencePage() {
       const deltaY = e.deltaY
       const zoomChange = -deltaY * ZOOM_SENSITIVITY
       
-      const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
+      const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevelRef.current + zoomChange))
       setZoomLevel(newZoom)
     }
 
@@ -178,7 +184,7 @@ export default function TurbulencePage() {
     return () => {
       canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [isClient, zoomLevel])
+  }, [isClient])
 
   // Handle canvas mouse events
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {

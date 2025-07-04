@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/page": [
+    "/turbulence/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/turbulence/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -26,35 +26,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/circular-field/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/circular-field/page.js"
-    ],
     "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/_not-found/page.js"
     ],
-    "/grid-field/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/grid-field/page.js"
-    ],
-    "/flow-field/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/flow-field/page.js"
-    ],
-    "/turbulence/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/turbulence/page.js"
-    ],
-    "/topography/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/topography/page.js"
+      "static/chunks/app/page.js"
     ]
   }
 }
