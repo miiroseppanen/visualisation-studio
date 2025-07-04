@@ -3,11 +3,14 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { CollapsibleHeader } from '@/components/ui/collapsible-header'
+import { Slider } from '@/components/ui/slider'
+import { Mountain, ChevronDown, ChevronRight, Plus, RotateCcw } from 'lucide-react'
 import { ListCard } from '@/components/ui/list-card'
-import { Mountain, Minus, Navigation, TrendingUp } from 'lucide-react'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
 import type { ElevationPoint } from '@/lib/topography-physics'
 import type { TopographyPanelState } from '@/lib/types'
+import { generateElevationId, generateElevationName } from '@/lib/topography-physics'
+import { COLOR_PALETTE } from '@/lib/constants'
 
 interface ElevationPointControlsProps {
   elevationPoints: ElevationPoint[]
@@ -21,17 +24,17 @@ interface ElevationPointControlsProps {
 
 const pointTypeIcons = {
   peak: Mountain,
-  valley: Minus,
-  saddle: Navigation,
-  ridge: TrendingUp,
+  valley: ChevronDown,
+  saddle: ChevronRight,
+  ridge: Plus,
 }
 
-const pointTypeColors = {
-  peak: '#3B82F6', // Blue
-  valley: '#EF4444', // Red
-  saddle: '#6B7280', // Gray
-  ridge: '#6B7280', // Gray
-}
+  const pointTypeColors = {
+    peak: COLOR_PALETTE.peak,
+    valley: COLOR_PALETTE.valley,
+    saddle: COLOR_PALETTE.saddle,
+    ridge: COLOR_PALETTE.ridge,
+  }
 
 const pointTypeOptions = [
   {
@@ -43,19 +46,19 @@ const pointTypeOptions = [
   {
     value: 'valley',
     label: 'Valley',
-    icon: <Minus className="w-4 h-4 text-white" />,
+    icon: <ChevronDown className="w-4 h-4 text-white" />,
     color: pointTypeColors.valley
   },
   {
     value: 'saddle',
     label: 'Saddle',
-    icon: <Navigation className="w-4 h-4 text-white" />,
+    icon: <ChevronRight className="w-4 h-4 text-white" />,
     color: pointTypeColors.saddle
   },
   {
     value: 'ridge',
     label: 'Ridge',
-    icon: <TrendingUp className="w-4 h-4 text-white" />,
+    icon: <Plus className="w-4 h-4 text-white" />,
     color: pointTypeColors.ridge
   }
 ]

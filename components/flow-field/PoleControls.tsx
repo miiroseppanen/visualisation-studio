@@ -5,8 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
-import { Plus, Magnet } from 'lucide-react'
+import { Plus, Magnet, ChevronDown, ChevronRight, RotateCcw } from 'lucide-react'
 import { ListCard } from '@/components/ui/list-card'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
+import type { Pole } from '@/lib/types'
+import type { FlowFieldPanelState } from '@/lib/types'
+import { COLOR_PALETTE } from '@/lib/constants'
 
 interface MagneticPole {
   id: string
@@ -52,13 +56,13 @@ export default function FlowPoleControls({
       value: 'north',
       label: 'North',
       icon: <Magnet className="w-4 h-4 text-white" />,
-      color: '#EF4444' // Flat red
+      color: COLOR_PALETTE.positive // Red for north
     },
     {
       value: 'south',
       label: 'South',
       icon: <Magnet className="w-4 h-4 text-white" />,
-      color: '#3B82F6' // Flat blue
+      color: COLOR_PALETTE.negative // Blue for south
     }
   ]
 
@@ -125,7 +129,7 @@ export default function FlowPoleControls({
               <ListCard
                 key={pole.id}
                 icon={<Magnet className="w-8 h-8 text-white" />}
-                iconColor={pole.type === 'north' ? '#EF4444' : '#3B82F6'}
+                iconColor={pole.type === 'north' ? COLOR_PALETTE.positive : COLOR_PALETTE.negative}
                 title={pole.type}
                 subtitle={`Strength: ${pole.strength} • Position: (${Math.round(pole.x)}, ${Math.round(pole.y)})`}
                 onRemove={() => onRemovePole(pole.id)}

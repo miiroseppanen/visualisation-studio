@@ -18,6 +18,29 @@ export const MIN_CURVE_STIFFNESS = 0
 export const MAX_CURVE_STIFFNESS = 100
 export const CURVE_STIFFNESS_STEP = 1
 
+// Color palette for visualizations
+export const COLOR_PALETTE = {
+  // Primary colors for poles and sources
+  positive: '#EF4444',    // Red for positive/north poles
+  negative: '#3B82F6',    // Blue for negative/south poles
+  neutral: '#6B7280',     // Gray for neutral elements
+  
+  // Extended palette with pale green
+  paleGreen: '#86EFAC',   // Pale green for additional elements
+  
+  // Source type colors
+  vortex: '#3B82F6',      // Blue for rotational flow
+  source: '#3B82F6',      // Blue for outward flow
+  sink: '#EF4444',        // Red for inward flow
+  uniform: '#6B7280',     // Gray for uniform flow
+  
+  // Topography colors
+  peak: '#3B82F6',        // Blue for peaks
+  valley: '#EF4444',      // Red for valleys
+  saddle: '#6B7280',      // Gray for saddles
+  ridge: '#6B7280'        // Gray for ridges
+} as const
+
 // Turbulence-specific constants
 export const DEFAULT_TURBULENCE_LINE_LENGTH = 60 // Longer default for turbulence
 export const MIN_TURBULENCE_LINE_LENGTH = 10

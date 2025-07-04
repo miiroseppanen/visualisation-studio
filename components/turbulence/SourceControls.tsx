@@ -1,13 +1,16 @@
 'use client'
 
+import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { Zap, ArrowUp, ArrowDown, Wind } from 'lucide-react'
+import { Zap, ArrowUp, ArrowDown, Wind, ChevronDown, ChevronRight, Plus, RotateCcw, ArrowRight } from 'lucide-react'
 import { ListCard } from '@/components/ui/list-card'
 import { CollapsibleHeader } from '@/components/ui/collapsible-header'
 import type { TurbulenceSource } from '@/lib/turbulence-physics'
 import type { TurbulencePanelState } from '@/lib/types'
+import { generateSourceId, generateSourceName } from '@/lib/turbulence-physics'
+import { COLOR_PALETTE } from '@/lib/constants'
 
 interface SourceControlsProps {
   sources: TurbulenceSource[]
@@ -35,13 +38,8 @@ export function SourceControls({
     uniform: 'Uniform Flow'
   }
 
-  // Unified flat colors: blue for positive/outward, red for negative/inward
-  const sourceTypeColors = {
-    vortex: '#3B82F6', // Flat blue
-    source: '#3B82F6', // Flat blue (outward flow)
-    sink: '#EF4444',   // Flat red (inward flow)
-    uniform: '#6B7280' // Gray for neutral
-  }
+  // Use centralized color palette
+  const sourceTypeColors = COLOR_PALETTE
 
   const sourceTypeIcons = {
     vortex: Zap,

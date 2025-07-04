@@ -1,20 +1,22 @@
 "use client"
 
 import React from 'react'
-import { Plus, Magnet } from 'lucide-react'
+import { Plus, Magnet, ChevronDown, ChevronRight, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { ListCard } from '@/components/ui/list-card'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
 import type { Pole, PolaritySettings } from '@/lib/types'
 import { generatePoleId, generatePoleName, renumberPoles } from '@/lib/physics'
 import { 
   MIN_POLE_STRENGTH, 
   MAX_POLE_STRENGTH, 
   POLE_STRENGTH_STEP,
-  DEFAULT_POLE_STRENGTH 
+  DEFAULT_POLE_STRENGTH,
+  COLOR_PALETTE
 } from '@/lib/constants'
 
 interface PoleControlsProps {
@@ -79,13 +81,13 @@ export default function PoleControls({
       value: 'positive',
       label: 'Positive (+)',
       icon: <Magnet className="w-4 h-4 text-white" />,
-      color: '#EF4444' // Flat red
+      color: COLOR_PALETTE.positive // Red for positive
     },
     {
       value: 'negative',
       label: 'Negative (-)',
       icon: <Magnet className="w-4 h-4 text-white" />,
-      color: '#3B82F6' // Flat blue
+      color: COLOR_PALETTE.negative // Blue for negative
     }
   ]
 
@@ -105,7 +107,7 @@ export default function PoleControls({
     <ListCard
       key={pole.id}
       icon={<Magnet className="w-8 h-8 text-white" />}
-      iconColor={pole.isPositive ? '#EF4444' : '#3B82F6'}
+      iconColor={pole.isPositive ? COLOR_PALETTE.positive : COLOR_PALETTE.negative}
       title={pole.name}
       subtitle={`Position: (${Math.round(pole.x)}, ${Math.round(pole.y)})`}
       onRemove={poles.length > 1 ? () => removePole(pole.id) : undefined}

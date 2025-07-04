@@ -1,6 +1,7 @@
 import type { TurbulenceSettings, NoiseSettings, FlowSettings, TurbulenceAnimationSettings, FlowingParticle } from './types'
 import type { TurbulenceSource } from './turbulence-physics'
 import { calculateTurbulenceAt, generateStreamline } from './turbulence-physics'
+import { COLOR_PALETTE } from './constants'
 
 export class TurbulenceRenderer {
   private canvas: HTMLCanvasElement
@@ -220,15 +221,8 @@ export class TurbulenceRenderer {
       
       const radius = 6
       
-      // Define colors for different source types
-      const sourceColors = {
-        vortex: '#3B82F6',    // Blue for rotational flow
-        source: '#3B82F6',    // Blue for outward flow
-        sink: '#EF4444',      // Red for inward flow
-        uniform: '#6B7280'    // Gray for uniform flow
-      }
-      
-      const sourceColor = sourceColors[source.type]
+      // Use centralized color palette
+      const sourceColor = COLOR_PALETTE[source.type]
       
       // Draw source with type-specific color
       this.ctx.fillStyle = sourceColor
@@ -346,15 +340,8 @@ export class TurbulenceRenderer {
     // Add sources to SVG
     if (turbulenceSettings.showSources) {
       sources.forEach(source => {
-        // Define colors for different source types
-        const sourceColors = {
-          vortex: '#3B82F6',    // Blue for rotational flow
-          source: '#3B82F6',    // Blue for outward flow
-          sink: '#EF4444',      // Red for inward flow
-          uniform: '#6B7280'    // Gray for uniform flow
-        }
-        
-        const sourceColor = sourceColors[source.type]
+        // Use centralized color palette
+        const sourceColor = COLOR_PALETTE[source.type]
         
         svg += `<circle cx="${source.x}" cy="${source.y}" r="6" fill="${sourceColor}" stroke="white" stroke-width="2"/>\n`
         
