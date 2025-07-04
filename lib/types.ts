@@ -1,3 +1,5 @@
+import type { TurbulenceSource } from './turbulence-physics'
+
 export interface GridLine {
   x: number
   y: number
@@ -50,6 +52,7 @@ export interface TurbulenceSettings {
   lineLength: number
   showSources: boolean
   streamlineMode: boolean // true for streamlines, false for grid vectors
+  sources: TurbulenceSource[]
 }
 
 export interface NoiseSettings {
@@ -204,4 +207,10 @@ export interface CircularFieldPanelState {
   polesExpanded: boolean
   displaySettingsExpanded: boolean
   animationExpanded: boolean
+}
+
+interface TurbulenceVisualizationSettings extends TurbulenceSettings {
+  noiseSettings: NoiseSettings
+  flowSettings: FlowSettings
+  sources: TurbulenceSource[]
 } 

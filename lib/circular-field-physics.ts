@@ -122,9 +122,15 @@ export function generateInteractiveCircularFieldLines(
   const lines: CircularFieldLine[] = []
   
   poles.forEach(pole => {
+    // Adjust line count based on pole strength - stronger poles get more field lines
+    const strengthFactor = Math.max(0.5, Math.min(3, pole.strength / 5))
+    const adjustedLineCount = Math.floor(settings.lineCount * strengthFactor)
+    
     // Generate circles around each pole
-    for (let i = 1; i <= settings.lineCount; i++) {
-      const baseRadius = i * settings.lineSpacing
+    for (let i = 1; i <= adjustedLineCount; i++) {
+      // Adjust spacing based on strength - stronger poles have tighter field lines
+      const spacingFactor = Math.max(0.5, Math.min(2, 10 / pole.strength))
+      const baseRadius = i * settings.lineSpacing * spacingFactor
       const points: { x: number; y: number }[] = []
       const numPoints = Math.max(64, Math.floor(baseRadius * 0.3))
       

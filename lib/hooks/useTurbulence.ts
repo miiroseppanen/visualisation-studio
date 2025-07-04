@@ -14,6 +14,7 @@ import { generateSourceId, generateSourceName } from '../turbulence-physics'
 interface TurbulenceVisualizationSettings extends TurbulenceSettings {
   noiseSettings: NoiseSettings
   flowSettings: FlowSettings
+  sources: TurbulenceSource[]
 }
 
 interface TurbulenceVisualizationAnimationSettings extends TurbulenceAnimationSettings {}
@@ -26,6 +27,7 @@ const DEFAULT_TURBULENCE_SETTINGS: TurbulenceSettings = {
   lineLength: 30,
   showSources: true,
   streamlineMode: false,
+  sources: [],
 }
 
 const DEFAULT_NOISE_SETTINGS: NoiseSettings = {
@@ -59,8 +61,8 @@ const DEFAULT_PANEL_STATE: TurbulencePanelState = {
 }
 
 export function useTurbulence() {
-  // Turbulence-specific state that's not covered by the base hook
-  const [sources, setSources] = useState<TurbulenceSource[]>([])
+  // Remove local sources state
+  // const [sources, setSources] = useState<TurbulenceSource[]>([])
 
   // Use the unified visualization hook with turbulence-specific configuration
   const visualization = useVisualization<
@@ -72,6 +74,7 @@ export function useTurbulence() {
       ...DEFAULT_TURBULENCE_SETTINGS,
       noiseSettings: DEFAULT_NOISE_SETTINGS,
       flowSettings: DEFAULT_FLOW_SETTINGS,
+      sources: [], // Add sources to main state
     },
     initialAnimationSettings: DEFAULT_ANIMATION_SETTINGS,
     initialPanelState: DEFAULT_PANEL_STATE,
@@ -81,6 +84,7 @@ export function useTurbulence() {
         ...DEFAULT_TURBULENCE_SETTINGS,
         noiseSettings: DEFAULT_NOISE_SETTINGS,
         flowSettings: DEFAULT_FLOW_SETTINGS,
+        sources: [],
       },
       animationSettings: DEFAULT_ANIMATION_SETTINGS,
       panelState: DEFAULT_PANEL_STATE,
@@ -111,36 +115,44 @@ export function useTurbulence() {
     }))
   }, [visualization.updateSettings])
 
-  // Source management functions
+  // Source management functions (now update main visualization state)
   const addSource = useCallback((type: TurbulenceSource['type'], x?: number, y?: number) => {
+    const sources = visualization.settings.sources || []
+    
+    // Get canvas dimensions, with fallback defaults
+    const canvasWidth = visualization.canvasSize?.width || 800
+    const canvasHeight = visualization.canvasSize?.height || 600
+    
     const newSource: TurbulenceSource = {
       id: generateSourceId(),
       name: generateSourceName(type, sources.length),
-      x: x ?? visualization.canvasSize.width / 2,
-      y: y ?? visualization.canvasSize.height / 2,
+      x: x ?? canvasWidth / 2,
+      y: y ?? canvasHeight / 2,
       strength: 50,
       type,
       angle: 0,
     }
-    setSources(prev => [...prev, newSource])
-  }, [sources.length, visualization.canvasSize])
+    visualization.updateSettings({ sources: [...sources, newSource] })
+  }, [visualization.settings.sources, visualization.canvasSize])
 
   const removeSource = useCallback((id: string) => {
-    setSources(prev => prev.filter(source => source.id !== id))
-  }, [])
+    const sources = visualization.settings.sources || []
+    visualization.updateSettings({ sources: sources.filter(source => source.id !== id) })
+  }, [visualization.settings.sources])
 
   const updateSource = useCallback((id: string, updates: Partial<TurbulenceSource>) => {
-    setSources(prev => prev.map(source => 
+    const sources = visualization.settings.sources || []
+    visualization.updateSettings({ sources: sources.map(source => 
       source.id === id ? { ...source, ...updates } : source
-    ))
-  }, [])
+    ) })
+  }, [visualization.settings.sources])
 
   const moveSource = useCallback((id: string, x: number, y: number) => {
     updateSource(id, { x, y })
   }, [updateSource])
 
   const clearAllSources = useCallback(() => {
-    setSources([])
+    visualization.updateSettings({ sources: [] })
   }, [])
 
   // Extract nested settings for backward compatibility (memoized to prevent infinite loops)
@@ -149,15 +161,18 @@ export function useTurbulence() {
     lineLength: visualization.settings.lineLength,
     showSources: visualization.settings.showSources,
     streamlineMode: visualization.settings.streamlineMode,
+    sources: visualization.settings.sources || [],
   }), [
     visualization.settings.lineCount,
     visualization.settings.lineLength,
     visualization.settings.showSources,
     visualization.settings.streamlineMode,
+    visualization.settings.sources,
   ])
 
   const noiseSettings = useMemo(() => visualization.settings.noiseSettings, [visualization.settings.noiseSettings])
   const flowSettings = useMemo(() => visualization.settings.flowSettings, [visualization.settings.flowSettings])
+  const sources = useMemo(() => visualization.settings.sources || [], [visualization.settings.sources])
 
   // Interaction handlers that work with the canvas ref from the base hook
   const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -207,7 +222,7 @@ export function useTurbulence() {
     
     // Turbulence-specific state
     sources,
-    setSources,
+    setSources: undefined, // no longer needed
     
     // State from base hook with backward compatibility
     turbulenceSettings,

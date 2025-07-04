@@ -45,10 +45,19 @@ export class CircularFieldRenderer extends BaseRenderer {
 
       this.ctx.save()
       
+      // Calculate line appearance based on intensity (pole strength)
+      const baseLineWidth = displaySettings.lineWeight
+      const baseOpacity = displaySettings.opacity
+      
+      // Intensity affects both line width and opacity
+      const intensityFactor = Math.min(3, Math.max(0.1, line.intensity * 2))
+      const lineWidth = baseLineWidth * intensityFactor
+      const opacity = baseOpacity * intensityFactor
+      
       // Set line style
       this.ctx.strokeStyle = '#000000'
-      this.ctx.lineWidth = displaySettings.lineWeight
-      this.ctx.globalAlpha = displaySettings.opacity
+      this.ctx.lineWidth = lineWidth
+      this.ctx.globalAlpha = opacity
       this.ctx.lineCap = 'round'
       this.ctx.lineJoin = 'round'
 

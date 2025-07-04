@@ -14,7 +14,6 @@ import VisualizationLayout from '@/components/layout/VisualizationLayout'
 
 export default function CircularFieldPage() {
   const rendererRef = useRef<CircularFieldRenderer | null>(null)
-  const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
 
   const {
@@ -42,33 +41,32 @@ export default function CircularFieldPage() {
 
   // Initialize canvas and renderer
   useEffect(() => {
-    setIsClient(true)
-    if (canvasRef.current) {
-      rendererRef.current = new CircularFieldRenderer(canvasRef.current)
-      
-      const updateSize = () => {
-        const canvas = canvasRef.current
-        if (canvas && rendererRef.current) {
-          const rect = canvas.getBoundingClientRect()
-          const width = rect.width
-          const height = rect.height
-          rendererRef.current.resize(width, height)
-          setCanvasSize({ width, height })
-        }
-      }
+    const canvas = canvasRef.current
+    if (!canvas) return
 
-      updateSize()
-      window.addEventListener('resize', updateSize)
-      return () => window.removeEventListener('resize', updateSize)
+    const renderer = new CircularFieldRenderer(canvas)
+    rendererRef.current = renderer
+    
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      const width = rect.width
+      const height = rect.height
+      renderer.setupCanvas()
+      setCanvasSize({ width, height })
     }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+    return () => window.removeEventListener('resize', resizeCanvas)
   }, [setCanvasSize])
 
   // Render the visualization
   useEffect(() => {
-    if (rendererRef.current && isClient) {
-      rendererRef.current.renderCircularField(poles, fieldLines, displaySettings)
-    }
-  }, [poles, fieldLines, displaySettings, isClient])
+    const canvas = canvasRef.current
+    if (!canvas || !rendererRef.current) return
+
+    rendererRef.current.renderCircularField(poles, fieldLines, displaySettings)
+  }, [poles, fieldLines, displaySettings])
 
   // Mouse event handlers
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
@@ -131,14 +129,6 @@ export default function CircularFieldPage() {
       link.click()
       URL.revokeObjectURL(url)
     }
-  }
-
-  if (!isClient) {
-    return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading circular field visualizer...</div>
-      </div>
-    )
   }
 
   return (

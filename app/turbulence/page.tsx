@@ -12,12 +12,12 @@ import { useTurbulence } from '@/lib/hooks/useTurbulence'
 import { TurbulenceRenderer } from '@/lib/turbulence-renderer'
 
 export default function TurbulencePage() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<TurbulenceRenderer | null>(null)
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
 
   const {
+    canvasRef,
     turbulenceSettings,
     noiseSettings,
     flowSettings,
