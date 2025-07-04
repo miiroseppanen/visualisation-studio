@@ -1,9 +1,11 @@
 'use client'
 
+import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
-import { ChevronDown, ChevronRight, Trash2, Mountain, MapPin, Navigation, TrendingUp } from 'lucide-react'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
+import { ListCard } from '@/components/ui/list-card'
+import { Mountain, Minus, Navigation, TrendingUp } from 'lucide-react'
 import type { ElevationPoint } from '@/lib/topography-physics'
 import type { TopographyPanelState } from '@/lib/types'
 
@@ -19,17 +21,44 @@ interface ElevationPointControlsProps {
 
 const pointTypeIcons = {
   peak: Mountain,
-  valley: MapPin,
+  valley: Minus,
   saddle: Navigation,
   ridge: TrendingUp,
 }
 
 const pointTypeColors = {
-  peak: '#8B4513',
-  valley: '#4169E1',
-  saddle: '#9370DB',
-  ridge: '#228B22',
+  peak: '#3B82F6', // Blue
+  valley: '#EF4444', // Red
+  saddle: '#6B7280', // Gray
+  ridge: '#6B7280', // Gray
 }
+
+const pointTypeOptions = [
+  {
+    value: 'peak',
+    label: 'Peak',
+    icon: <Mountain className="w-4 h-4 text-white" />,
+    color: pointTypeColors.peak
+  },
+  {
+    value: 'valley',
+    label: 'Valley',
+    icon: <Minus className="w-4 h-4 text-white" />,
+    color: pointTypeColors.valley
+  },
+  {
+    value: 'saddle',
+    label: 'Saddle',
+    icon: <Navigation className="w-4 h-4 text-white" />,
+    color: pointTypeColors.saddle
+  },
+  {
+    value: 'ridge',
+    label: 'Ridge',
+    icon: <TrendingUp className="w-4 h-4 text-white" />,
+    color: pointTypeColors.ridge
+  }
+]
 
 export function ElevationPointControls({
   elevationPoints,
@@ -44,25 +73,23 @@ export function ElevationPointControls({
     onUpdatePanelState({ elevationPointsExpanded: !panelState.elevationPointsExpanded })
   }
 
+  const switchPointType = (id: string, newType: string) => {
+    onUpdateElevationPoint(id, { type: newType as ElevationPoint['type'] })
+  }
+
   return (
     <div className="space-y-3">
-      <button
-        onClick={toggleExpanded}
-        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
-      >
-        {panelState.elevationPointsExpanded ? (
-          <ChevronDown className="h-4 w-4" />
-        ) : (
-          <ChevronRight className="h-4 w-4" />
-        )}
-        Elevation Points ({elevationPoints.length})
-      </button>
+      <CollapsibleHeader
+        title={`Elevation Points (${elevationPoints.length})`}
+        isExpanded={panelState.elevationPointsExpanded}
+        onToggle={toggleExpanded}
+      />
 
       {panelState.elevationPointsExpanded && (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-4">
           {/* Add Point Controls */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">Add Points</Label>
+            <Label className="text-sm font-medium mb-2 block text-gray-900 dark:text-white">Add Points</Label>
             <div className="grid grid-cols-2 gap-2">
               {(Object.keys(pointTypeIcons) as Array<ElevationPoint['type']>).map((type) => {
                 const Icon = pointTypeIcons[type]
@@ -72,7 +99,7 @@ export function ElevationPointControls({
                     variant="outline"
                     size="sm"
                     onClick={() => onAddElevationPoint(type)}
-                    className="flex items-center gap-1 text-xs"
+                    className="flex items-center gap-1 text-xs border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                     style={{ borderColor: pointTypeColors[type] }}
                   >
                     <Icon className="h-3 w-3" style={{ color: pointTypeColors[type] }} />
@@ -84,97 +111,47 @@ export function ElevationPointControls({
           </div>
 
           {/* Existing Points */}
-          {elevationPoints.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium">Current Points</Label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium text-gray-900 dark:text-white">Existing Points</Label>
+              {elevationPoints.length > 0 && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={onClearAll}
-                  className="text-xs px-2 py-1 h-auto"
+                  className="text-xs text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
                 >
-                  <Trash2 className="h-3 w-3 mr-1" />
                   Clear All
                 </Button>
+              )}
+            </div>
+            
+            {elevationPoints.length === 0 ? (
+              <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">
+                No elevation points added yet
               </div>
-
-              <div className="space-y-3">
+            ) : (
+              <div className="space-y-2">
                 {elevationPoints.map((point) => {
                   const Icon = pointTypeIcons[point.type]
                   return (
-                    <div
+                    <ListCard
                       key={point.id}
-                      className="p-3 border rounded-lg space-y-2 w-full"
-                      style={{ borderColor: pointTypeColors[point.type] + '40' }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Icon 
-                            className="h-4 w-4" 
-                            style={{ color: pointTypeColors[point.type] }} 
-                          />
-                          <span className="font-medium text-sm">{point.name}</span>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onRemoveElevationPoint(point.id)}
-                          className="p-1 h-auto"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">
-                            Elevation: {Math.round(point.elevation)}m
-                          </Label>
-                          <Slider
-                            value={[point.elevation]}
-                            onValueChange={(value) =>
-                              onUpdateElevationPoint(point.id, { elevation: value[0] })
-                            }
-                            min={0}
-                            max={2000}
-                            step={10}
-                            className="mt-1"
-                          />
-                        </div>
-
-                        <div>
-                          <Label className="text-xs text-muted-foreground">
-                            Influence Radius: {Math.round(point.radius)}px
-                          </Label>
-                          <Slider
-                            value={[point.radius]}
-                            onValueChange={(value) =>
-                              onUpdateElevationPoint(point.id, { radius: value[0] })
-                            }
-                            min={50}
-                            max={300}
-                            step={10}
-                            className="mt-1"
-                          />
-                        </div>
-
-                        <div className="text-xs text-muted-foreground pt-1">
-                          Position: ({Math.round(point.x)}, {Math.round(point.y)})
-                        </div>
-                      </div>
-                    </div>
+                      title={`${point.type} ${point.id}`}
+                      subtitle={`${Math.round(point.x)}, ${Math.round(point.y)}`}
+                      icon={<Icon className="w-8 h-8 text-white" />}
+                      iconColor={pointTypeColors[point.type]}
+                      onRemove={() => onRemoveElevationPoint(point.id)}
+                      typeOptions={pointTypeOptions}
+                      currentType={point.type}
+                      onTypeChange={(newType) => switchPointType(point.id, newType)}
+                      showTypeSwitch={true}
+                    />
                   )
                 })}
               </div>
-            </div>
-          )}
-
-          {elevationPoints.length === 0 && (
-            <div className="text-center py-4 text-muted-foreground text-sm">
-              Click on the canvas or use the buttons above to add elevation points
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>

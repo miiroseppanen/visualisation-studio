@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { VISUALIZATION_STYLES, buildClasses } from '@/lib/visualization-styles'
 
@@ -19,21 +19,21 @@ export function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("space-y-3", className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full p-2 text-left text-sm font-medium text-foreground hover:bg-accent/50 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background dark:hover:bg-accent/30"
+        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
       >
-        <span>{title}</span>
         {isOpen ? (
-          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          <ChevronLeft className="h-4 w-4" />
         )}
+        {title}
       </button>
       
       {isOpen && (
-        <div className="pl-4 space-y-2 border-l border-border/30 dark:border-border/20">
+        <div className="pl-4 space-y-4">
           {children}
         </div>
       )}

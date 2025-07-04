@@ -1,6 +1,7 @@
 'use client'
 
-import { ChevronDown, ChevronRight, Play, Pause } from 'lucide-react'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
+import { Play, Pause } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -25,17 +26,11 @@ export function TurbulenceAnimationControls({
 
   return (
     <div className="space-y-4">
-      <button
-        onClick={onToggleExpanded}
-        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
-      >
-        {expanded ? (
-          <ChevronDown className="h-4 w-4" />
-        ) : (
-          <ChevronRight className="h-4 w-4" />
-        )}
-        Animation
-      </button>
+      <CollapsibleHeader
+        title="Animation"
+        isExpanded={expanded}
+        onToggle={onToggleExpanded}
+      />
 
       {expanded && (
         <div className="space-y-4 pl-4">
@@ -63,44 +58,28 @@ export function TurbulenceAnimationControls({
 
           {/* Animation Speed */}
           <div className="space-y-2">
-            <div className="flex justify-between">
-              <Label className="text-sm">Animation Speed</Label>
-              <span className="text-xs text-muted-foreground">
-                {settings.speed.toFixed(1)}x
-              </span>
-            </div>
+            <Label className="text-sm">Speed: {settings.speed.toFixed(1)}x</Label>
             <Slider
               value={[settings.speed]}
               onValueChange={([value]) => onSettingsChange({ speed: value })}
               min={0.1}
-              max={3.0}
+              max={3}
               step={0.1}
               className="w-full"
-              disabled={!settings.isAnimating}
             />
           </div>
 
-          {/* Flow Intensity */}
+          {/* Animation Intensity */}
           <div className="space-y-2">
-            <div className="flex justify-between">
-              <Label className="text-sm">Flow Intensity</Label>
-              <span className="text-xs text-muted-foreground">
-                {settings.intensity.toFixed(1)}x
-              </span>
-            </div>
+            <Label className="text-sm">Intensity: {settings.intensity.toFixed(1)}</Label>
             <Slider
               value={[settings.intensity]}
               onValueChange={([value]) => onSettingsChange({ intensity: value })}
               min={0.1}
-              max={3.0}
+              max={3}
               step={0.1}
               className="w-full"
             />
-          </div>
-
-          {/* Animation Time Display - Update less frequently */}
-          <div className="text-center text-xs text-muted-foreground">
-            Time: {Math.floor(settings.time * 10) / 10}s
           </div>
         </div>
       )}

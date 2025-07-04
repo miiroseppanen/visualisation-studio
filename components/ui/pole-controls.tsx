@@ -1,12 +1,13 @@
 "use client"
 
 import React from 'react'
-import { Plus, Trash2, Magnet } from 'lucide-react'
+import { Plus, Magnet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { ListCard } from '@/components/ui/list-card'
 import type { Pole, PolaritySettings } from '@/lib/types'
 import { generatePoleId, generatePoleName, renumberPoles } from '@/lib/physics'
 import { 
@@ -68,12 +69,32 @@ export default function PoleControls({
     ))
   }
 
+  const switchPolePolarity = (id: string, newPolarity: string) => {
+    const isPositive = newPolarity === 'positive'
+    updatePole(id, { isPositive })
+  }
+
+  const polarityOptions = [
+    {
+      value: 'positive',
+      label: 'Positive (+)',
+      icon: <Magnet className="w-4 h-4 text-white" />,
+      color: '#EF4444' // Flat red
+    },
+    {
+      value: 'negative',
+      label: 'Negative (-)',
+      icon: <Magnet className="w-4 h-4 text-white" />,
+      color: '#3B82F6' // Flat blue
+    }
+  ]
+
   const renderAddButton = () => (
     <Button
       variant="outline"
       size="sm"
       onClick={addPole}
-      className="flex items-center gap-2"
+      className="flex items-center gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
     >
       <Plus className="w-4 h-4" />
       Add Pole
@@ -81,34 +102,24 @@ export default function PoleControls({
   )
 
   const renderPoleItem = (pole: Pole, index: number) => (
-    <div key={pole.id} className="space-y-3 p-3 border rounded-lg bg-slate-50/50 dark:bg-black/40 dark:border-white/20 w-full">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div 
-            className="w-4 h-4 rounded-full border-2 border-border flex items-center justify-center"
-            style={{ backgroundColor: pole.isPositive ? '#ef4444' : '#3b82f6' }}
-          >
-            <Magnet className="w-2 h-2 text-white" />
-          </div>
-          <Label className="text-sm font-medium dark:text-white">{pole.name}</Label>
-        </div>
-        {poles.length > 1 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => removePole(pole.id)}
-            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
-        )}
-      </div>
-
+    <ListCard
+      key={pole.id}
+      icon={<Magnet className="w-8 h-8 text-white" />}
+      iconColor={pole.isPositive ? '#EF4444' : '#3B82F6'}
+      title={pole.name}
+      subtitle={`Position: (${Math.round(pole.x)}, ${Math.round(pole.y)})`}
+      onRemove={poles.length > 1 ? () => removePole(pole.id) : undefined}
+      showRemoveButton={poles.length > 1}
+      typeOptions={polarityOptions}
+      currentType={pole.isPositive ? 'positive' : 'negative'}
+      onTypeChange={(newType) => switchPolePolarity(pole.id, newType)}
+      showTypeSwitch={true}
+    >
       {/* Pole Strength */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-xs text-muted-foreground dark:text-white/60">Strength</Label>
-          <div className="text-xs text-muted-foreground dark:text-white/60">{pole.strength}</div>
+          <Label className="text-xs text-gray-600 dark:text-gray-300">Strength</Label>
+          <div className="text-xs text-gray-600 dark:text-gray-300">{pole.strength}</div>
         </div>
         <Slider
           value={[pole.strength]}
@@ -119,26 +130,7 @@ export default function PoleControls({
           className="w-full"
         />
       </div>
-
-      {/* Individual Polarity Toggle */}
-      {showPolarityControls && (
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id={`polarity-${pole.id}`}
-            checked={pole.isPositive}
-            onCheckedChange={(checked) => updatePole(pole.id, { isPositive: checked as boolean })}
-          />
-          <Label htmlFor={`polarity-${pole.id}`} className="text-xs dark:text-white/80">
-            Positive Polarity {pole.isPositive ? '(+)' : '(-)'}
-          </Label>
-        </div>
-      )}
-
-      {/* Position Display */}
-      <div className="text-xs text-muted-foreground dark:text-white/60">
-        Position: ({Math.round(pole.x)}, {Math.round(pole.y)})
-      </div>
-    </div>
+    </ListCard>
   )
 
   if (addButtonPosition === 'outside') {
@@ -165,7 +157,7 @@ export default function PoleControls({
                     checked={showPoles}
                     onCheckedChange={(checked) => onToggleShowPoles(checked as boolean)}
                   />
-                  <Label htmlFor="showPoles" className="text-sm">Show Poles</Label>
+                  <Label htmlFor="showPoles" className="text-sm text-gray-900 dark:text-white">Show Poles</Label>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -174,8 +166,8 @@ export default function PoleControls({
                     checked={polaritySettings.attractToPoles}
                     onCheckedChange={(checked) => onUpdatePolarity({ attractToPoles: checked as boolean })}
                   />
-                  <Label htmlFor="attractToPoles" className="text-sm">Attract to Positive Poles</Label>
-                  <div className="text-xs text-muted-foreground ml-2">
+                  <Label htmlFor="attractToPoles" className="text-sm text-gray-900 dark:text-white">Attract to Positive Poles</Label>
+                  <div className="text-xs text-gray-600 dark:text-gray-300 ml-2">
                     {polaritySettings.attractToPoles ? '(Magnetic)' : '(Electric)'}
                   </div>
                 </div>
@@ -208,7 +200,7 @@ export default function PoleControls({
                 checked={showPoles}
                 onCheckedChange={(checked) => onToggleShowPoles(checked as boolean)}
               />
-              <Label htmlFor="showPoles" className="text-sm">Show Poles</Label>
+              <Label htmlFor="showPoles" className="text-sm text-gray-900 dark:text-white">Show Poles</Label>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -217,8 +209,8 @@ export default function PoleControls({
                 checked={polaritySettings.attractToPoles}
                 onCheckedChange={(checked) => onUpdatePolarity({ attractToPoles: checked as boolean })}
               />
-              <Label htmlFor="attractToPoles" className="text-sm">Attract to Positive Poles</Label>
-              <div className="text-xs text-muted-foreground ml-2">
+              <Label htmlFor="attractToPoles" className="text-sm text-gray-900 dark:text-white">Attract to Positive Poles</Label>
+              <div className="text-xs text-gray-600 dark:text-gray-300 ml-2">
                 {polaritySettings.attractToPoles ? '(Magnetic)' : '(Electric)'}
               </div>
             </div>

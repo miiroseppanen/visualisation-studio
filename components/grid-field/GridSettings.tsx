@@ -59,8 +59,7 @@ export default function GridSettings({
   return (
     <CollapsibleSection
       title="Grid Settings"
-      expanded={expanded}
-      onToggle={onToggleExpanded}
+      defaultOpen={expanded}
     >
       <div className="space-y-6 mt-4">
         {/* Grid Type */}

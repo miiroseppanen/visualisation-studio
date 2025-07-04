@@ -2,7 +2,7 @@
 
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
 import type { TopographySettings } from '@/lib/topography-physics'
 import type { TopographyPanelState } from '@/lib/types'
 
@@ -25,17 +25,11 @@ export function TopographySettings({
 
   return (
     <div className="space-y-3">
-      <button
-        onClick={toggleExpanded}
-        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
-      >
-        {panelState.topographySettingsExpanded ? (
-          <ChevronDown className="h-4 w-4" />
-        ) : (
-          <ChevronRight className="h-4 w-4" />
-        )}
-        Topography Settings
-      </button>
+      <CollapsibleHeader
+        title="Topography Settings"
+        isExpanded={panelState.topographySettingsExpanded}
+        onToggle={toggleExpanded}
+      />
 
       {panelState.topographySettingsExpanded && (
         <div className="space-y-4">

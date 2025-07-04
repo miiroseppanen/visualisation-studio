@@ -3,7 +3,7 @@
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
 import type { TopographyDisplaySettings } from '@/lib/types'
 import type { TopographyPanelState } from '@/lib/types'
 
@@ -26,17 +26,11 @@ export function TopographyDisplaySettings({
 
   return (
     <div className="space-y-3">
-      <button
-        onClick={toggleExpanded}
-        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
-      >
-        {panelState.displaySettingsExpanded ? (
-          <ChevronDown className="h-4 w-4" />
-        ) : (
-          <ChevronRight className="h-4 w-4" />
-        )}
-        Display Settings
-      </button>
+      <CollapsibleHeader
+        title="Display Settings"
+        isExpanded={panelState.displaySettingsExpanded}
+        onToggle={toggleExpanded}
+      />
 
       {panelState.displaySettingsExpanded && (
         <div className="space-y-4">
@@ -99,17 +93,17 @@ export function TopographyDisplaySettings({
 
           {/* Line Weight Controls */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Line Weights</Label>
+            <Label className="text-sm font-medium">Line Weight</Label>
             
             <div>
               <Label className="text-xs text-muted-foreground">
-                Contour Line Weight: {settings.lineWeight.toFixed(1)}px
+                Minor Contour Weight: {settings.lineWeight.toFixed(1)}px
               </Label>
               <Slider
                 value={[settings.lineWeight]}
                 onValueChange={(value) => onUpdateSettings({ lineWeight: value[0] })}
                 min={0.5}
-                max={5.0}
+                max={3}
                 step={0.1}
                 className="mt-1"
               />
@@ -122,8 +116,8 @@ export function TopographyDisplaySettings({
               <Slider
                 value={[settings.majorContourWeight]}
                 onValueChange={(value) => onUpdateSettings({ majorContourWeight: value[0] })}
-                min={1.0}
-                max={8.0}
+                min={0.5}
+                max={5}
                 step={0.1}
                 className="mt-1"
               />

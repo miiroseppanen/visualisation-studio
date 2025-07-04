@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -19,17 +19,11 @@ export function FieldSettings({
 }: FieldSettingsProps) {
   return (
     <div className="space-y-4">
-      <button
-        onClick={onToggle}
-        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
-      >
-        {isExpanded ? (
-          <ChevronDown className="h-4 w-4" />
-        ) : (
-          <ChevronRight className="h-4 w-4" />
-        )}
-        Field Settings
-      </button>
+      <CollapsibleHeader
+        title="Field Settings"
+        isExpanded={isExpanded}
+        onToggle={onToggle}
+      />
 
       {isExpanded && (
         <div className="space-y-4 pl-4">

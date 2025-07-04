@@ -4,12 +4,13 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import VisualizationPageLayout from '@/components/layout/VisualizationPageLayout'
 import { TurbulenceRenderer } from '@/lib/turbulence-renderer'
 import type { TurbulenceSource } from '@/lib/turbulence-physics'
-import type { TurbulenceSettings, NoiseSettings, FlowSettings } from '@/lib/types'
+import type { TurbulenceSettings, NoiseSettings, FlowSettings, TurbulencePanelState } from '@/lib/types'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { SourceControls } from '@/components/turbulence/SourceControls'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 
 export default function TurbulencePage() {
@@ -74,6 +75,14 @@ export default function TurbulencePage() {
 
   // Panel state
   const [panelState, setPanelState] = useState({ isOpen: true })
+  const [turbulencePanelState, setTurbulencePanelState] = useState<TurbulencePanelState>({
+    isOpen: true,
+    turbulenceExpanded: true,
+    sourcesExpanded: true,
+    flowSettingsExpanded: false,
+    noiseExpanded: false,
+    animationExpanded: false
+  })
   const [expandedSections, setExpandedSections] = useState({
     fieldSettings: true,
     animation: false,
@@ -318,27 +327,58 @@ export default function TurbulencePage() {
   }
 
   const addRandomSource = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const rect = canvas.getBoundingClientRect()
-    const x = Math.random() * rect.width
-    const y = Math.random() * rect.height
-    const strength = 30 + Math.random() * 70
-    const type = Math.random() > 0.5 ? 'vortex' : 'sink'
-
+    const types: TurbulenceSource['type'][] = ['vortex', 'source', 'sink', 'uniform']
+    const randomType = types[Math.floor(Math.random() * types.length)]
     const newSource: TurbulenceSource = {
       id: Date.now().toString(),
-      name: `${type === 'vortex' ? 'Vortex' : 'Sink'} ${sources.length + 1}`,
-      x,
-      y,
-      strength,
-      type,
-      angle: Math.random() * 360
+      name: `${randomType.charAt(0).toUpperCase() + randomType.slice(1)} ${sources.length + 1}`,
+      x: Math.random() * 600 + 100,
+      y: Math.random() * 400 + 100,
+      strength: Math.random() * 50 + 25,
+      type: randomType,
+      angle: randomType === 'uniform' ? Math.random() * 360 : 0
     }
     const newSources = [...sources, newSource]
     setSources(newSources)
     setSettings(prev => ({ ...prev, sources: newSources }))
+  }
+
+  const addSource = (type: TurbulenceSource['type']) => {
+    const newSource: TurbulenceSource = {
+      id: Date.now().toString(),
+      name: `${type.charAt(0).toUpperCase() + type.slice(1)} ${sources.length + 1}`,
+      x: Math.random() * 600 + 100,
+      y: Math.random() * 400 + 100,
+      strength: 50,
+      type: type,
+      angle: type === 'uniform' ? 0 : 0
+    }
+    const newSources = [...sources, newSource]
+    setSources(newSources)
+    setSettings(prev => ({ ...prev, sources: newSources }))
+  }
+
+  const removeSource = (id: string) => {
+    const newSources = sources.filter(s => s.id !== id)
+    setSources(newSources)
+    setSettings(prev => ({ ...prev, sources: newSources }))
+  }
+
+  const updateSource = (id: string, updates: Partial<TurbulenceSource>) => {
+    const newSources = sources.map(source => 
+      source.id === id ? { ...source, ...updates } : source
+    )
+    setSources(newSources)
+    setSettings(prev => ({ ...prev, sources: newSources }))
+  }
+
+  const clearAllSources = () => {
+    setSources([])
+    setSettings(prev => ({ ...prev, sources: [] }))
+  }
+
+  const updateTurbulencePanelState = (updates: Partial<TurbulencePanelState>) => {
+    setTurbulencePanelState(prev => ({ ...prev, ...updates }))
   }
 
   const exportSVG = () => {
@@ -447,63 +487,15 @@ export default function TurbulencePage() {
           </CollapsibleSection>
 
           {/* Source Management */}
-          <CollapsibleSection 
-            title="Sources" 
-            defaultOpen={expandedSections.sources}
-          >
-            <div className="space-y-4 pb-2">
-              <div className="flex gap-2">
-                <Button onClick={addRandomSource} variant="outline" size="sm">
-                  Add Random Source
-                </Button>
-              </div>
-              
-              {sources.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Click on the canvas to add vortex sources
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {sources.map((source) => (
-                    <div key={source.id} className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border/50 hover:border-border transition-colors">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-4 h-4 rounded-full border-2 border-white shadow-sm ${
-                            source.type === 'vortex' ? 'bg-green-500' : 
-                            source.type === 'sink' ? 'bg-red-500' : 'bg-blue-500'
-                          }`} />
-                          <div>
-                            <div className="text-sm font-medium">{source.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              Strength: {source.strength} • Position: ({source.x.toFixed(0)}, {source.y.toFixed(0)})
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => {
-                          const newSources = sources.filter(s => s.id !== source.id)
-                          setSources(newSources)
-                          setSettings(prev => ({ ...prev, sources: newSources }))
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                  
-                  {sources.length > 3 && (
-                    <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-                      {sources.length} sources total • Click and drag sources on canvas to reposition
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </CollapsibleSection>
+          <SourceControls
+            sources={sources}
+            panelState={turbulencePanelState}
+            onUpdatePanelState={updateTurbulencePanelState}
+            onAddSource={addSource}
+            onRemoveSource={removeSource}
+            onUpdateSource={updateSource}
+            onClearAll={clearAllSources}
+          />
 
           {/* Flow Settings */}
           <CollapsibleSection 

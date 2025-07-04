@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronRight, Play, Pause, RotateCcw } from 'lucide-react'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
+import { Play, Pause, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -13,60 +14,50 @@ interface AnimationControlsProps {
   onToggleExpanded: () => void
 }
 
-export function AnimationControls({ 
-  settings, 
-  onSettingsChange, 
+export function AnimationControls({
+  settings,
+  onSettingsChange,
   onReset,
-  expanded, 
-  onToggleExpanded 
+  expanded,
+  onToggleExpanded
 }: AnimationControlsProps) {
+  const toggleAnimation = () => {
+    onSettingsChange({ isAnimating: !settings.isAnimating })
+  }
+
   return (
     <div className="space-y-4">
-      <button
-        onClick={onToggleExpanded}
-        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
-      >
-        {expanded ? (
-          <ChevronDown className="h-4 w-4" />
-        ) : (
-          <ChevronRight className="h-4 w-4" />
-        )}
-        Animation
-      </button>
+      <CollapsibleHeader
+        title="Animation"
+        isExpanded={expanded}
+        onToggle={onToggleExpanded}
+      />
 
       {expanded && (
         <div className="space-y-4 pl-4">
-          <div className="flex items-center gap-2">
+          {/* Play/Pause Button */}
+          <div className="flex items-center justify-center">
             <Button
+              onClick={toggleAnimation}
               variant={settings.isAnimating ? "default" : "outline"}
               size="sm"
-              onClick={() => onSettingsChange({ isAnimating: !settings.isAnimating })}
               className="flex items-center gap-2"
             >
               {settings.isAnimating ? (
                 <>
                   <Pause className="h-3 w-3" />
-                  Pause
+                  <span>Pause</span>
                 </>
               ) : (
                 <>
                   <Play className="h-3 w-3" />
-                  Play
+                  <span>Play</span>
                 </>
               )}
             </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onReset}
-              className="flex items-center gap-2"
-            >
-              <RotateCcw className="h-3 w-3" />
-              Reset
-            </Button>
           </div>
 
+          {/* Particle Speed */}
           <div className="space-y-2">
             <Label className="text-sm">Particle Speed: {settings.particleSpeed.toFixed(1)}</Label>
             <Slider
@@ -79,18 +70,20 @@ export function AnimationControls({
             />
           </div>
 
+          {/* Particle Life */}
           <div className="space-y-2">
             <Label className="text-sm">Particle Life: {settings.particleLife}</Label>
             <Slider
               value={[settings.particleLife]}
               onValueChange={([value]) => onSettingsChange({ particleLife: value })}
-              min={20}
-              max={300}
+              min={50}
+              max={200}
               step={10}
               className="w-full"
             />
           </div>
 
+          {/* Flow Intensity */}
           <div className="space-y-2">
             <Label className="text-sm">Flow Intensity: {settings.flowIntensity.toFixed(1)}</Label>
             <Slider
@@ -103,8 +96,17 @@ export function AnimationControls({
             />
           </div>
 
-          <div className="text-xs text-gray-500">
-            Time: {Math.round(settings.time / 1000)}s
+          {/* Reset Button */}
+          <div className="flex items-center justify-center">
+            <Button
+              onClick={onReset}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>Reset</span>
+            </Button>
           </div>
         </div>
       )}

@@ -3,7 +3,9 @@
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { Zap, ArrowUp, ArrowDown, Wind } from 'lucide-react'
+import { ListCard } from '@/components/ui/list-card'
+import { CollapsibleHeader } from '@/components/ui/collapsible-header'
 import type { TurbulenceSource } from '@/lib/turbulence-physics'
 import type { TurbulencePanelState } from '@/lib/types'
 
@@ -33,11 +35,61 @@ export function SourceControls({
     uniform: 'Uniform Flow'
   }
 
+  // Unified flat colors: blue for positive/outward, red for negative/inward
   const sourceTypeColors = {
-    vortex: 'bg-purple-500',
-    source: 'bg-green-500',
-    sink: 'bg-red-500',
-    uniform: 'bg-yellow-500'
+    vortex: '#3B82F6', // Flat blue
+    source: '#3B82F6', // Flat blue (outward flow)
+    sink: '#EF4444',   // Flat red (inward flow)
+    uniform: '#6B7280' // Gray for neutral
+  }
+
+  const sourceTypeIcons = {
+    vortex: Zap,
+    source: ArrowUp,
+    sink: ArrowDown,
+    uniform: Wind
+  }
+
+  const sourceTypeOptions = [
+    {
+      value: 'vortex',
+      label: 'Vortex',
+      icon: <Zap className="w-4 h-4 text-white" />,
+      color: sourceTypeColors.vortex
+    },
+    {
+      value: 'source',
+      label: 'Source',
+      icon: <ArrowUp className="w-4 h-4 text-white" />,
+      color: sourceTypeColors.source
+    },
+    {
+      value: 'sink',
+      label: 'Sink',
+      icon: <ArrowDown className="w-4 h-4 text-white" />,
+      color: sourceTypeColors.sink
+    },
+    {
+      value: 'uniform',
+      label: 'Uniform',
+      icon: <Wind className="w-4 h-4 text-white" />,
+      color: sourceTypeColors.uniform
+    }
+  ]
+
+  const switchSourceType = (id: string, newType: string) => {
+    const source = sources.find(s => s.id === id)
+    if (source) {
+      // Preserve existing properties and update type
+      const updates: Partial<TurbulenceSource> = { type: newType as TurbulenceSource['type'] }
+      
+      // Reset angle for non-uniform types
+      if (newType !== 'uniform' && source.type === 'uniform') {
+        updates.angle = 0
+      }
+      
+      onUpdateSource(id, updates)
+    }
   }
 
   const toggleExpanded = () => {
@@ -45,56 +97,54 @@ export function SourceControls({
   }
 
   return (
-    <div>
-      <button
-        className="flex items-center gap-2 w-full text-left font-medium hover:text-primary transition-colors"
-        onClick={toggleExpanded}
-      >
-        {panelState.sourcesExpanded ? (
-          <ChevronDown className="h-4 w-4" />
-        ) : (
-          <ChevronRight className="h-4 w-4" />
-        )}
-        Turbulence Sources ({sources.length})
-      </button>
+    <div className="space-y-3">
+      <CollapsibleHeader
+        title={`Turbulence Sources (${sources.length})`}
+        isExpanded={panelState.sourcesExpanded}
+        onToggle={toggleExpanded}
+      />
 
       {panelState.sourcesExpanded && (
-        <div className="space-y-4 pl-4 mt-4">
+        <div className="space-y-4 mt-4">
           {/* Add Source Buttons */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Add Sources</Label>
+            <Label className="text-sm font-medium text-gray-900 dark:text-white">Add Sources</Label>
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onAddSource('vortex')}
-                className="text-xs"
+                className="text-xs border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
-                + Vortex
+                <Zap className="w-3 h-3 mr-1" />
+                Vortex
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onAddSource('source')}
-                className="text-xs"
+                className="text-xs border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
-                + Source
+                <ArrowUp className="w-3 h-3 mr-1" />
+                Source
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onAddSource('sink')}
-                className="text-xs"
+                className="text-xs border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
-                + Sink
+                <ArrowDown className="w-3 h-3 mr-1" />
+                Sink
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onAddSource('uniform')}
-                className="text-xs"
+                className="text-xs border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
-                + Uniform
+                <Wind className="w-3 h-3 mr-1" />
+                Uniform
               </Button>
             </div>
           </div>
@@ -102,103 +152,83 @@ export function SourceControls({
           {/* Current Sources Header and Clear All */}
           {sources.length > 0 && (
             <div className="flex items-center justify-between mt-4">
-              <Label className="text-sm font-medium">Current Sources</Label>
+              <Label className="text-sm font-medium text-gray-900 dark:text-white">Current Sources</Label>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onClearAll}
-                className="text-xs text-red-600 hover:text-red-700"
+                className="text-xs text-gray-600 hover:text-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 Clear All
               </Button>
             </div>
           )}
 
-          {/* Source List (scrollable only) */}
+          {/* Source List */}
           {sources.length > 0 && (
             <div className="space-y-3 mt-2">
-              {sources.map((source) => (
-                <div
-                  key={source.id}
-                  className="p-3 border rounded-lg space-y-2 bg-slate-50 w-full"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div
-                        className={`w-3 h-3 rounded-full ${sourceTypeColors[source.type]}`}
-                      />
-                      <span className="text-sm font-medium">{source.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        ({sourceTypeLabels[source.type]})
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onRemoveSource(source.id)}
-                      className="text-xs text-red-600 hover:text-red-700 h-6 w-6 p-0"
-                    >
-                      ×
-                    </Button>
-                  </div>
-
-                  {/* Source Controls */}
-                  <div className="space-y-2">
-                    {/* Strength */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between">
-                        <Label className="text-xs">Strength</Label>
-                        <span className="text-xs text-muted-foreground">
-                          {source.strength}
-                        </span>
-                      </div>
-                      <Slider
-                        value={[source.strength]}
-                        onValueChange={([value]) =>
-                          onUpdateSource(source.id, { strength: value })
-                        }
-                        min={10}
-                        max={200}
-                        step={5}
-                        className="w-full"
-                      />
-                    </div>
-
-                    {/* Angle (for uniform flow) */}
-                    {source.type === 'uniform' && (
+              {sources.map((source) => {
+                const Icon = sourceTypeIcons[source.type]
+                return (
+                  <ListCard
+                    key={source.id}
+                    icon={<Icon className="w-8 h-8 text-white" />}
+                    iconColor={sourceTypeColors[source.type]}
+                    title={source.name}
+                    subtitle={`Position: (${Math.round(source.x)}, ${Math.round(source.y)})`}
+                    onRemove={() => onRemoveSource(source.id)}
+                    typeOptions={sourceTypeOptions}
+                    currentType={source.type}
+                    onTypeChange={(newType) => switchSourceType(source.id, newType)}
+                    showTypeSwitch={true}
+                  >
+                    {/* Source Controls */}
+                    <div className="space-y-2">
+                      {/* Strength */}
                       <div className="space-y-1">
                         <div className="flex justify-between">
-                          <Label className="text-xs">Angle</Label>
-                          <span className="text-xs text-muted-foreground">
-                            {source.angle}°
+                          <Label className="text-xs text-gray-600 dark:text-gray-300">Strength</Label>
+                          <span className="text-xs text-gray-600 dark:text-gray-300">
+                            {source.strength}
                           </span>
                         </div>
                         <Slider
-                          value={[source.angle]}
+                          value={[source.strength]}
                           onValueChange={([value]) =>
-                            onUpdateSource(source.id, { angle: value })
+                            onUpdateSource(source.id, { strength: value })
                           }
+                          max={100}
                           min={0}
-                          max={360}
-                          step={5}
+                          step={1}
                           className="w-full"
                         />
                       </div>
-                    )}
 
-                    {/* Position */}
-                    <div className="text-xs text-muted-foreground">
-                      Position: ({Math.round(source.x)}, {Math.round(source.y)})
+                      {/* Angle (for uniform flow) */}
+                      {source.type === 'uniform' && (
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <Label className="text-xs text-gray-600 dark:text-gray-300">Angle</Label>
+                            <span className="text-xs text-gray-600 dark:text-gray-300">
+                              {Math.round(source.angle || 0)}°
+                            </span>
+                          </div>
+                          <Slider
+                            value={[source.angle || 0]}
+                            onValueChange={([value]) =>
+                              onUpdateSource(source.id, { angle: value })
+                            }
+                            max={360}
+                            min={0}
+                            step={1}
+                            className="w-full"
+                          />
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {sources.length === 0 && (
-            <div className="text-center py-4 text-sm text-muted-foreground">
-              Click on the canvas or use buttons above to add turbulence sources
+                  </ListCard>
+                )
+              })}
             </div>
           )}
         </div>
