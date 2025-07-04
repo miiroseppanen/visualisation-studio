@@ -137,8 +137,8 @@ export function generateStreamline(
   noiseSettings: NoiseSettings,
   flowSettings: FlowSettings,
   time: number,
-  steps: number = 50,
-  stepSize: number = 2
+  steps: number = 150,
+  stepSize: number = 3
 ): { x: number; y: number }[] {
   const points: { x: number; y: number }[] = []
   let currentX = startX

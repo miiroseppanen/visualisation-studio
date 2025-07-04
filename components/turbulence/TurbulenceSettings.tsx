@@ -6,6 +6,20 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { TurbulenceSettings } from '@/lib/types'
+import { 
+  MIN_TURBULENCE_LINE_COUNT, 
+  MAX_TURBULENCE_LINE_COUNT, 
+  TURBULENCE_LINE_COUNT_STEP,
+  MIN_TURBULENCE_LINE_LENGTH,
+  MAX_TURBULENCE_LINE_LENGTH,
+  TURBULENCE_LINE_LENGTH_STEP,
+  MIN_STREAMLINE_STEPS,
+  MAX_STREAMLINE_STEPS,
+  STREAMLINE_STEPS_STEP,
+  MIN_STREAMLINE_STEP_SIZE,
+  MAX_STREAMLINE_STEP_SIZE,
+  STREAMLINE_STEP_SIZE_STEP
+} from '@/lib/constants'
 
 interface TurbulenceSettingsProps {
   settings: TurbulenceSettings
@@ -66,9 +80,9 @@ export function TurbulenceSettings({
             <Slider
               value={[settings.lineCount]}
               onValueChange={([value]) => onSettingsChange({ lineCount: value })}
-              min={100}
-              max={5000}
-              step={100}
+              min={MIN_TURBULENCE_LINE_COUNT}
+              max={MAX_TURBULENCE_LINE_COUNT}
+              step={TURBULENCE_LINE_COUNT_STEP}
               className="w-full"
             />
           </div>
@@ -85,12 +99,53 @@ export function TurbulenceSettings({
               <Slider
                 value={[settings.lineLength]}
                 onValueChange={([value]) => onSettingsChange({ lineLength: value })}
-                min={10}
-                max={80}
-                step={2}
+                min={MIN_TURBULENCE_LINE_LENGTH}
+                max={MAX_TURBULENCE_LINE_LENGTH}
+                step={TURBULENCE_LINE_LENGTH_STEP}
                 className="w-full"
               />
             </div>
+          )}
+
+          {/* Streamline Settings (for streamline mode) */}
+          {settings.streamlineMode && (
+            <>
+              {/* Streamline Steps */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label className="text-sm">Streamline Length</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {settings.streamlineSteps || 150} steps
+                  </span>
+                </div>
+                <Slider
+                  value={[settings.streamlineSteps || 150]}
+                  onValueChange={([value]) => onSettingsChange({ streamlineSteps: value })}
+                  min={MIN_STREAMLINE_STEPS}
+                  max={MAX_STREAMLINE_STEPS}
+                  step={STREAMLINE_STEPS_STEP}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Streamline Step Size */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label className="text-sm">Step Size</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {settings.streamlineStepSize || 3}px
+                  </span>
+                </div>
+                <Slider
+                  value={[settings.streamlineStepSize || 3]}
+                  onValueChange={([value]) => onSettingsChange({ streamlineStepSize: value })}
+                  min={MIN_STREAMLINE_STEP_SIZE}
+                  max={MAX_STREAMLINE_STEP_SIZE}
+                  step={STREAMLINE_STEP_SIZE_STEP}
+                  className="w-full"
+                />
+              </div>
+            </>
           )}
 
           {/* Show Sources */}

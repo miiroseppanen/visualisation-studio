@@ -18,6 +18,27 @@ export const MIN_CURVE_STIFFNESS = 0
 export const MAX_CURVE_STIFFNESS = 100
 export const CURVE_STIFFNESS_STEP = 1
 
+// Turbulence-specific constants
+export const DEFAULT_TURBULENCE_LINE_LENGTH = 60 // Longer default for turbulence
+export const MIN_TURBULENCE_LINE_LENGTH = 10
+export const MAX_TURBULENCE_LINE_LENGTH = 200
+export const TURBULENCE_LINE_LENGTH_STEP = 5
+
+export const DEFAULT_TURBULENCE_LINE_COUNT = 2000 // More dense default
+export const MIN_TURBULENCE_LINE_COUNT = 500
+export const MAX_TURBULENCE_LINE_COUNT = 10000
+export const TURBULENCE_LINE_COUNT_STEP = 100
+
+export const DEFAULT_STREAMLINE_STEPS = 150 // Longer streamlines
+export const MIN_STREAMLINE_STEPS = 50
+export const MAX_STREAMLINE_STEPS = 500
+export const STREAMLINE_STEPS_STEP = 10
+
+export const DEFAULT_STREAMLINE_STEP_SIZE = 3 // Larger step size for longer lines
+export const MIN_STREAMLINE_STEP_SIZE = 1
+export const MAX_STREAMLINE_STEP_SIZE = 10
+export const STREAMLINE_STEP_SIZE_STEP = 0.5
+
 // Animation defaults
 export const DEFAULT_WIND_STRENGTH = 0.3
 export const DEFAULT_WIND_SPEED = 0.3

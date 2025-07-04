@@ -52,6 +52,8 @@ export interface TurbulenceSettings {
   lineLength: number
   showSources: boolean
   streamlineMode: boolean // true for streamlines, false for grid vectors
+  streamlineSteps: number // Number of steps for streamlines
+  streamlineStepSize: number // Step size for streamlines
   sources: TurbulenceSource[]
 }
 

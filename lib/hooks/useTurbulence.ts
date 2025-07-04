@@ -9,6 +9,12 @@ import type {
 } from '../types'
 import type { TurbulenceSource } from '../turbulence-physics'
 import { generateSourceId, generateSourceName } from '../turbulence-physics'
+import { 
+  DEFAULT_TURBULENCE_LINE_COUNT, 
+  DEFAULT_TURBULENCE_LINE_LENGTH,
+  DEFAULT_STREAMLINE_STEPS,
+  DEFAULT_STREAMLINE_STEP_SIZE
+} from '../constants'
 
 // Turbulence-specific types that extend the base visualization types
 interface TurbulenceVisualizationSettings extends TurbulenceSettings {
@@ -23,10 +29,12 @@ interface TurbulenceVisualizationPanelState extends TurbulencePanelState {}
 
 // Default settings
 const DEFAULT_TURBULENCE_SETTINGS: TurbulenceSettings = {
-  lineCount: 2000,
-  lineLength: 30,
+  lineCount: DEFAULT_TURBULENCE_LINE_COUNT,
+  lineLength: DEFAULT_TURBULENCE_LINE_LENGTH,
   showSources: true,
   streamlineMode: false,
+  streamlineSteps: DEFAULT_STREAMLINE_STEPS,
+  streamlineStepSize: DEFAULT_STREAMLINE_STEP_SIZE,
   sources: [],
 }
 
@@ -161,12 +169,16 @@ export function useTurbulence() {
     lineLength: visualization.settings.lineLength,
     showSources: visualization.settings.showSources,
     streamlineMode: visualization.settings.streamlineMode,
+    streamlineSteps: visualization.settings.streamlineSteps || DEFAULT_STREAMLINE_STEPS,
+    streamlineStepSize: visualization.settings.streamlineStepSize || DEFAULT_STREAMLINE_STEP_SIZE,
     sources: visualization.settings.sources || [],
   }), [
     visualization.settings.lineCount,
     visualization.settings.lineLength,
     visualization.settings.showSources,
     visualization.settings.streamlineMode,
+    visualization.settings.streamlineSteps,
+    visualization.settings.streamlineStepSize,
     visualization.settings.sources,
   ])
 

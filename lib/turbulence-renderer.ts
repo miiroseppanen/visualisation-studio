@@ -121,7 +121,7 @@ export class TurbulenceRenderer {
     flowSettings: FlowSettings,
     animationSettings: TurbulenceAnimationSettings
   ): void {
-    const streamlineCount = Math.floor(turbulenceSettings.lineCount / 100) // Fewer streamlines than vectors
+    const streamlineCount = Math.floor(turbulenceSettings.lineCount / 50) // More streamlines for better density
     const spacing = Math.sqrt((this.width * this.height) / streamlineCount)
 
     this.ctx.strokeStyle = '#000000'
@@ -137,7 +137,9 @@ export class TurbulenceRenderer {
 
       const points = generateStreamline(
         startX, startY, sources, noiseSettings, flowSettings, 
-        animationSettings.time, 100, 2
+        animationSettings.time, 
+        turbulenceSettings.streamlineSteps || 150, 
+        turbulenceSettings.streamlineStepSize || 3
       )
 
       if (points.length > 5) {
