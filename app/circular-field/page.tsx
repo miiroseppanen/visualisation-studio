@@ -7,7 +7,7 @@ import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constant
 import { CircularFieldRenderer } from '@/lib/renderers/CircularFieldRenderer'
 import { useCircularField } from '@/lib/hooks/useCircularField'
 import { FieldSettings } from '@/components/circular-field/FieldSettings'
-import { PoleControls } from '@/components/circular-field/PoleControls'
+import { CircularPoleControls } from '@/components/circular-field/PoleControls'
 import { DisplaySettings } from '@/components/circular-field/DisplaySettings'
 import { AnimationControls } from '@/components/circular-field/AnimationControls'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
@@ -171,7 +171,7 @@ export default function CircularFieldPage() {
             })}
           />
 
-          <PoleControls
+          <CircularPoleControls
             poles={poles}
             onPoleUpdate={updatePole}
             onPoleRemove={removePole}
