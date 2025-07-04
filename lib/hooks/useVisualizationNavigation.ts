@@ -2,6 +2,7 @@ import { usePathname } from 'next/navigation'
 import { useMemo, useCallback } from 'react'
 import { visualizationOptions, getVisualizationByPath, type VisualizationOption } from '../navigation-config'
 import { useNavigation } from './useNavigation'
+import { pauseAllAnimations } from '../utils'
 
 interface VisualizationNavigationState {
   currentVisualization: VisualizationOption | null
@@ -28,6 +29,9 @@ export function useVisualizationNavigation(): UseVisualizationNavigationReturn {
   }, [pathname])
 
   const navigateToVisualization = useCallback((id: string) => {
+    // Pause all animations before navigating to prevent interference
+    pauseAllAnimations()
+    
     const visualization = visualizationOptions.find(viz => viz.id === id)
     if (visualization) {
       navigateToPath(visualization.path)

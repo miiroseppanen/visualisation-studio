@@ -58,8 +58,9 @@ export function useCircularField() {
       animationExpanded: false
     },
     initialPoles: [
-      { id: '1', x: 300, y: 200, strength: 5, isPositive: true, name: 'North' },
-      { id: '2', x: 500, y: 200, strength: 5, isPositive: false, name: 'South' }
+      { id: '1', x: 300, y: 200, strength: 12, isPositive: true, name: 'North 1' },
+      { id: '2', x: 500, y: 200, strength: 10, isPositive: false, name: 'South 1' },
+      { id: '3', x: 400, y: 300, strength: 8, isPositive: true, name: 'North 2' }
     ],
     resetToDefaults: () => ({
       settings: {
@@ -91,8 +92,9 @@ export function useCircularField() {
         animationExpanded: false
       },
       poles: [
-        { id: '1', x: 300, y: 200, strength: 5, isPositive: true, name: 'North' },
-        { id: '2', x: 500, y: 200, strength: 5, isPositive: false, name: 'South' }
+        { id: '1', x: 300, y: 200, strength: 12, isPositive: true, name: 'North 1' },
+        { id: '2', x: 500, y: 200, strength: 10, isPositive: false, name: 'South 1' },
+        { id: '3', x: 400, y: 300, strength: 8, isPositive: true, name: 'North 2' }
       ]
     })
   })

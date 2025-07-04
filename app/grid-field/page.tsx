@@ -10,6 +10,7 @@ import { GridRenderer } from '@/lib/renderers/GridRenderer'
 import { calculateFieldAt, isPoleClicked, generatePoleId, generatePoleName } from '@/lib/physics'
 import type { GridLine } from '@/lib/types'
 import { POLE_CLICK_RADIUS, ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL, FRAME_TIME } from '@/lib/constants'
+import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 
 // Grid generation functions
 function generateRectangularGrid(width: number, height: number, spacing: number): { x: number; y: number }[] {
@@ -188,14 +189,96 @@ export default function GridFieldPage() {
 
     const animate = () => {
       updateAnimationSettings({ time: animationSettings.time + animationSettings.windSpeed * FRAME_TIME })
-      animationRef.current = requestAnimationFrame(animate)
+      const frameId = requestAnimationFrame(animate)
+      animationRef.current = frameId
+      registerAnimationFrame(frameId)
     }
 
-    animationRef.current = requestAnimationFrame(animate)
+    const frameId = requestAnimationFrame(animate)
+    animationRef.current = frameId
+    registerAnimationFrame(frameId)
+    
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
       }
+    }
+  }, [animationSettings.isAnimating, animationSettings.windSpeed, animationSettings.time, updateAnimationSettings])
+
+  // Listen for global pause event
+  useEffect(() => {
+    const handlePauseAllAnimations = () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
+      }
+      updateAnimationSettings({ isAnimating: false })
+    }
+
+    window.addEventListener('pauseAllAnimations', handlePauseAllAnimations)
+    
+    return () => {
+      window.removeEventListener('pauseAllAnimations', handlePauseAllAnimations)
+    }
+  }, [updateAnimationSettings])
+
+  // Cleanup on unmount to prevent navigation issues
+  useEffect(() => {
+    return () => {
+      // Stop animation when component unmounts
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
+      }
+      // Clear renderer to prevent memory leaks
+      if (rendererRef.current) {
+        rendererRef.current = null
+      }
+    }
+  }, [])
+
+  // Stop animation when navigating away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page is hidden (navigation, tab switch, etc.) - pause animation
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current)
+          unregisterAnimationFrame(animationRef.current)
+          animationRef.current = undefined
+        }
+      } else if (animationSettings.isAnimating && !animationRef.current) {
+        // Page is visible again and should be animating - restart
+        const animate = () => {
+          updateAnimationSettings({ time: animationSettings.time + animationSettings.windSpeed * FRAME_TIME })
+          const frameId = requestAnimationFrame(animate)
+          animationRef.current = frameId
+          registerAnimationFrame(frameId)
+        }
+        const frameId = requestAnimationFrame(animate)
+        animationRef.current = frameId
+        registerAnimationFrame(frameId)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [animationSettings.isAnimating, animationSettings.windSpeed, animationSettings.time, updateAnimationSettings])
 

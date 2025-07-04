@@ -19,7 +19,7 @@ interface NavigationBarProps {
  */
 export default function NavigationBar({
   showBackButton = true,
-  backButtonText = 'Back',
+  backButtonText = 'Home',
   backButtonFallback = '/',
   leftContent,
   rightContent,

@@ -24,7 +24,7 @@ export default function DesktopNavigation({
   onExportSVG,
   additionalActionButtons,
   showBackButton = true,
-  backButtonText = 'Back',
+  backButtonText = 'Home',
   backButtonFallback = '/',
   className = ''
 }: DesktopNavigationProps) {

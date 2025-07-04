@@ -23,7 +23,7 @@ export default function SimpleNavigation({
   onExportSVG,
   additionalActionButtons,
   showBackButton = true,
-  backButtonText = 'Back',
+  backButtonText = 'Home',
   backButtonFallback = '/',
   className = ''
 }: SimpleNavigationProps) {

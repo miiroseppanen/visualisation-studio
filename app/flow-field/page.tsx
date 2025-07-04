@@ -9,6 +9,9 @@ import ParticleSettings from '@/components/flow-field/ParticleSettings'
 import { AnimationControls } from '@/components/flow-field/AnimationControls'
 import type { FlowFieldAnimationSettings, FlowFieldPanelState } from '@/lib/types'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
+import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 
 interface MagneticPole {
   id: string
@@ -187,16 +190,94 @@ export default function FlowFieldPage() {
       )
 
       setAnimationSettings(prev => ({ ...prev, time: prev.time + 1 }))
-      animationRef.current = requestAnimationFrame(animate)
+      const frameId = requestAnimationFrame(animate)
+      animationRef.current = frameId
+      registerAnimationFrame(frameId)
     }
 
-    animationRef.current = requestAnimationFrame(animate)
+    const frameId = requestAnimationFrame(animate)
+    animationRef.current = frameId
+    registerAnimationFrame(frameId)
+    
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
       }
     }
   }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, isClient])
+
+  // Listen for global pause event
+  useEffect(() => {
+    const handlePauseAllAnimations = () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
+      }
+      setAnimationSettings(prev => ({ ...prev, isAnimating: false }))
+    }
+
+    window.addEventListener('pauseAllAnimations', handlePauseAllAnimations)
+    
+    return () => {
+      window.removeEventListener('pauseAllAnimations', handlePauseAllAnimations)
+    }
+  }, [])
+
+  // Cleanup on unmount to prevent navigation issues
+  useEffect(() => {
+    return () => {
+      // Stop animation when component unmounts
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
+      }
+    }
+  }, [])
+
+  // Stop animation when navigating away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page is hidden (navigation, tab switch, etc.) - pause animation
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current)
+          unregisterAnimationFrame(animationRef.current)
+          animationRef.current = undefined
+        }
+      } else if (animationSettings.isAnimating && !animationRef.current) {
+        // Page is visible again and should be animating - restart
+        const animate = () => {
+          // ... animation logic would go here
+          const frameId = requestAnimationFrame(animate)
+          animationRef.current = frameId
+          registerAnimationFrame(frameId)
+        }
+        const frameId = requestAnimationFrame(animate)
+        animationRef.current = frameId
+        registerAnimationFrame(frameId)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity])
 
   // Render loop
   useEffect(() => {

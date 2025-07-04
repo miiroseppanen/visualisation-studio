@@ -10,6 +10,7 @@ import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 
 export default function TurbulencePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -106,15 +107,96 @@ export default function TurbulencePage() {
     if (isAnimating) {
       const animate = () => {
         setTime(prev => prev + 0.01 * animationSpeed)
-        animationRef.current = requestAnimationFrame(animate)
+        const frameId = requestAnimationFrame(animate)
+        animationRef.current = frameId
+        registerAnimationFrame(frameId)
       }
-      animationRef.current = requestAnimationFrame(animate)
+      const frameId = requestAnimationFrame(animate)
+      animationRef.current = frameId
+      registerAnimationFrame(frameId)
       
       return () => {
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current)
+          unregisterAnimationFrame(animationRef.current)
+          animationRef.current = null
         }
       }
+    }
+  }, [isAnimating, animationSpeed])
+
+  // Listen for global pause event
+  useEffect(() => {
+    const handlePauseAllAnimations = () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = null
+      }
+      setIsAnimating(false)
+    }
+
+    window.addEventListener('pauseAllAnimations', handlePauseAllAnimations)
+    
+    return () => {
+      window.removeEventListener('pauseAllAnimations', handlePauseAllAnimations)
+    }
+  }, [])
+
+  // Cleanup on unmount to prevent navigation issues
+  useEffect(() => {
+    return () => {
+      // Stop animation when component unmounts
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = null
+      }
+      // Clear renderer to prevent memory leaks
+      if (rendererRef.current) {
+        rendererRef.current = null
+      }
+    }
+  }, [])
+
+  // Stop animation when navigating away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        unregisterAnimationFrame(animationRef.current)
+        animationRef.current = null
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page is hidden (navigation, tab switch, etc.) - pause animation
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current)
+          unregisterAnimationFrame(animationRef.current)
+          animationRef.current = null
+        }
+      } else if (isAnimating && !animationRef.current) {
+        // Page is visible again and should be animating - restart
+        const animate = () => {
+          setTime(prev => prev + 0.01 * animationSpeed)
+          const frameId = requestAnimationFrame(animate)
+          animationRef.current = frameId
+          registerAnimationFrame(frameId)
+        }
+        const frameId = requestAnimationFrame(animate)
+        animationRef.current = frameId
+        registerAnimationFrame(frameId)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [isAnimating, animationSpeed])
 

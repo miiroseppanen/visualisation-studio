@@ -27,7 +27,7 @@ export default function MobileNavigation({
   onExportSVG,
   additionalActionButtons,
   showBackButton = true,
-  backButtonText = 'Back',
+  backButtonText = 'Home',
   backButtonFallback = '/',
   className = ''
 }: MobileNavigationProps) {
