@@ -99,6 +99,22 @@ canvas {
   cursor: crosshair;
 }
 
+/* Mobile canvas fixes */
+@media (max-width: 768px) {
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: calc(100vh - 120px) !important; /* Account for navigation and controls */
+  }
+  
+  /* Ensure canvas container has proper height on mobile */
+  .canvas-container {
+    height: calc(100vh - 120px);
+    min-height: 400px;
+    max-height: calc(100vh - 120px);
+  }
+}
+
 /* Glass morphism effect */
 .glass {
   background: rgba(255, 255, 255, 0.05);

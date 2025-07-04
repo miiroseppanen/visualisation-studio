@@ -54,7 +54,7 @@ export default function VisualizationLayout({
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col relative">
           {/* Canvas/Visualization Content */}
-          <div className="flex-1 w-full relative">
+          <div className="flex-1 w-full relative min-h-0 canvas-container">
             {children}
           </div>
 

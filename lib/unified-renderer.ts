@@ -34,8 +34,27 @@ export abstract class BaseRenderer {
 
   setupCanvas() {
     const rect = this.canvas.getBoundingClientRect()
-    this.width = rect.width
-    this.height = rect.height
+    
+    // Use the container's actual size, but ensure we don't exceed viewport
+    let width = rect.width
+    let height = rect.height
+    
+    // On mobile, ensure we don't exceed viewport dimensions
+    if (window.innerWidth < 768) { // Mobile breakpoint
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      
+      // Use the smaller of container size or viewport size
+      width = Math.min(width, viewportWidth)
+      height = Math.min(height, viewportHeight)
+      
+      // Ensure minimum size
+      width = Math.max(width, 300)
+      height = Math.max(height, 400)
+    }
+    
+    this.width = width
+    this.height = height
     
     // Set actual canvas size in memory (scaled for retina)
     this.canvas.width = this.width * this.dpr

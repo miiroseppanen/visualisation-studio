@@ -114,14 +114,39 @@ export function useVisualization<TSettings, TAnimationSettings, TPanelState>(
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect()
-      const width = rect.width
-      const height = rect.height
+      let width = rect.width
+      let height = rect.height
+      
+      // On mobile, ensure we don't exceed viewport dimensions
+      if (window.innerWidth < 768) {
+        const viewportWidth = window.innerWidth
+        const viewportHeight = window.innerHeight
+        
+        // Use the smaller of container size or viewport size
+        width = Math.min(width, viewportWidth)
+        height = Math.min(height, viewportHeight)
+        
+        // Ensure minimum size
+        width = Math.max(width, 300)
+        height = Math.max(height, 400)
+      }
+      
       setCanvasSize({ width, height })
     }
 
     resizeCanvas()
+    
+    // Use ResizeObserver for more reliable resize detection
+    const resizeObserver = new ResizeObserver(resizeCanvas)
+    resizeObserver.observe(canvas)
+    
+    // Also listen for window resize for viewport changes
     window.addEventListener('resize', resizeCanvas)
-    return () => window.removeEventListener('resize', resizeCanvas)
+    
+    return () => {
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', resizeCanvas)
+    }
   }, [])
 
   return {
