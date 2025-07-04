@@ -91,16 +91,18 @@ export class TurbulenceRenderer {
           x, y, sources, noiseSettings, flowSettings, animationSettings.time
         )
 
-        // Scale and apply intensity
+        // Calculate field magnitude and direction
         const magnitude = Math.sqrt(field.fieldX * field.fieldX + field.fieldY * field.fieldY)
-        const scaledMagnitude = Math.min(magnitude * animationSettings.intensity, turbulenceSettings.lineLength)
         
-        if (scaledMagnitude > 0.1) {
+        if (magnitude > 0.01) {
           const normalizedX = field.fieldX / magnitude
           const normalizedY = field.fieldY / magnitude
           
-          const endX = x + normalizedX * scaledMagnitude
-          const endY = y + normalizedY * scaledMagnitude
+          // Use the full line length setting, scaled by intensity for visual effect
+          const lineLength = turbulenceSettings.lineLength * animationSettings.intensity
+          
+          const endX = x + normalizedX * lineLength
+          const endY = y + normalizedY * lineLength
           
           // Simple black line without arrows
           this.ctx.beginPath()
@@ -258,14 +260,16 @@ export class TurbulenceRenderer {
           )
 
           const magnitude = Math.sqrt(field.fieldX * field.fieldX + field.fieldY * field.fieldY)
-          const scaledMagnitude = Math.min(magnitude * animationSettings.intensity, turbulenceSettings.lineLength)
           
-          if (scaledMagnitude > 0.1) {
+          if (magnitude > 0.01) {
             const normalizedX = field.fieldX / magnitude
             const normalizedY = field.fieldY / magnitude
             
-            const endX = x + normalizedX * scaledMagnitude
-            const endY = y + normalizedY * scaledMagnitude
+            // Use the full line length setting, scaled by intensity for visual effect
+            const lineLength = turbulenceSettings.lineLength * animationSettings.intensity
+            
+            const endX = x + normalizedX * lineLength
+            const endY = y + normalizedY * lineLength
             
             svg += `<line x1="${x}" y1="${y}" x2="${endX}" y2="${endY}" stroke="black" stroke-width="0.5" opacity="0.8"/>\n`
           }
