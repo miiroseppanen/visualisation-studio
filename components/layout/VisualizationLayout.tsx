@@ -43,26 +43,28 @@ export default function VisualizationLayout({
   )
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <VisualizationNav actionButtons={actionButtons} />
-      
-      {/* Main Content Area */}
-      <main className="relative">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Fixed Navigation */}
+      <div className="fixed top-0 left-0 w-full z-50 shadow-sm bg-background">
+        <VisualizationNav actionButtons={actionButtons} />
+      </div>
+
+      {/* Main Content Area below nav */}
+      <main className="flex-1 flex flex-col relative" style={{ marginTop: '64px' }}>
         {/* Canvas/Visualization Content */}
-        <div className="w-full h-screen">
+        <div className="flex-1 w-full relative">
           {children}
         </div>
-        
+
         {/* Status Display */}
         {statusContent && (
-          <div className="fixed top-24 left-4 z-40 pointer-events-none">
+          <div className="fixed top-20 left-4 z-40 pointer-events-none">
             <div className="bg-background/80 backdrop-blur-sm border border-border/20 rounded-md px-3 py-2 text-sm text-muted-foreground">
               {statusContent}
             </div>
           </div>
         )}
-        
+
         {/* Help Text */}
         {helpText && (
           <div className="fixed bottom-4 left-4 z-40 pointer-events-none">
@@ -72,7 +74,7 @@ export default function VisualizationLayout({
           </div>
         )}
       </main>
-      
+
       {/* Settings Panel */}
       <ControlsPanel title="Settings" isOpen={panelOpen} onToggle={onPanelToggle}>
         {settingsContent}

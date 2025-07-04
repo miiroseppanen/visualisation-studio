@@ -1,83 +1,82 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
-import { useTurbulence } from '@/lib/hooks/useTurbulence'
-import { TurbulenceRenderer } from '@/lib/turbulence-renderer'
+import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { TurbulenceSettings } from '@/components/turbulence/TurbulenceSettings'
 import { SourceControls } from '@/components/turbulence/SourceControls'
 import { FlowControls } from '@/components/turbulence/FlowControls'
 import { TurbulenceAnimationControls } from '@/components/turbulence/TurbulenceAnimationControls'
+import type { TurbulenceAnimationSettings } from '@/lib/types'
+import { useTurbulence } from '@/lib/hooks/useTurbulence'
+import { TurbulenceRenderer } from '@/lib/turbulence-renderer'
 
 export default function TurbulencePage() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<TurbulenceRenderer | null>(null)
+  const [isClient, setIsClient] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState(1)
 
   const {
-    // Refs
-    canvasRef,
-    
-    // Settings
     turbulenceSettings,
     noiseSettings,
     flowSettings,
     animationSettings,
     panelState,
-    
-    // Sources
     sources,
-    
-    // Interaction state
-    canvasSize,
-    
-    // Update functions
+    isDragging,
     updateTurbulenceSettings,
     updateNoiseSettings,
     updateFlowSettings,
     updateAnimationSettings,
     updatePanelState,
-    
-    // Source management
     addSource,
     removeSource,
     updateSource,
     clearAllSources,
-    
-    // Interaction handlers
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
     handleCanvasResize,
-    
-    // Reset function
-    resetAllSettings,
   } = useTurbulence()
 
   // Initialize renderer
   useEffect(() => {
-    if (canvasRef.current && !rendererRef.current) {
-      rendererRef.current = new TurbulenceRenderer(canvasRef.current)
-      
-      // Handle resize
-      const handleResize = () => {
-        if (canvasRef.current && rendererRef.current) {
-          const rect = canvasRef.current.getBoundingClientRect()
-          rendererRef.current.resize(rect.width, rect.height)
-          handleCanvasResize({ width: rect.width, height: rect.height })
+    if (canvasRef.current && isClient) {
+      try {
+        rendererRef.current = new TurbulenceRenderer(canvasRef.current)
+        
+        // Set initial canvas size
+        const updateSize = () => {
+          if (canvasRef.current) {
+            const rect = canvasRef.current.getBoundingClientRect()
+            handleCanvasResize(rect.width, rect.height)
+            if (rendererRef.current) {
+              rendererRef.current.resize(rect.width, rect.height)
+            }
+          }
         }
-      }
 
-      window.addEventListener('resize', handleResize)
-      handleResize() // Initial size
-
-      return () => {
-        window.removeEventListener('resize', handleResize)
+        updateSize()
+        window.addEventListener('resize', updateSize)
+        
+        return () => {
+          window.removeEventListener('resize', updateSize)
+        }
+      } catch (error) {
+        console.error('Failed to initialize turbulence renderer:', error)
       }
     }
-  }, [canvasRef, handleCanvasResize])
+  }, [isClient, handleCanvasResize])
 
-  // Render loop
+  // Client-side only rendering
   useEffect(() => {
-    if (rendererRef.current) {
+    setIsClient(true)
+  }, [])
+
+  // Render the visualization
+  useEffect(() => {
+    if (rendererRef.current && isClient) {
       rendererRef.current.renderField(
         sources,
         turbulenceSettings,
@@ -86,77 +85,120 @@ export default function TurbulencePage() {
         animationSettings
       )
     }
-  }, [sources, turbulenceSettings, noiseSettings, flowSettings, animationSettings])
+  }, [sources, turbulenceSettings, noiseSettings, flowSettings, animationSettings, isClient])
 
-  const handleExportSVG = () => {
+  // Handle canvas mouse events
+  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    handleMouseDown(e)
+  }
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    handleMouseMove(e)
+  }
+
+  const handleCanvasMouseUp = () => {
+    handleMouseUp()
+  }
+
+  // Handle wheel zoom
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    
+    const deltaY = e.deltaY
+    const zoomChange = -deltaY * ZOOM_SENSITIVITY
+    
+    const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
+    setZoomLevel(newZoom)
+  }
+
+  // Export as SVG
+  const exportSVG = () => {
     if (rendererRef.current) {
-      const svgContent = rendererRef.current.exportAsSVG(
+      const svg = rendererRef.current.exportAsSVG(
         sources,
         turbulenceSettings,
         noiseSettings,
         flowSettings,
         animationSettings
       )
-      
-      const blob = new Blob([svgContent], { type: 'image/svg+xml' })
+      const blob = new Blob([svg], { type: 'image/svg+xml' })
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = 'turbulence-flow-field.svg'
-      document.body.appendChild(link)
+      link.download = 'turbulence.svg'
       link.click()
-      document.body.removeChild(link)
       URL.revokeObjectURL(url)
     }
   }
 
+  // Reset visualization
+  const handleReset = () => {
+    clearAllSources()
+    setZoomLevel(1)
+  }
+
+  if (!isClient) {
+    return (
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading turbulence visualizer...</div>
+      </div>
+    )
+  }
+
   return (
     <VisualizationLayout
-      onReset={resetAllSettings}
-      onExportSVG={handleExportSVG}
+      onReset={handleReset}
+      onExportSVG={exportSVG}
       statusContent={
         <>
-          Mode: {turbulenceSettings.streamlineMode ? 'Streamlines' : 'Vectors'} | 
-          Sources: {sources.length} | 
-          Density: {turbulenceSettings.lineCount.toLocaleString()}
+          Turbulence Mode | 
+          {sources.length} sources • 
+          {turbulenceSettings.lineCount} lines • 
+          Zoom: {Math.round(zoomLevel * 100)}%
         </>
       }
-      helpText="Click to add vortex, drag to move • Toggle visualization modes in controls"
+      helpText="Click to add sources, drag to move • Wheel to zoom • Use controls to adjust turbulence settings"
       panelOpen={panelState.isOpen}
       onPanelToggle={() => updatePanelState({ isOpen: !panelState.isOpen })}
       settingsContent={
         <div className="space-y-8">
           <TurbulenceSettings
             settings={turbulenceSettings}
-            expanded={panelState.turbulenceExpanded}
-            onToggleExpanded={() => updatePanelState({ turbulenceExpanded: !panelState.turbulenceExpanded })}
             onSettingsChange={updateTurbulenceSettings}
+            expanded={panelState.turbulenceExpanded}
+            onToggleExpanded={() => updatePanelState({ 
+              turbulenceExpanded: !panelState.turbulenceExpanded 
+            })}
           />
 
           <SourceControls
             sources={sources}
-            panelState={panelState}
-            onUpdatePanelState={updatePanelState}
             onAddSource={addSource}
             onRemoveSource={removeSource}
             onUpdateSource={updateSource}
             onClearAll={clearAllSources}
+            expanded={panelState.sourcesExpanded}
+            onToggleExpanded={() => updatePanelState({ 
+              sourcesExpanded: !panelState.sourcesExpanded 
+            })}
           />
 
           <FlowControls
-            flowSettings={flowSettings}
-            noiseSettings={noiseSettings}
-            panelState={panelState}
-            onUpdatePanelState={updatePanelState}
-            onFlowChange={updateFlowSettings}
-            onNoiseChange={updateNoiseSettings}
+            settings={flowSettings}
+            onSettingsChange={updateFlowSettings}
+            expanded={panelState.flowSettingsExpanded}
+            onToggleExpanded={() => updatePanelState({ 
+              flowSettingsExpanded: !panelState.flowSettingsExpanded 
+            })}
           />
 
           <TurbulenceAnimationControls
             settings={animationSettings}
             onSettingsChange={updateAnimationSettings}
             expanded={panelState.animationExpanded}
-            onToggleExpanded={() => updatePanelState({ animationExpanded: !panelState.animationExpanded })}
+            onToggleExpanded={() => updatePanelState({ 
+              animationExpanded: !panelState.animationExpanded 
+            })}
           />
         </div>
       }
@@ -164,10 +206,11 @@ export default function TurbulencePage() {
       <canvas
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        onMouseDown={handleCanvasMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleCanvasMouseUp}
+        onMouseLeave={handleCanvasMouseUp}
+        onWheel={handleWheel}
       />
     </VisualizationLayout>
   )

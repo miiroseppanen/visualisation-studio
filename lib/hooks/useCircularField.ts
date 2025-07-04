@@ -191,6 +191,13 @@ export function useCircularField() {
     addPole(x, y)
   }, [addPole])
 
+  // Panel toggle functionality
+  const togglePanel = useCallback(() => {
+    visualization.updatePanelState({ 
+      isOpen: !(visualization.panelState as any).isOpen 
+    })
+  }, [visualization.updatePanelState, visualization.panelState])
+
   // Extract nested settings for backward compatibility
   const fieldSettings: CircularFieldSettings = {
     lineCount: visualization.settings.lineCount,
@@ -249,6 +256,10 @@ export function useCircularField() {
     updatePanelState: visualization.updatePanelState,
     setCanvasSize: visualization.setCanvasSize,
     resetVisualization: visualization.resetVisualization,
+    
+    // Panel controls
+    panelOpen: (visualization.panelState as any).isOpen,
+    togglePanel,
     
     // Mouse handlers
     handleMouseDown,

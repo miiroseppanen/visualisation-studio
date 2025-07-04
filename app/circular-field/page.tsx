@@ -10,8 +10,7 @@ import { FieldSettings } from '@/components/circular-field/FieldSettings'
 import { PoleControls } from '@/components/circular-field/PoleControls'
 import { DisplaySettings } from '@/components/circular-field/DisplaySettings'
 import { AnimationControls } from '@/components/circular-field/AnimationControls'
-import VisualizationNav from '@/components/VisualizationNav'
-import ControlsPanel from '@/components/ControlsPanel'
+import VisualizationLayout from '@/components/layout/VisualizationLayout'
 
 export default function CircularFieldPage() {
   const rendererRef = useRef<CircularFieldRenderer | null>(null)
@@ -134,38 +133,20 @@ export default function CircularFieldPage() {
     }
   }
 
-  return (
-    <div className="h-screen bg-background flex flex-col">
-      <VisualizationNav 
-        actionButtons={
-          <>
-            <Button variant="ghost" size="sm" onClick={resetVisualization}>
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Reset
-            </Button>
-            <Button size="sm" onClick={exportSVG}>
-              <Download className="w-4 h-4 mr-2" />
-              SVG
-            </Button>
-          </>
-        }
-      />
+  if (!isClient) {
+    return (
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading circular field visualizer...</div>
+      </div>
+    )
+  }
 
-      <div className="flex-1 relative">
-        {/* Canvas - Fullscreen */}
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full cursor-crosshair"
-          style={{ cursor: draggedPole ? 'grabbing' : 'crosshair' }}
-          onMouseDown={handleCanvasMouseDown}
-          onMouseMove={handleCanvasMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onWheel={handleWheel}
-        />
-        
-        {/* Status overlay */}
-        <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
+  return (
+    <VisualizationLayout
+      onReset={resetVisualization}
+      onExportSVG={exportSVG}
+      statusContent={
+        <>
           Poles: {poles.length} | 
           Field Lines: {fieldLines.length} | 
           Zoom: {Math.round(zoomLevel * 100)}% | 
@@ -173,15 +154,12 @@ export default function CircularFieldPage() {
           {animationSettings.isAnimating && (
             <span className="text-blue-600"> | ● Animating</span>
           )}
-        </div>
-        
-        <div className="absolute bottom-4 left-4 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
-          Click to add pole, drag to move • Wheel to zoom • Circular field lines around magnetic poles
-        </div>
-      </div>
-
-      {/* Floating Controls Panel */}
-      <ControlsPanel title="Circular Field Controls">
+        </>
+      }
+      helpText="Click to add pole, drag to move • Wheel to zoom • Circular field lines around magnetic poles"
+      panelOpen={panelState.isOpen}
+      onPanelToggle={() => updatePanelState({ isOpen: !panelState.isOpen })}
+      settingsContent={
         <div className="space-y-8">
           <FieldSettings
             settings={fieldSettings}
@@ -221,7 +199,18 @@ export default function CircularFieldPage() {
             })}
           />
         </div>
-      </ControlsPanel>
-    </div>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full cursor-crosshair"
+        style={{ cursor: draggedPole ? 'grabbing' : 'crosshair' }}
+        onMouseDown={handleCanvasMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+      />
+    </VisualizationLayout>
   )
 } 

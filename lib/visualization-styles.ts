@@ -20,18 +20,17 @@ export const VISUALIZATION_STYLES = {
 
   // Settings panel styles
   settingsPanel: {
-    container: "fixed top-24 right-4 bottom-4 z-50",
-    panel: "relative h-full w-80 max-w-[90vw] rounded-md border border-border/20 flex flex-col pointer-events-auto shadow-lg hover:shadow-2xl bg-background/15 hover:bg-background/95 backdrop-blur-sm hover:backdrop-blur-md transition-all duration-500 ease-in-out transform-gpu overflow-hidden",
-    topBar: "flex items-center justify-between p-4 border-b border-border/20 bg-background/20 hover:bg-background/90 backdrop-blur-xs hover:backdrop-blur-md transition-all duration-300",
-    content: "flex-1 overflow-y-auto bg-background/10 hover:bg-background/80 backdrop-blur-sm hover:backdrop-blur-md transition-all duration-300",
-    contentInner: "p-6 pb-20",
-    button: "bg-background/20 hover:bg-background/90 backdrop-blur-xs hover:backdrop-blur-md border border-border/20 rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 transform-gpu",
-    buttonContainer: "fixed top-28 right-8 z-[60] pointer-events-auto"
+    container: "fixed top-20 right-0 bottom-4 z-50",
+    panel: "relative h-full bg-white/95 backdrop-blur-md border-l border-gray-200 shadow-2xl transition-all duration-500 ease-in-out",
+    header: "flex items-center justify-between p-4 border-b border-gray-200 bg-white/80 backdrop-blur-sm",
+    content: "flex-1 overflow-y-auto p-6",
+    minimizedContent: "absolute inset-0 flex flex-col items-center justify-center space-y-4 p-2",
+    toggleButton: "bg-white hover:bg-gray-50 border border-gray-300 rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 transform-gpu text-gray-800"
   },
 
   // Status and help overlays
   overlays: {
-    status: "fixed top-24 left-4 z-40 pointer-events-none",
+    status: "fixed top-20 left-4 z-40 pointer-events-none",
     statusContent: "bg-background/80 backdrop-blur-sm border border-border/20 rounded-md px-3 py-2 text-sm text-muted-foreground",
     help: "fixed bottom-4 left-4 z-40 pointer-events-none",
     helpContent: "bg-background/80 backdrop-blur-sm border border-border/20 rounded-md px-3 py-2 text-sm text-muted-foreground max-w-md"
@@ -123,11 +122,6 @@ export function getVisualizationClasses(category: keyof typeof VISUALIZATION_STY
 
 // Common component class builders
 export const buildClasses = {
-  settingsPanel: (isOpen: boolean) => `
-    ${VISUALIZATION_STYLES.settingsPanel.panel}
-    ${isOpen ? VISUALIZATION_STYLES.animations.slideIn : VISUALIZATION_STYLES.animations.slideOut}
-  `.trim(),
-
   collapsibleContent: (isExpanded: boolean) => `
     ${VISUALIZATION_STYLES.collapsible.content}
     ${isExpanded ? VISUALIZATION_STYLES.animations.expandIn : VISUALIZATION_STYLES.animations.expandOut}
