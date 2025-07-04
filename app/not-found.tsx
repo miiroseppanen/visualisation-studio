@@ -15,7 +15,7 @@ export default function NotFound() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground text-center">
-            The page you're looking for doesn't exist. It might have been moved or deleted.
+            The page you're looking for doesn't exist. It might have been moved or deleted from Visualization Studio.
           </p>
           <Button asChild className="w-full">
             <Link href="/">

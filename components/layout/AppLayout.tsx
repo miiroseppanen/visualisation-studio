@@ -13,7 +13,7 @@ export default function AppLayout({
   navigationVariant = 'header' 
 }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {showNavigation && <AppNavigation variant={navigationVariant} />}
       <main className="flex-1">
         {children}

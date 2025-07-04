@@ -3,8 +3,9 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Sparkles, Grid3X3, Magnet, Wind, Mountain, Radio } from 'lucide-react'
+import { Grid3X3, Magnet, Wind, Mountain, Radio } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { H23Logo } from '@/components/ui/h23-logo'
 
 interface NavigationItem {
   title: string
@@ -58,9 +59,7 @@ export default function AppNavigation({ variant = 'header', className = '' }: Ap
     return (
       <div className={`flex items-center space-x-4 ${className}`}>
         <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-          <div className="w-6 h-6 bg-foreground rounded flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-background" />
-          </div>
+          <H23Logo size="md" />
           <span className="text-lg font-normal">Visualization Studio</span>
         </Link>
       </div>
@@ -72,9 +71,7 @@ export default function AppNavigation({ variant = 'header', className = '' }: Ap
       <div className="container mx-auto px-8 py-6">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-4 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-foreground rounded flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-background" />
-            </div>
+            <H23Logo size="lg" />
             <h1 className="text-xl font-normal">Visualization Studio</h1>
           </Link>
           
@@ -100,7 +97,7 @@ export default function AppNavigation({ variant = 'header', className = '' }: Ap
           <div className="md:hidden">
             <Button variant="ghost" size="sm" asChild>
               <Link href="/">
-                <Sparkles className="w-4 h-4" />
+                <H23Logo size="sm" />
               </Link>
             </Button>
           </div>

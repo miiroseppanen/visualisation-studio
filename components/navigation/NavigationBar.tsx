@@ -32,7 +32,7 @@ export default function NavigationBar({
   }
 
   return (
-    <div className={`border-b border-border/40 bg-background/95 backdrop-blur-sm ${className}`}>
+    <div className={`m-4 rounded-xl border border-border/30 bg-background/60 backdrop-blur-md hover:bg-background/80 hover:backdrop-blur-lg transition-all duration-300 ${className}`}>
       <div className="w-full px-4 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Left side */}

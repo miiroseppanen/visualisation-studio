@@ -3,12 +3,12 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'SVG Illustration Studio',
-  description: 'Create and test magnetic field visualizations with interactive SVG illustrations',
+  title: 'Visualization Studio',
+  description: 'Professional pattern generation toolkit for creative branding and packaging design. Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.',
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg'
+    icon: '/h23-logo.svg',
+    shortcut: '/h23-logo.svg',
+    apple: '/h23-logo.svg'
   }
 }
 

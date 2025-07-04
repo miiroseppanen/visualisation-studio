@@ -71,8 +71,8 @@ export default function ControlsPanel({
           // Mobile: Full height bottom sheet
           "fixed inset-x-0 bottom-0 z-50 transition-all duration-500 ease-in-out",
           isPanelVisible ? "translate-y-0" : "translate-y-full",
-          // Desktop: Side panel on right 
-          "md:fixed md:top-16 md:right-0 md:left-auto md:bottom-0 md:w-80 md:translate-y-0 md:z-40",
+          // Desktop: Side panel on right with margin
+          "md:fixed md:top-20 md:right-4 md:left-auto md:bottom-4 md:w-80 md:translate-y-0 md:z-40",
           // Desktop transforms
           isPanelVisible ? "md:translate-x-0" : "md:translate-x-full"
         )}
@@ -80,13 +80,13 @@ export default function ControlsPanel({
         {/* Panel Content */}
         <div className={cn(
           // Mobile: Bottom sheet style
-          "relative h-[85vh] w-full bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-2xl flex flex-col rounded-t-xl",
-          // Desktop: Side panel style
-          "md:h-full md:w-80 md:bg-white/95 md:backdrop-blur-md md:border-l md:border-t-0 md:shadow-2xl md:rounded-t-none md:rounded-none"
+          "relative h-[85vh] w-full bg-white/60 backdrop-blur-md border border-gray-200/40 shadow-2xl flex flex-col rounded-t-xl hover:bg-white/80 transition-all duration-300",
+          // Desktop: Side panel style with glass effect
+          "md:h-full md:w-80 md:bg-white/60 md:backdrop-blur-md md:border md:border-gray-200/40 md:shadow-2xl md:rounded-xl md:hover:bg-white/80"
         )}>
           
           {/* Panel Header */}
-          <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
+          <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200/50 bg-white/40 backdrop-blur-sm rounded-t-xl">
             {/* Mobile drag handle */}
             <div className="md:hidden w-full flex justify-center mb-2">
               <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
@@ -96,7 +96,7 @@ export default function ControlsPanel({
               <h2 className="text-lg font-normal text-gray-800">{title}</h2>
               <button
                 onClick={handleClose}
-                className="p-1.5 rounded-md hover:bg-gray-100 transition-colors group touch-manipulation"
+                className="p-1.5 rounded-md hover:bg-gray-100/50 transition-colors group touch-manipulation"
                 aria-label="Close panel"
                 title="Close (Esc)"
               >
@@ -119,13 +119,13 @@ export default function ControlsPanel({
         <div className={cn(
           // Mobile: Bottom right corner
           "fixed bottom-4 right-4 z-[60] pointer-events-auto",
-          // Desktop: Top right 
-          "md:fixed md:top-20 md:right-4 md:bottom-auto md:z-50"
+          // Desktop: Top right with margin
+          "md:fixed md:top-24 md:right-8 md:bottom-auto md:z-50"
         )}>
           <button
             onClick={handleToggle}
             className={cn(
-              "bg-white hover:bg-gray-50 border border-gray-300 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 transform-gpu text-gray-800 group touch-manipulation",
+              "bg-white/60 hover:bg-white/80 border border-gray-300/50 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 transform-gpu text-gray-800 group touch-manipulation backdrop-blur-md",
               // Mobile: Larger touch target
               "p-4 md:p-3"
             )}

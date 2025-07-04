@@ -50,7 +50,7 @@ export default function MobileNavigation({
 
   return (
     <div className={`md:hidden ${className}`}>
-      <div className="border-b border-border/40 bg-background/95 backdrop-blur-sm">
+      <div className="m-4 rounded-xl border border-border/30 bg-background/60 backdrop-blur-md hover:bg-background/80 hover:backdrop-blur-lg transition-all duration-300">
         {/* Mobile Header */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
@@ -97,7 +97,7 @@ export default function MobileNavigation({
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="border-t border-border/40 bg-background/98 backdrop-blur-sm">
+          <div className="border-t border-border/40 bg-background/70 backdrop-blur-md rounded-b-xl">
             <div className="px-4 py-3 max-h-[70vh] overflow-y-auto">
               <div className="space-y-3">
                 <div>
