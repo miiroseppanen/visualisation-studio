@@ -204,7 +204,7 @@ export default function CircularFieldPage() {
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
+        className="w-full h-full cursor-crosshair dark:invert dark:hue-rotate-180"
         style={{ cursor: draggedPole ? 'grabbing' : 'crosshair' }}
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleCanvasMouseMove}

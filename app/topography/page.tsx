@@ -205,7 +205,7 @@ export default function TopographyPage() {
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
+        className="w-full h-full cursor-crosshair dark:invert dark:hue-rotate-180"
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}

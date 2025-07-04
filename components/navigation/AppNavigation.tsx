@@ -95,11 +95,6 @@ export default function AppNavigation({ variant = 'header', className = '' }: Ap
           </nav>
           
           <div className="md:hidden">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/">
-                <H23Logo size="sm" />
-              </Link>
-            </Button>
           </div>
         </div>
       </div>

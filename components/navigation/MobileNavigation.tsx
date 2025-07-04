@@ -32,11 +32,11 @@ export default function MobileNavigation({
   className = ''
 }: MobileNavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { navigateBack } = useNavigation()
+  const { navigateHome } = useNavigation()
   const { currentVisualization, allVisualizations, navigateToVisualization } = useVisualizationNavigation()
 
   const handleBackClick = () => {
-    navigateBack(backButtonFallback)
+    navigateHome()
   }
 
   const handleVisualizationSelect = (id: string) => {
@@ -50,9 +50,9 @@ export default function MobileNavigation({
 
   return (
     <div className={`md:hidden ${className}`}>
-      <div className="m-4 rounded-xl border border-border/30 bg-background/60 backdrop-blur-md hover:bg-background/80 hover:backdrop-blur-lg transition-all duration-300">
+      <div className="m-4 rounded-lg border border-border/30 bg-background/60 backdrop-blur-md hover:bg-background/80 hover:backdrop-blur-lg transition-all duration-300 dark:bg-background/40 dark:hover:bg-background/60">
         {/* Mobile Header */}
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center space-x-3">
             {showBackButton && (
               <NavigationBackButton 
@@ -97,7 +97,7 @@ export default function MobileNavigation({
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="border-t border-border/40 bg-background/70 backdrop-blur-md rounded-b-xl">
+          <div className="border-t border-border/40 bg-background/70 backdrop-blur-md rounded-b-xl dark:bg-background/50">
             <div className="px-4 py-3 max-h-[70vh] overflow-y-auto">
               <div className="space-y-3">
                 <div>

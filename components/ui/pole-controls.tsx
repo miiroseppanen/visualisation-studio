@@ -81,7 +81,7 @@ export default function PoleControls({
   )
 
   const renderPoleItem = (pole: Pole, index: number) => (
-    <div key={pole.id} className="space-y-3 p-3 border rounded-lg bg-slate-50/50 w-full">
+    <div key={pole.id} className="space-y-3 p-3 border rounded-lg bg-slate-50/50 dark:bg-black/40 dark:border-white/20 w-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div 
@@ -90,14 +90,14 @@ export default function PoleControls({
           >
             <Magnet className="w-2 h-2 text-white" />
           </div>
-          <Label className="text-sm font-medium">{pole.name}</Label>
+          <Label className="text-sm font-medium dark:text-white">{pole.name}</Label>
         </div>
         {poles.length > 1 && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => removePole(pole.id)}
-            className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
           >
             <Trash2 className="w-3 h-3" />
           </Button>
@@ -107,8 +107,8 @@ export default function PoleControls({
       {/* Pole Strength */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-xs text-muted-foreground">Strength</Label>
-          <div className="text-xs text-muted-foreground">{pole.strength}</div>
+          <Label className="text-xs text-muted-foreground dark:text-white/60">Strength</Label>
+          <div className="text-xs text-muted-foreground dark:text-white/60">{pole.strength}</div>
         </div>
         <Slider
           value={[pole.strength]}
@@ -128,14 +128,14 @@ export default function PoleControls({
             checked={pole.isPositive}
             onCheckedChange={(checked) => updatePole(pole.id, { isPositive: checked as boolean })}
           />
-          <Label htmlFor={`polarity-${pole.id}`} className="text-xs">
+          <Label htmlFor={`polarity-${pole.id}`} className="text-xs dark:text-white/80">
             Positive Polarity {pole.isPositive ? '(+)' : '(-)'}
           </Label>
         </div>
       )}
 
       {/* Position Display */}
-      <div className="text-xs text-muted-foreground">
+      <div className="text-xs text-muted-foreground dark:text-white/60">
         Position: ({Math.round(pole.x)}, {Math.round(pole.y)})
       </div>
     </div>
@@ -146,13 +146,15 @@ export default function PoleControls({
       <div className="flex items-start gap-3">
         <CollapsibleSection
           title={`Poles (${poles.length})`}
-          expanded={expanded}
-          onToggle={onToggleExpanded}
+          defaultOpen={expanded}
           className="flex-1"
         >
           <div className="space-y-4 mt-4">
             {/* Individual Pole Controls */}
             {poles.map(renderPoleItem)}
+
+            {/* Add Pole Button */}
+            {renderAddButton()}
 
             {/* Global Pole Controls */}
             {showGlobalControls && polaritySettings && onUpdatePolarity && onToggleShowPoles && (
@@ -181,8 +183,6 @@ export default function PoleControls({
             )}
           </div>
         </CollapsibleSection>
-        
-        {renderAddButton()}
       </div>
     )
   }
@@ -190,15 +190,14 @@ export default function PoleControls({
   return (
     <CollapsibleSection
       title={`Poles (${poles.length})`}
-      expanded={expanded}
-      onToggle={onToggleExpanded}
+      defaultOpen={expanded}
     >
       <div className="space-y-4 mt-4">
-        {/* Add Pole Button */}
-        {renderAddButton()}
-
         {/* Individual Pole Controls */}
         {poles.map(renderPoleItem)}
+
+        {/* Add Pole Button */}
+        {renderAddButton()}
 
         {/* Global Pole Controls */}
         {showGlobalControls && polaritySettings && onUpdatePolarity && onToggleShowPoles && (

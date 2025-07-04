@@ -390,8 +390,7 @@ export default function TurbulencePage() {
           {/* Field Settings - Top */}
           <CollapsibleSection 
             title="Field Settings" 
-            expanded={expandedSections.fieldSettings}
-            onToggle={() => toggleSection('fieldSettings')}
+            defaultOpen={expandedSections.fieldSettings}
           >
             <div className="space-y-4 pb-2">
               <div className="space-y-2">
@@ -449,9 +448,8 @@ export default function TurbulencePage() {
 
           {/* Source Management */}
           <CollapsibleSection 
-            title={`Sources (${sources.length})`} 
-            expanded={expandedSections.sources}
-            onToggle={() => toggleSection('sources')}
+            title="Sources" 
+            defaultOpen={expandedSections.sources}
           >
             <div className="space-y-4 pb-2">
               <div className="flex gap-2">
@@ -509,9 +507,8 @@ export default function TurbulencePage() {
 
           {/* Flow Settings */}
           <CollapsibleSection 
-            title="Flow Settings" 
-            expanded={expandedSections.flowSettings}
-            onToggle={() => toggleSection('flowSettings')}
+            title="Flow" 
+            defaultOpen={expandedSections.flowSettings}
           >
             <div className="space-y-4 pb-2">
               <div className="flex items-center space-x-2">
@@ -551,9 +548,8 @@ export default function TurbulencePage() {
 
           {/* Noise Settings */}
           <CollapsibleSection 
-            title="Noise Settings" 
-            expanded={expandedSections.noiseSettings}
-            onToggle={() => toggleSection('noiseSettings')}
+            title="Noise" 
+            defaultOpen={expandedSections.noiseSettings}
           >
             <div className="space-y-4 pb-2">
               <div className="space-y-2">
@@ -621,8 +617,7 @@ export default function TurbulencePage() {
           {/* Animation Settings - Bottom */}
           <CollapsibleSection 
             title="Animation" 
-            expanded={expandedSections.animation}
-            onToggle={() => toggleSection('animation')}
+            defaultOpen={expandedSections.animation}
           >
             <div className="space-y-4 pb-2">
               <div className="flex items-center space-x-2">
@@ -669,7 +664,7 @@ export default function TurbulencePage() {
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
+        className="w-full h-full cursor-crosshair dark:invert dark:hue-rotate-180"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

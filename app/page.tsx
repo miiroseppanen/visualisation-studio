@@ -163,6 +163,9 @@ export default function HomePage() {
             Professional pattern generation toolkit for creative branding and packaging design. 
             Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.
           </p>
+          <p className="text-base text-muted-foreground mb-12 max-w-2xl">
+            Visualization Studio is designed and developed by <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>, a creative technology agency specializing in digital tools, branding, and interactive experiences for ambitious brands.
+          </p>
           <div className="flex flex-col sm:flex-row gap-6">
             <Button asChild size="lg" className="group w-fit text-base px-8 py-3">
               <Link href="/grid-field">
@@ -186,7 +189,7 @@ export default function HomePage() {
             <Link key={viz.path} href={viz.path} className="block group">
               <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02]">
                 <CardHeader className="pb-4">
-                  <div className="w-full aspect-[3/2] bg-gray-50 rounded-lg overflow-hidden mb-4 transition-transform duration-200 group-hover:scale-[1.01]">
+                  <div className="w-full aspect-[3/2] bg-gray-50 dark:bg-black rounded-lg overflow-hidden mb-4 transition-transform duration-200 group-hover:scale-[1.01] dark:invert dark:hue-rotate-180">
                     <viz.preview />
                   </div>
                   <div className="flex items-center space-x-3">

@@ -45,16 +45,16 @@ export function TurbulenceAnimationControls({
               onClick={toggleAnimation}
               variant={settings.isAnimating ? "default" : "outline"}
               size="sm"
-              className="flex items-center space-x-2"
+              className="flex items-center gap-2"
             >
               {settings.isAnimating ? (
                 <>
-                  <Pause className="h-4 w-4" />
+                  <Pause className="h-3 w-3" />
                   <span>Pause</span>
                 </>
               ) : (
                 <>
-                  <Play className="h-4 w-4" />
+                  <Play className="h-3 w-3" />
                   <span>Play</span>
                 </>
               )}

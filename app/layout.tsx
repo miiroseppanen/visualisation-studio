@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import './globals.css'
+import { ThemeProvider } from '@/components/ui/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'Visualization Studio',
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased bg-background text-foreground">
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

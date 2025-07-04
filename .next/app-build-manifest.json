@@ -31,6 +31,16 @@
       "static/chunks/main-app.js",
       "static/chunks/app/_not-found/page.js"
     ],
+    "/flow-field/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/flow-field/page.js"
+    ],
+    "/turbulence/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/turbulence/page.js"
+    ],
     "/grid-field/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

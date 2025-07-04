@@ -43,17 +43,25 @@ export default function AnimationControls({
       {expanded && (
         <div className="space-y-4 pl-4 mt-4">
           {/* Play/Pause Animation */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center">
             <Button
-              variant="outline"
+              variant={animationSettings.isAnimating ? "default" : "outline"}
               size="sm"
               onClick={() => onUpdateAnimation({ isAnimating: !animationSettings.isAnimating })}
+              className="flex items-center gap-2"
             >
-              {animationSettings.isAnimating ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              {animationSettings.isAnimating ? (
+                <>
+                  <Pause className="h-3 w-3" />
+                  <span>Pause</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-3 w-3" />
+                  <span>Play</span>
+                </>
+              )}
             </Button>
-            <Label className="text-sm">
-              {animationSettings.isAnimating ? 'Pause' : 'Play'} Animation
-            </Label>
           </div>
 
           {/* Wind Strength */}
