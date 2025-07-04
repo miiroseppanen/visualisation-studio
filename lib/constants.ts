@@ -32,7 +32,7 @@ export const COLOR_PALETTE = {
   vortex: '#3B82F6',      // Blue for rotational flow
   source: '#3B82F6',      // Blue for outward flow
   sink: '#EF4444',        // Red for inward flow
-  uniform: '#6B7280',     // Gray for uniform flow
+  uniform: '#86EFAC',     // Pale green for uniform flow
   
   // Topography colors
   peak: '#3B82F6',        // Blue for peaks
