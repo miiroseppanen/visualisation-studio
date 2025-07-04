@@ -50,7 +50,7 @@ export default function TurbulencePage() {
         const updateSize = () => {
           if (canvasRef.current) {
             const rect = canvasRef.current.getBoundingClientRect()
-            handleCanvasResize(rect.width, rect.height)
+            handleCanvasResize({ width: rect.width, height: rect.height })
             if (rendererRef.current) {
               rendererRef.current.resize(rect.width, rect.height)
             }
