@@ -2,6 +2,7 @@ import React from 'react'
 import AppLayout from './AppLayout'
 import { SimpleNavigation } from '@/components/navigation'
 import ControlsPanel from '@/components/ControlsPanel'
+import { useMobileUI } from '@/lib/hooks/useMobileUI'
 import { cn } from '@/lib/utils'
 
 interface VisualizationLayoutProps {
@@ -36,19 +37,26 @@ export default function VisualizationLayout({
   showVisualizationNav = true,
   visualizationNavProps = {}
 }: VisualizationLayoutProps) {
+  const { isUIVisible, isMobile } = useMobileUI()
+
   return (
     <AppLayout showNavigation={false}>
       <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Visualization Navigation */}
         {showVisualizationNav && (
-          <SimpleNavigation 
-            onReset={onReset}
-            onExportSVG={onExportSVG}
-            showBackButton={visualizationNavProps.showBackButton}
-            backButtonText={visualizationNavProps.backButtonText}
-            backButtonFallback={visualizationNavProps.backButtonFallbackPath}
-            additionalActionButtons={visualizationNavProps.additionalActionButtons}
-          />
+          <div className={cn(
+            "transition-all duration-300 ease-in-out",
+            isUIVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full"
+          )}>
+            <SimpleNavigation 
+              onReset={onReset}
+              onExportSVG={onExportSVG}
+              showBackButton={visualizationNavProps.showBackButton}
+              backButtonText={visualizationNavProps.backButtonText}
+              backButtonFallback={visualizationNavProps.backButtonFallbackPath}
+              additionalActionButtons={visualizationNavProps.additionalActionButtons}
+            />
+          </div>
         )}
 
         {/* Main Content Area */}
@@ -61,7 +69,7 @@ export default function VisualizationLayout({
           {/* Status Display - Mobile responsive */}
           <div className={cn(
             "absolute top-2 sm:top-4 left-2 sm:left-4 z-40 pointer-events-none transition-all duration-500 ease-in-out",
-            statusContent && panelOpen 
+            statusContent && panelOpen && isUIVisible
               ? "opacity-100 translate-y-0" 
               : "opacity-0 -translate-y-2 pointer-events-none"
           )}>
@@ -75,7 +83,7 @@ export default function VisualizationLayout({
           {/* Help Text - Mobile responsive */}
           <div className={cn(
             "absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-40 pointer-events-none transition-all duration-500 ease-in-out",
-            helpText && panelOpen 
+            helpText && panelOpen && isUIVisible
               ? "opacity-100 translate-y-0" 
               : "opacity-0 translate-y-2 pointer-events-none"
           )}>
@@ -85,16 +93,30 @@ export default function VisualizationLayout({
               </div>
             </div>
           </div>
+
+          {/* Mobile UI Indicator */}
+          {isMobile && !isUIVisible && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
+              <div className="bg-black/20 backdrop-blur-sm rounded-full p-3 dark:bg-white/20">
+                <div className="w-2 h-2 bg-white rounded-full dark:bg-black"></div>
+              </div>
+            </div>
+          )}
         </main>
 
         {/* Settings Panel - Mobile responsive */}
-        <ControlsPanel 
-          title="Settings" 
-          isOpen={panelOpen} 
-          onToggle={onPanelToggle}
-        >
-          {settingsContent}
-        </ControlsPanel>
+        <div className={cn(
+          "transition-all duration-300 ease-in-out",
+          isUIVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}>
+          <ControlsPanel 
+            title="Settings" 
+            isOpen={panelOpen} 
+            onToggle={onPanelToggle}
+          >
+            {settingsContent}
+          </ControlsPanel>
+        </div>
       </div>
     </AppLayout>
   )

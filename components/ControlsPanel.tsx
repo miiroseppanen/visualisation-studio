@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { Settings, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useMobileUI } from "@/lib/hooks/useMobileUI"
 
 interface ControlsPanelProps {
   children: React.ReactNode
@@ -20,6 +21,7 @@ export default function ControlsPanel({
   onToggle 
 }: ControlsPanelProps) {
   const [panelState, setPanelState] = useState<PanelState>(isOpen ? 'open' : 'closed')
+  const { isUIVisible, isMobile } = useMobileUI()
 
   // Sync with external state
   useEffect(() => {
@@ -65,13 +67,15 @@ export default function ControlsPanel({
         />
       )}
 
-      {/* Toggle Button - Always visible when panel is closed */}
+      {/* Toggle Button - Always visible when panel is closed, respects mobile UI visibility */}
       {!isPanelVisible && (
         <div className={cn(
           // Mobile: Bottom right corner
-          "fixed bottom-4 right-4 z-[60] pointer-events-auto",
+          "fixed bottom-4 right-4 z-[60] pointer-events-auto transition-all duration-300 ease-in-out",
           // Desktop: Top right with margin - moved lower and closer to edge
-          "md:fixed md:top-32 md:right-6 md:bottom-auto md:z-50"
+          "md:fixed md:top-32 md:right-6 md:bottom-auto md:z-50",
+          // Mobile UI visibility
+          isMobile && !isUIVisible ? "opacity-0 pointer-events-none" : "opacity-100"
         )}>
           <button
             onClick={handleToggle}

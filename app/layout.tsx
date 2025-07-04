@@ -2,6 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/ui/ThemeProvider'
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 
 export const metadata: Metadata = {
   title: 'Visualization Studio',
@@ -10,7 +11,24 @@ export const metadata: Metadata = {
     icon: '/h23-logo.svg',
     shortcut: '/h23-logo.svg',
     apple: '/h23-logo.svg'
-  }
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover'
+  },
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' }
+  ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Visualization Studio'
+  },
+  manifest: '/manifest.json'
 }
 
 export default function RootLayout({
@@ -20,9 +38,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Visualization Studio" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+      </head>
       <body className="font-sans antialiased bg-background text-foreground">
         <ThemeProvider>
           {children}
+          <ServiceWorkerRegistration />
         </ThemeProvider>
       </body>
     </html>
