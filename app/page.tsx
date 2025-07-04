@@ -151,7 +151,7 @@ const visualizations = [
 
 export default function HomePage() {
   return (
-    <AppLayout>
+    <AppLayout showNavigation={true} navigationVariant="header">
       {/* Hero Section */}
       <section className="container mx-auto px-8 py-32">
         <div className="max-w-4xl">
@@ -198,23 +198,19 @@ export default function HomePage() {
                     </div>
                     <CardTitle className="text-lg group-hover:text-accent-foreground transition-colors duration-200">{viz.title}</CardTitle>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                  <CardDescription className="text-sm text-muted-foreground leading-relaxed">
                     {viz.description}
                   </CardDescription>
-                  <ul className="space-y-2 mb-6">
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <ul className="space-y-2">
                     {viz.features.map((feature, index) => (
-                      <li key={index} className="text-sm text-muted-foreground flex items-center">
-                        <div className="w-1 h-1 bg-muted-foreground/50 rounded-full mr-2 flex-shrink-0"></div>
+                      <li key={index} className="flex items-center text-sm text-muted-foreground">
+                        <Sparkles className="w-3 h-3 mr-2 text-accent flex-shrink-0" />
                         {feature}
                       </li>
                     ))}
                   </ul>
-                  <div className="flex items-center text-sm font-medium text-accent group-hover:text-accent-foreground transition-colors duration-200">
-                    Open Tool
-                    <ArrowRight className="ml-2 w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
-                  </div>
                 </CardContent>
               </Card>
             </Link>
@@ -222,38 +218,34 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="container mx-auto px-8 py-24">
-        <div className="max-w-4xl">
-          <h3 className="text-4xl font-normal mb-12 text-foreground">
-            Built for Professionals
+      {/* About Section */}
+      <section id="about" className="container mx-auto px-8 py-24">
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-3xl md:text-4xl font-normal mb-8 text-foreground">
+            About Visualization Studio
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="space-y-4">
-              <div className="w-12 h-12 bg-foreground/10 rounded-lg flex items-center justify-center">
-                <Download className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-medium">Export Ready</h4>
-              <p className="text-muted-foreground">
-                Export your patterns as scalable SVG files, perfect for print and digital applications.
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div>
+              <h4 className="text-xl font-medium mb-4 text-foreground">Professional Pattern Generation</h4>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                Visualization Studio provides a comprehensive toolkit for creating sophisticated patterns and textures. 
+                Whether you're designing packaging, branding materials, or digital assets, our tools offer the precision 
+                and flexibility needed for professional results.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Each visualization tool is designed with both creative freedom and technical precision in mind, 
+                allowing you to explore endless possibilities while maintaining control over every aspect of your design.
               </p>
             </div>
-            <div className="space-y-4">
-              <div className="w-12 h-12 bg-foreground/10 rounded-lg flex items-center justify-center">
-                <Play className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-medium">Real-time Preview</h4>
-              <p className="text-muted-foreground">
-                See your patterns update in real-time as you adjust parameters and settings.
+            <div>
+              <h4 className="text-xl font-medium mb-4 text-foreground">Powered by H23</h4>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                Developed by <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>, 
+                a creative technology agency that specializes in building digital tools and experiences for ambitious brands.
               </p>
-            </div>
-            <div className="space-y-4">
-              <div className="w-12 h-12 bg-foreground/10 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-medium">Infinite Possibilities</h4>
-              <p className="text-muted-foreground">
-                Combine multiple pattern types and effects to create truly unique designs.
+              <p className="text-muted-foreground leading-relaxed">
+                Our expertise in creative technology, branding, and interactive experiences informs every aspect 
+                of Visualization Studio, ensuring it meets the needs of professional designers and creative teams.
               </p>
             </div>
           </div>
