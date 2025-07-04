@@ -24,6 +24,9 @@ export default function TurbulencePage() {
     animationSettings,
     panelState,
     sources,
+    particles,
+    initializeParticles,
+    updateParticles,
     isDragging,
     updateTurbulenceSettings,
     updateNoiseSettings,
@@ -40,7 +43,7 @@ export default function TurbulencePage() {
     handleCanvasResize,
   } = useTurbulence()
 
-  // Initialize renderer
+  // Initialize renderer and particles
   useEffect(() => {
     if (canvasRef.current && isClient) {
       try {
@@ -60,6 +63,11 @@ export default function TurbulencePage() {
         updateSize()
         window.addEventListener('resize', updateSize)
         
+        // Initialize particles when flowing mode is enabled
+        if (turbulenceSettings.flowingMode) {
+          initializeParticles(Math.floor(turbulenceSettings.lineCount / 10))
+        }
+        
         return () => {
           window.removeEventListener('resize', updateSize)
         }
@@ -67,16 +75,76 @@ export default function TurbulencePage() {
         console.error('Failed to initialize turbulence renderer:', error)
       }
     }
-  }, [isClient, handleCanvasResize])
+  }, [isClient, handleCanvasResize, turbulenceSettings.flowingMode, turbulenceSettings.lineCount, initializeParticles])
 
   // Client-side only rendering
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  // Render the visualization
+  // Reinitialize particles when flowing mode is toggled
   useEffect(() => {
-    if (rendererRef.current && isClient) {
+    if (isClient && turbulenceSettings.flowingMode) {
+      initializeParticles(Math.floor(turbulenceSettings.lineCount / 10))
+    }
+  }, [isClient, turbulenceSettings.flowingMode, turbulenceSettings.lineCount, initializeParticles])
+
+  // Animation loop for flowing particles
+  useEffect(() => {
+    if (!isClient || !animationSettings.isAnimating || !turbulenceSettings.flowingMode) return
+
+    let animationId: number
+    let lastTime = performance.now()
+
+    const animate = (currentTime: number) => {
+      const deltaTime = currentTime - lastTime
+      lastTime = currentTime
+
+      // Update particles
+      updateParticles(deltaTime)
+
+      // Update animation time
+      updateAnimationSettings({ time: animationSettings.time + deltaTime * 0.01 })
+
+      // Render
+      if (rendererRef.current) {
+        rendererRef.current.renderField(
+          sources,
+          turbulenceSettings,
+          noiseSettings,
+          flowSettings,
+          animationSettings,
+          particles
+        )
+      }
+
+      animationId = requestAnimationFrame(animate)
+    }
+
+    animationId = requestAnimationFrame(animate)
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId)
+      }
+    }
+  }, [
+    isClient, 
+    animationSettings.isAnimating, 
+    turbulenceSettings.flowingMode,
+    sources, 
+    turbulenceSettings, 
+    noiseSettings, 
+    flowSettings, 
+    animationSettings,
+    particles,
+    updateParticles,
+    updateAnimationSettings
+  ])
+
+  // Render the visualization (for non-flowing modes)
+  useEffect(() => {
+    if (rendererRef.current && isClient && !turbulenceSettings.flowingMode) {
       rendererRef.current.renderField(
         sources,
         turbulenceSettings,
