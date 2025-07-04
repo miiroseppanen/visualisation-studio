@@ -12,7 +12,7 @@ import { TopographyDisplaySettings } from '@/components/topography/TopographyDis
 import { AnimationControls } from '@/components/topography/AnimationControls'
 import type { TopographyAnimationSettings } from '@/lib/types'
 import { useTopography } from '@/lib/hooks/useTopography'
-import { TopographyRenderer } from '@/lib/topography-renderer'
+import { TopographyRenderer } from '@/lib/renderers/TopographyRenderer'
 
 export default function TopographyPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -121,7 +121,7 @@ export default function TopographyPage() {
   const handleExportSVG = () => {
     if (rendererRef.current) {
       try {
-        const svg = rendererRef.current.exportAsSVG(
+        const svg = rendererRef.current.exportTopographySVG(
           elevationPoints,
           topographySettings,
           displaySettings

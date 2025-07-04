@@ -20,7 +20,7 @@ export const VISUALIZATION_STYLES = {
 
   // Settings panel styles
   settingsPanel: {
-    container: "fixed top-24 right-4 bottom-4 z-50 pointer-events-none",
+    container: "fixed top-24 right-4 bottom-4 z-50",
     panel: "relative h-full w-80 max-w-[90vw] rounded-md border border-border/20 flex flex-col pointer-events-auto shadow-lg hover:shadow-2xl bg-background/15 hover:bg-background/95 backdrop-blur-sm hover:backdrop-blur-md transition-all duration-500 ease-in-out transform-gpu overflow-hidden",
     topBar: "flex items-center justify-between p-4 border-b border-border/20 bg-background/20 hover:bg-background/90 backdrop-blur-xs hover:backdrop-blur-md transition-all duration-300",
     content: "flex-1 overflow-y-auto bg-background/10 hover:bg-background/80 backdrop-blur-sm hover:backdrop-blur-md transition-all duration-300",

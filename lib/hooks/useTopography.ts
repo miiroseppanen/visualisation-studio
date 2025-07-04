@@ -1,162 +1,148 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
+import { useVisualization } from './useVisualization'
 import type { 
-  TopographyDisplaySettings,
-  TopographyAnimationSettings,
-  TopographyPanelState
+  TopographyDisplaySettings, 
+  TopographyAnimationSettings as BaseTopographyAnimationSettings, 
+  TopographyPanelState as BaseTopographyPanelState 
 } from '../types'
 import type { ElevationPoint, TopographySettings } from '../topography-physics'
 import { generateElevationId, generateElevationName } from '../topography-physics'
 
-export interface UseTopographyReturn {
-  // Settings
-  topographySettings: TopographySettings
+// Topography-specific types that extend the base visualization types
+interface TopographyVisualizationSettings extends TopographySettings {
   displaySettings: TopographyDisplaySettings
-  animationSettings: TopographyAnimationSettings
-  panelState: TopographyPanelState
-  
-  // Elevation points
-  elevationPoints: ElevationPoint[]
-  
-  // Interaction state
-  isDragging: boolean
-  dragPointId: string | null
-  canvasSize: { width: number; height: number }
-  
-  // Update functions
-  updateTopographySettings: (updates: Partial<TopographySettings>) => void
-  updateDisplaySettings: (updates: Partial<TopographyDisplaySettings>) => void
-  updateAnimationSettings: (updates: Partial<TopographyAnimationSettings>) => void
-  updatePanelState: (updates: Partial<TopographyPanelState>) => void
-  
-  // Elevation point management
-  addElevationPoint: (type: ElevationPoint['type'], x?: number, y?: number) => void
-  removeElevationPoint: (id: string) => void
-  updateElevationPoint: (id: string, updates: Partial<ElevationPoint>) => void
-  moveElevationPoint: (id: string, x: number, y: number) => void
-  clearAllElevationPoints: () => void
-  
-  // Interaction handlers
-  handleMouseDown: (event: React.MouseEvent<HTMLCanvasElement>) => void
-  handleMouseMove: (event: React.MouseEvent<HTMLCanvasElement>) => void
-  handleMouseUp: () => void
-  handleCanvasResize: (width: number, height: number) => void
 }
 
-export function useTopography(): UseTopographyReturn {
-  // Settings state
-  const [topographySettings, setTopographySettings] = useState<TopographySettings>({
-    contourInterval: 50,
-    minElevation: 0,
-    maxElevation: 1000,
-    smoothing: 0.3,
-    resolution: 1.0,
-  })
-
-  const [displaySettings, setDisplaySettings] = useState<TopographyDisplaySettings>({
+// Default settings
+const defaultSettings: TopographyVisualizationSettings = {
+  contourInterval: 50,
+  minElevation: 0,
+  maxElevation: 1000,
+  smoothing: 0.3,
+  resolution: 1.0,
+  displaySettings: {
     showElevationPoints: true,
     showContourLines: true,
     showElevationLabels: true,
     showGradientField: false,
     lineWeight: 1.5,
     majorContourWeight: 3.0,
-    majorContourInterval: 5, // Every 5th contour is major
-  })
+    majorContourInterval: 5,
+  }
+}
 
-  const [animationSettings, setAnimationSettings] = useState<TopographyAnimationSettings>({
-    isAnimating: false,
-    windSpeed: 1.0,
-    windDirection: 0,
-    contourPulse: false,
-    time: 0,
-  })
+const defaultAnimationSettings: BaseTopographyAnimationSettings = {
+  isAnimating: false,
+  windSpeed: 1.0,
+  windDirection: 0,
+  contourPulse: false,
+  time: 0,
+}
 
-  const [panelState, setPanelState] = useState<TopographyPanelState>({
-    topographySettingsExpanded: true,
-    elevationPointsExpanded: true,
-    contourSettingsExpanded: false,
-    displaySettingsExpanded: false,
-    animationExpanded: false,
-  })
+const defaultPanelState: BaseTopographyPanelState = {
+  isOpen: true,
+  topographySettingsExpanded: true,
+  elevationPointsExpanded: true,
+  contourSettingsExpanded: false,
+  displaySettingsExpanded: false,
+  animationExpanded: false,
+}
 
-  // Elevation points and interaction state
-  const [elevationPoints, setElevationPoints] = useState<ElevationPoint[]>([
-    {
-      id: generateElevationId(),
-      name: 'Peak 1',
-      x: 300,
-      y: 200,
-      elevation: 800,
-      type: 'peak',
-      radius: 150,
-    },
-    {
-      id: generateElevationId(),
-      name: 'Valley 1',
-      x: 600,
-      y: 400,
-      elevation: 200,
-      type: 'valley',
-      radius: 120,
-    },
-    {
-      id: generateElevationId(),
-      name: 'Peak 2',
-      x: 900,
-      y: 250,
-      elevation: 900,
-      type: 'peak',
-      radius: 100,
-    },
-  ])
+// Initial elevation points
+const initialElevationPoints: ElevationPoint[] = [
+  {
+    id: generateElevationId(),
+    name: 'Peak 1',
+    x: 300,
+    y: 200,
+    elevation: 800,
+    type: 'peak',
+    radius: 150,
+  },
+  {
+    id: generateElevationId(),
+    name: 'Valley 1',
+    x: 600,
+    y: 400,
+    elevation: 200,
+    type: 'valley',
+    radius: 120,
+  },
+  {
+    id: generateElevationId(),
+    name: 'Peak 2',
+    x: 900,
+    y: 250,
+    elevation: 900,
+    type: 'peak',
+    radius: 100,
+  },
+]
 
+export function useTopography() {
+  // Local state for elevation points and interaction
+  const [elevationPoints, setElevationPoints] = useState<ElevationPoint[]>(initialElevationPoints)
   const [isDragging, setIsDragging] = useState(false)
   const [dragPointId, setDragPointId] = useState<string | null>(null)
   const [canvasSize, setCanvasSize] = useState({ width: 1200, height: 800 })
 
-  // Animation loop
-  const animationFrameRef = useRef<number>()
-  const lastTimeRef = useRef<number>(0)
+  // Use the unified visualization hook
+  const visualization = useVisualization<TopographyVisualizationSettings, BaseTopographyAnimationSettings, BaseTopographyPanelState>({
+    initialSettings: defaultSettings,
+    initialAnimationSettings: defaultAnimationSettings,
+    initialPanelState: defaultPanelState,
+    initialPoles: [],
+    resetToDefaults: () => ({
+      settings: defaultSettings,
+      animationSettings: defaultAnimationSettings,
+      panelState: defaultPanelState,
+      poles: [],
+    }),
+  })
 
-  useEffect(() => {
-    if (animationSettings.isAnimating) {
-      const animate = (currentTime: number) => {
-        const deltaTime = currentTime - lastTimeRef.current
-        lastTimeRef.current = currentTime
-
-        setAnimationSettings(prev => ({
-          ...prev,
-          time: prev.time + (deltaTime * 0.001 * prev.windSpeed)
-        }))
-
-        animationFrameRef.current = requestAnimationFrame(animate)
+  // Setup animation using unified utilities
+  React.useEffect(() => {
+    const cleanup = visualization.startAnimation(
+      visualization.animationSettings.isAnimating,
+      (frameTime) => {
+        visualization.updateAnimationSettings({
+          time: visualization.animationSettings.time + frameTime * visualization.animationSettings.windSpeed
+        })
       }
+    )
+    return cleanup
+  }, [visualization.animationSettings.isAnimating, visualization.animationSettings.time, visualization.animationSettings.windSpeed, visualization.startAnimation, visualization.updateAnimationSettings])
 
-      animationFrameRef.current = requestAnimationFrame(animate)
-    }
+  // Extract nested settings for backward compatibility (memoized to prevent infinite loops)
+  const topographySettings: TopographySettings = useMemo(() => ({
+    contourInterval: visualization.settings.contourInterval,
+    minElevation: visualization.settings.minElevation,
+    maxElevation: visualization.settings.maxElevation,
+    smoothing: visualization.settings.smoothing,
+    resolution: visualization.settings.resolution,
+  }), [
+    visualization.settings.contourInterval,
+    visualization.settings.minElevation,
+    visualization.settings.maxElevation,
+    visualization.settings.smoothing,
+    visualization.settings.resolution,
+  ])
 
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-    }
-  }, [animationSettings.isAnimating, animationSettings.windSpeed])
+  const displaySettings = useMemo(() => visualization.settings.displaySettings, [visualization.settings.displaySettings])
 
-  // Update functions
+  // Topography-specific update functions (convenience wrappers)
   const updateTopographySettings = useCallback((updates: Partial<TopographySettings>) => {
-    setTopographySettings(prev => ({ ...prev, ...updates }))
-  }, [])
+    visualization.updateSettings({ ...updates })
+  }, [visualization.updateSettings])
 
   const updateDisplaySettings = useCallback((updates: Partial<TopographyDisplaySettings>) => {
-    setDisplaySettings(prev => ({ ...prev, ...updates }))
-  }, [])
-
-  const updateAnimationSettings = useCallback((updates: Partial<TopographyAnimationSettings>) => {
-    setAnimationSettings(prev => ({ ...prev, ...updates }))
-  }, [])
-
-  const updatePanelState = useCallback((updates: Partial<TopographyPanelState>) => {
-    setPanelState(prev => ({ ...prev, ...updates }))
-  }, [])
+    visualization.updateSettings((prev) => ({
+      displaySettings: { 
+        ...prev.displaySettings, 
+        ...updates 
+      }
+    }))
+  }, [visualization.updateSettings])
 
   // Elevation point management
   const addElevationPoint = useCallback((type: ElevationPoint['type'], x?: number, y?: number) => {
@@ -230,11 +216,14 @@ export function useTopography(): UseTopographyReturn {
   }, [])
 
   return {
-    // Settings
+    // Unified visualization interface
+    ...visualization,
+    
+    // Backward compatibility interface
     topographySettings,
     displaySettings,
-    animationSettings,
-    panelState,
+    animationSettings: visualization.animationSettings,
+    panelState: visualization.panelState,
     
     // Elevation points
     elevationPoints,
@@ -247,8 +236,8 @@ export function useTopography(): UseTopographyReturn {
     // Update functions
     updateTopographySettings,
     updateDisplaySettings,
-    updateAnimationSettings,
-    updatePanelState,
+    updateAnimationSettings: visualization.updateAnimationSettings,
+    updatePanelState: visualization.updatePanelState,
     
     // Elevation point management
     addElevationPoint,
@@ -263,4 +252,6 @@ export function useTopography(): UseTopographyReturn {
     handleMouseUp,
     handleCanvasResize,
   }
-} 
+}
+
+export type UseTopographyReturn = ReturnType<typeof useTopography> 

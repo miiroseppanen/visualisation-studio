@@ -11,6 +11,8 @@ interface VisualizationLayoutProps {
   statusContent?: React.ReactNode
   helpText?: string
   settingsContent: React.ReactNode
+  panelOpen?: boolean
+  onPanelToggle?: () => void
 }
 
 export default function VisualizationLayout({
@@ -19,7 +21,9 @@ export default function VisualizationLayout({
   onExportSVG,
   statusContent,
   helpText,
-  settingsContent
+  settingsContent,
+  panelOpen = true,
+  onPanelToggle
 }: VisualizationLayoutProps) {
   const actionButtons = (
     <>
@@ -70,7 +74,7 @@ export default function VisualizationLayout({
       </main>
       
       {/* Settings Panel */}
-      <ControlsPanel title="Settings">
+      <ControlsPanel title="Settings" isOpen={panelOpen} onToggle={onPanelToggle}>
         {settingsContent}
       </ControlsPanel>
     </div>

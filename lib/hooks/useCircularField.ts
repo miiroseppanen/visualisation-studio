@@ -1,6 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import type { Pole } from '../types'
-import type { CircularFieldDisplaySettings, CircularFieldAnimationSettings, CircularFieldPanelState } from '../types'
+import React, { useState, useCallback } from 'react'
+import { useVisualization } from './useVisualization'
+import type { 
+  Pole, 
+  CircularFieldDisplaySettings, 
+  CircularFieldAnimationSettings, 
+  CircularFieldPanelState 
+} from '../types'
 import { 
   generateInteractiveCircularFieldLines, 
   filterVisibleFieldLines, 
@@ -9,113 +14,131 @@ import {
   type CircularFieldSettings
 } from '../circular-field-physics'
 
+// Circular-specific types that extend the base visualization types
+interface CircularVisualizationSettings extends CircularFieldSettings {
+  displaySettings: CircularFieldDisplaySettings
+}
+
+interface CircularAnimationSettings extends CircularFieldAnimationSettings {}
+
+interface CircularPanelState extends CircularFieldPanelState {}
+
 export function useCircularField() {
-  // Poles state
-  const [poles, setPoles] = useState<Pole[]>([
-    { id: '1', x: 300, y: 200, strength: 5, isPositive: true, name: 'North' },
-    { id: '2', x: 500, y: 200, strength: 5, isPositive: false, name: 'South' }
-  ])
-
-  // Field settings
-  const [fieldSettings, setFieldSettings] = useState<CircularFieldSettings>({
-    lineCount: 8,
-    lineSpacing: 25,
-    lineWeight: 1.5,
-    opacity: 0.8,
-    showPoles: true,
-    animationSpeed: 50
-  })
-
-  // Display settings
-  const [displaySettings, setDisplaySettings] = useState<CircularFieldDisplaySettings>({
-    showFieldLines: true,
-    showPoles: true,
-    showPoleLabels: true,
-    lineWeight: 1.5,
-    opacity: 0.8
-  })
-
-  // Animation settings
-  const [animationSettings, setAnimationSettings] = useState<CircularFieldAnimationSettings>({
-    isAnimating: false,
-    rotationSpeed: 50,
-    pulseEffect: false,
-    time: 0
-  })
-
-  // Panel state
-  const [panelState, setPanelState] = useState<CircularFieldPanelState>({
-    fieldSettingsExpanded: true,
-    polesExpanded: true,
-    displaySettingsExpanded: true,
-    animationExpanded: false
-  })
-
-  // Canvas state
-  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 })
+  // Circular-specific state that's not covered by the base hook
   const [fieldLines, setFieldLines] = useState<CircularFieldLine[]>([])
-  const [draggedPole, setDraggedPole] = useState<Pole | null>(null)
-  
-  // Animation frame ref
-  const animationFrameRef = useRef<number>()
 
-  // Generate field lines
+  // Use the unified visualization hook with circular-specific configuration
+  const visualization = useVisualization<CircularVisualizationSettings, CircularAnimationSettings, CircularPanelState>({
+    initialSettings: {
+      lineCount: 8,
+      lineSpacing: 25,
+      lineWeight: 1.5,
+      opacity: 0.8,
+      showPoles: true,
+      animationSpeed: 50,
+      displaySettings: {
+        showFieldLines: true,
+        showPoles: true,
+        showPoleLabels: true,
+        lineWeight: 1.5,
+        opacity: 0.8
+      }
+    },
+    initialAnimationSettings: {
+      isAnimating: false,
+      rotationSpeed: 50,
+      pulseEffect: false,
+      time: 0
+    },
+    initialPanelState: {
+      isOpen: true,
+      fieldSettingsExpanded: true,
+      polesExpanded: true,
+      displaySettingsExpanded: true,
+      animationExpanded: false
+    },
+    initialPoles: [
+      { id: '1', x: 300, y: 200, strength: 5, isPositive: true, name: 'North' },
+      { id: '2', x: 500, y: 200, strength: 5, isPositive: false, name: 'South' }
+    ],
+    resetToDefaults: () => ({
+      settings: {
+        lineCount: 8,
+        lineSpacing: 25,
+        lineWeight: 1.5,
+        opacity: 0.8,
+        showPoles: true,
+        animationSpeed: 50,
+        displaySettings: {
+          showFieldLines: true,
+          showPoles: true,
+          showPoleLabels: true,
+          lineWeight: 1.5,
+          opacity: 0.8
+        }
+      },
+      animationSettings: {
+        isAnimating: false,
+        rotationSpeed: 50,
+        pulseEffect: false,
+        time: 0
+      },
+      panelState: {
+        isOpen: true,
+        fieldSettingsExpanded: true,
+        polesExpanded: true,
+        displaySettingsExpanded: true,
+        animationExpanded: false
+      },
+      poles: [
+        { id: '1', x: 300, y: 200, strength: 5, isPositive: true, name: 'North' },
+        { id: '2', x: 500, y: 200, strength: 5, isPositive: false, name: 'South' }
+      ]
+    })
+  })
+
+  // Generate field lines (using unified canvas utilities)
   const generateFieldLines = useCallback(() => {
     const lines = generateInteractiveCircularFieldLines(
-      poles,
-      fieldSettings,
-      canvasSize.width,
-      canvasSize.height
+      visualization.poles,
+      visualization.settings,
+      visualization.canvasSize.width,
+      visualization.canvasSize.height
     )
     
     const visibleLines = filterVisibleFieldLines(
       lines,
-      canvasSize.width,
-      canvasSize.height
+      visualization.canvasSize.width,
+      visualization.canvasSize.height
     )
     
     setFieldLines(visibleLines)
-  }, [poles, fieldSettings, canvasSize])
-
-  // Animation loop
-  useEffect(() => {
-    if (animationSettings.isAnimating) {
-      const animate = () => {
-        setAnimationSettings(prev => ({
-          ...prev,
-          time: prev.time + 16 // ~60fps
-        }))
-        animationFrameRef.current = requestAnimationFrame(animate)
-      }
-      animationFrameRef.current = requestAnimationFrame(animate)
-    } else {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-    }
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-    }
-  }, [animationSettings.isAnimating])
+  }, [visualization.poles, visualization.settings, visualization.canvasSize])
 
   // Apply animation to field lines
-  const animatedFieldLines = animationSettings.isAnimating
+  const animatedFieldLines = visualization.animationSettings.isAnimating
     ? animateCircularFieldLines(
         fieldLines,
-        animationSettings.time,
-        animationSettings.rotationSpeed
+        visualization.animationSettings.time,
+        visualization.animationSettings.rotationSpeed
       )
     : fieldLines
 
-  // Regenerate field lines when dependencies change
-  useEffect(() => {
-    generateFieldLines()
-  }, [generateFieldLines])
+  // Circular-specific update functions (convenience wrappers)
+  const updateFieldSettings = useCallback((updates: Partial<CircularFieldSettings>) => {
+    visualization.updateSettings({ ...updates })
+  }, [visualization.updateSettings])
 
-  // Pole management functions
+  const updateDisplaySettings = useCallback((updates: Partial<CircularFieldDisplaySettings>) => {
+    visualization.updateSettings((prev) => ({ 
+      displaySettings: { 
+        ...prev.displaySettings, 
+        ...updates 
+      } 
+    }))
+  }, [visualization.updateSettings])
+
+  // Pole management functions (using unified utilities)
   const addPole = useCallback((x: number, y: number) => {
     const newPole: Pole = {
       id: Date.now().toString(),
@@ -123,94 +146,98 @@ export function useCircularField() {
       y,
       strength: 5,
       isPositive: Math.random() > 0.5,
-      name: `Pole ${poles.length + 1}`
+      name: `Pole ${visualization.poles.length + 1}`
     }
-    setPoles(prev => [...prev, newPole])
-  }, [poles.length])
+    visualization.setPoles([...visualization.poles, newPole])
+  }, [visualization.poles, visualization.setPoles])
 
   const updatePole = useCallback((id: string, updates: Partial<Pole>) => {
-    setPoles(prev => prev.map(pole => 
+    visualization.setPoles(visualization.poles.map(pole => 
       pole.id === id ? { ...pole, ...updates } : pole
     ))
-  }, [])
+  }, [visualization.poles, visualization.setPoles])
 
   const removePole = useCallback((id: string) => {
-    setPoles(prev => prev.filter(pole => pole.id !== id))
-  }, [])
+    visualization.setPoles(visualization.poles.filter(pole => pole.id !== id))
+  }, [visualization.poles, visualization.setPoles])
 
   const movePole = useCallback((id: string, x: number, y: number) => {
-    setPoles(prev => prev.map(pole => 
+    visualization.setPoles(visualization.poles.map(pole => 
       pole.id === id ? { ...pole, x, y } : pole
     ))
-  }, [])
+  }, [visualization.poles, visualization.setPoles])
 
   // Mouse interaction handlers
   const handleMouseDown = useCallback((x: number, y: number, findPoleAt: (x: number, y: number) => Pole | null) => {
     const pole = findPoleAt(x, y)
     if (pole) {
-      setDraggedPole(pole)
+      visualization.setDraggedItemId(pole.id)
+      visualization.setIsDragging(true)
     }
-  }, [])
+  }, [visualization.setDraggedItemId, visualization.setIsDragging])
 
   const handleMouseMove = useCallback((x: number, y: number) => {
-    if (draggedPole) {
-      movePole(draggedPole.id, x, y)
+    if (visualization.isDragging && visualization.draggedItemId) {
+      movePole(visualization.draggedItemId, x, y)
     }
-  }, [draggedPole, movePole])
+  }, [visualization.isDragging, visualization.draggedItemId, movePole])
 
   const handleMouseUp = useCallback(() => {
-    setDraggedPole(null)
-  }, [])
+    visualization.setIsDragging(false)
+    visualization.setDraggedItemId(null)
+  }, [visualization.setIsDragging, visualization.setDraggedItemId])
 
   const handleDoubleClick = useCallback((x: number, y: number) => {
     addPole(x, y)
   }, [addPole])
 
-  // Settings update functions
-  const updateFieldSettings = useCallback((updates: Partial<CircularFieldSettings>) => {
-    setFieldSettings(prev => ({ ...prev, ...updates }))
-  }, [])
+  // Extract nested settings for backward compatibility
+  const fieldSettings: CircularFieldSettings = {
+    lineCount: visualization.settings.lineCount,
+    lineSpacing: visualization.settings.lineSpacing,
+    lineWeight: visualization.settings.lineWeight,
+    opacity: visualization.settings.opacity,
+    showPoles: visualization.settings.showPoles,
+    animationSpeed: visualization.settings.animationSpeed
+  }
 
-  const updateDisplaySettings = useCallback((updates: Partial<CircularFieldDisplaySettings>) => {
-    setDisplaySettings(prev => ({ ...prev, ...updates }))
-  }, [])
+  const displaySettings = visualization.settings.displaySettings
 
-  const updateAnimationSettings = useCallback((updates: Partial<CircularFieldAnimationSettings>) => {
-    setAnimationSettings(prev => ({ ...prev, ...updates }))
-  }, [])
+  // Setup field line generation effect
+  React.useEffect(() => {
+    generateFieldLines()
+  }, [generateFieldLines])
 
-  const updatePanelState = useCallback((updates: Partial<CircularFieldPanelState>) => {
-    setPanelState(prev => ({ ...prev, ...updates }))
-  }, [])
-
-  // Reset function
-  const resetVisualization = useCallback(() => {
-    setPoles([
-      { id: '1', x: 300, y: 200, strength: 5, isPositive: true, name: 'North' },
-      { id: '2', x: 500, y: 200, strength: 5, isPositive: false, name: 'South' }
-    ])
-    setFieldSettings({
-      lineCount: 8,
-      lineSpacing: 25,
-      lineWeight: 1.5,
-      opacity: 0.8,
-      showPoles: true,
-      animationSpeed: 50
-    })
-    setAnimationSettings(prev => ({ ...prev, isAnimating: false, time: 0 }))
-  }, [])
+  // Setup animation using unified utilities
+  React.useEffect(() => {
+    const cleanup = visualization.startAnimation(
+      visualization.animationSettings.isAnimating,
+      (frameTime) => {
+        visualization.updateAnimationSettings({
+          time: visualization.animationSettings.time + frameTime
+        })
+      }
+    )
+    return cleanup
+  }, [visualization.animationSettings.isAnimating, visualization.animationSettings.time, visualization.startAnimation, visualization.updateAnimationSettings])
 
   return {
-    // State
-    poles,
+    // Refs (from base hook)
+    canvasRef: visualization.canvasRef,
+    animationRef: visualization.animationRef,
+    
+    // Circular-specific state
+    fieldLines: animatedFieldLines,
+    
+    // State from base hook with backward compatibility
+    poles: visualization.poles,
     fieldSettings,
     displaySettings,
-    animationSettings,
-    panelState,
-    canvasSize,
-    fieldLines: animatedFieldLines,
-    draggedPole,
-
+    animationSettings: visualization.animationSettings,
+    panelState: visualization.panelState,
+    canvasSize: visualization.canvasSize,
+    draggedPole: visualization.draggedItemId ? visualization.poles.find(p => p.id === visualization.draggedItemId) || null : null,
+    
     // Actions
     addPole,
     updatePole,
@@ -218,11 +245,11 @@ export function useCircularField() {
     movePole,
     updateFieldSettings,
     updateDisplaySettings,
-    updateAnimationSettings,
-    updatePanelState,
-    setCanvasSize,
-    resetVisualization,
-
+    updateAnimationSettings: visualization.updateAnimationSettings,
+    updatePanelState: visualization.updatePanelState,
+    setCanvasSize: visualization.setCanvasSize,
+    resetVisualization: visualization.resetVisualization,
+    
     // Mouse handlers
     handleMouseDown,
     handleMouseMove,

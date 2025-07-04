@@ -55,6 +55,7 @@ export default function FlowFieldPage() {
   
   // Panel state for collapsible sections
   const [panelState, setPanelState] = useState<FlowFieldPanelState>({
+    isOpen: true,
     fieldSettingsExpanded: true,
     polesExpanded: true,
     particleSettingsExpanded: true,
@@ -448,68 +449,66 @@ export default function FlowFieldPage() {
         }
       />
 
-      <div className="flex-1 flex">
+      <div className="flex-1 relative">
         {/* Canvas - Fullscreen */}
-        <div className="flex-1 relative">
-          <canvas
-            ref={canvasRef}
-            className="w-full h-full cursor-crosshair"
-            onMouseDown={handleCanvasMouseDown}
-            onMouseMove={handleCanvasMouseMove}
-            onMouseUp={handleCanvasMouseUp}
-            onMouseLeave={handleCanvasMouseUp}
-            onWheel={handleWheel}
-          />
-          <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
-            Mode: Flow Simulation | 
-            Poles: {poles.length} | 
-            Particles: {particleCount} | 
-            Zoom: {Math.round(zoomLevel * 100)}%
-          </div>
-          <div className="absolute bottom-4 left-4 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
-            Click to add pole, drag to move • Wheel to zoom • Use controls to adjust settings
-          </div>
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full cursor-crosshair"
+          onMouseDown={handleCanvasMouseDown}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseUp={handleCanvasMouseUp}
+          onMouseLeave={handleCanvasMouseUp}
+          onWheel={handleWheel}
+        />
+        <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
+          Mode: Flow Simulation | 
+          Poles: {poles.length} | 
+          Particles: {particleCount} | 
+          Zoom: {Math.round(zoomLevel * 100)}%
         </div>
-
-        {/* Floating Controls Panel */}
-        <ControlsPanel title="Flow Field Controls">
-          <div className="space-y-8">
-            <PoleControls
-              poles={poles}
-              selectedPoleType={selectedPoleType}
-              isAddingPole={isAddingPole}
-              showPoles={showPoles}
-              showFieldLines={showFieldLines}
-              expanded={panelState.polesExpanded}
-              onToggleExpanded={() => setPanelState(prev => ({ ...prev, polesExpanded: !prev.polesExpanded }))}
-              onSetSelectedPoleType={setSelectedPoleType}
-              onSetIsAddingPole={setIsAddingPole}
-              onRemovePole={removePole}
-              onSetShowPoles={setShowPoles}
-              onSetShowFieldLines={setShowFieldLines}
-            />
-
-            <ParticleSettings
-              particleCount={particleCount}
-              particleSpeed={animationSettings.particleSpeed}
-              particleLife={animationSettings.particleLife}
-              expanded={panelState.particleSettingsExpanded}
-              onToggleExpanded={() => setPanelState(prev => ({ ...prev, particleSettingsExpanded: !prev.particleSettingsExpanded }))}
-              onSetParticleCount={setParticleCount}
-              onSetParticleSpeed={(speed) => setAnimationSettings(prev => ({ ...prev, particleSpeed: speed }))}
-              onSetParticleLife={(life) => setAnimationSettings(prev => ({ ...prev, particleLife: life }))}
-            />
-
-            <AnimationControls
-              settings={animationSettings}
-              onSettingsChange={(updates) => setAnimationSettings(prev => ({ ...prev, ...updates }))}
-              onReset={resetToDefaults}
-              expanded={panelState.animationExpanded}
-              onToggleExpanded={() => setPanelState(prev => ({ ...prev, animationExpanded: !prev.animationExpanded }))}
-            />
-          </div>
-        </ControlsPanel>
+        <div className="absolute bottom-4 left-4 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+          Click to add pole, drag to move • Wheel to zoom • Use controls to adjust settings
+        </div>
       </div>
+
+      {/* Floating Controls Panel */}
+      <ControlsPanel title="Flow Field Controls">
+        <div className="space-y-8">
+          <PoleControls
+            poles={poles}
+            selectedPoleType={selectedPoleType}
+            isAddingPole={isAddingPole}
+            showPoles={showPoles}
+            showFieldLines={showFieldLines}
+            expanded={panelState.polesExpanded}
+            onToggleExpanded={() => setPanelState(prev => ({ ...prev, polesExpanded: !prev.polesExpanded }))}
+            onSetSelectedPoleType={setSelectedPoleType}
+            onSetIsAddingPole={setIsAddingPole}
+            onRemovePole={removePole}
+            onSetShowPoles={setShowPoles}
+            onSetShowFieldLines={setShowFieldLines}
+          />
+
+          <ParticleSettings
+            particleCount={particleCount}
+            particleSpeed={animationSettings.particleSpeed}
+            particleLife={animationSettings.particleLife}
+            expanded={panelState.particleSettingsExpanded}
+            onToggleExpanded={() => setPanelState(prev => ({ ...prev, particleSettingsExpanded: !prev.particleSettingsExpanded }))}
+            onSetParticleCount={setParticleCount}
+            onSetParticleSpeed={(speed) => setAnimationSettings(prev => ({ ...prev, particleSpeed: speed }))}
+            onSetParticleLife={(life) => setAnimationSettings(prev => ({ ...prev, particleLife: life }))}
+          />
+
+          <AnimationControls
+            settings={animationSettings}
+            onSettingsChange={(updates) => setAnimationSettings(prev => ({ ...prev, ...updates }))}
+            onReset={resetToDefaults}
+            expanded={panelState.animationExpanded}
+            onToggleExpanded={() => setPanelState(prev => ({ ...prev, animationExpanded: !prev.animationExpanded }))}
+          />
+        </div>
+      </ControlsPanel>
     </div>
   )
 } 

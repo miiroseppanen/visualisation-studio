@@ -1,17 +1,19 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
 import GridSettings from '@/components/grid-field/GridSettings'
 import PoleControls from '@/components/grid-field/PoleControls'
 import AnimationControls from '@/components/grid-field/AnimationControls'
 import { useGridField } from '@/lib/hooks/useGridField'
-import { CanvasRenderer, generateSVGExport, downloadSVG } from '@/lib/canvas-renderer'
+import { GridRenderer } from '@/lib/renderers/GridRenderer'
 import { calculateFieldAt, isPoleClicked, generatePoleId, generatePoleName } from '@/lib/physics'
 import type { GridLine } from '@/lib/types'
 import { POLE_CLICK_RADIUS, ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL, FRAME_TIME } from '@/lib/constants'
 
 export default function GridFieldPage() {
+  const rendererRef = useRef<GridRenderer | null>(null)
+  
   const {
     canvasRef,
     animationRef,
@@ -60,7 +62,8 @@ export default function GridFieldPage() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const renderer = new CanvasRenderer(canvas)
+    const renderer = new GridRenderer(canvas)
+    rendererRef.current = renderer
     
     const resizeCanvas = () => {
       renderer.setupCanvas()
@@ -74,10 +77,9 @@ export default function GridFieldPage() {
   // Generate grid lines
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !rendererRef.current) return
 
-    const renderer = new CanvasRenderer(canvas)
-    const { width, height } = renderer.getDimensions()
+    const { width, height } = rendererRef.current.getDimensions()
 
     // Apply zoom to spacing and line length
     const gridSpacing = gridSettings.spacing * zoomSettings.level
@@ -136,21 +138,20 @@ export default function GridFieldPage() {
   // Canvas drawing
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !rendererRef.current) return
 
-    const renderer = new CanvasRenderer(canvas)
-    renderer.clear()
-    renderer.drawGridLines(gridLines)
-    renderer.drawPoles(poles, zoomSettings.level, gridSettings.showPoles)
-  }, [gridLines, poles, gridSettings.showPoles, zoomSettings.level])
+    rendererRef.current.render(
+      { gridLines, poles, zoomLevel: zoomSettings.level },
+      gridSettings
+    )
+  }, [gridLines, poles, gridSettings, zoomSettings.level])
 
   // Mouse event handlers
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !rendererRef.current) return
 
-    const renderer = new CanvasRenderer(canvas)
-    const { x, y } = renderer.getCanvasCoordinates(e.clientX, e.clientY)
+    const { x, y } = rendererRef.current.getCanvasCoordinates(e.clientX, e.clientY)
 
     // Check if clicking on an existing pole
     const clickedPole = poles.find(pole => isPoleClicked(x, y, pole, POLE_CLICK_RADIUS))
@@ -178,10 +179,9 @@ export default function GridFieldPage() {
     if (!isDragging || !draggedPoleId) return
 
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !rendererRef.current) return
 
-    const renderer = new CanvasRenderer(canvas)
-    const { x, y } = renderer.getCanvasCoordinates(e.clientX, e.clientY)
+    const { x, y } = rendererRef.current.getCanvasCoordinates(e.clientX, e.clientY)
 
     setPoles(poles.map(pole => 
       pole.id === draggedPoleId ? { ...pole, x, y } : pole
@@ -204,8 +204,16 @@ export default function GridFieldPage() {
   }
 
   const exportSVG = () => {
-    const svgContent = generateSVGExport(gridLines, poles, gridSettings.showPoles)
-    downloadSVG(svgContent)
+    if (rendererRef.current) {
+      const svg = rendererRef.current.exportSVG({ gridLines, poles }, gridSettings, { width: 800, height: 600, backgroundColor: '#ffffff' })
+      const blob = new Blob([svg], { type: 'image/svg+xml' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'grid-field.svg'
+      link.click()
+      URL.revokeObjectURL(url)
+    }
   }
 
   return (
@@ -220,6 +228,8 @@ export default function GridFieldPage() {
         </>
       }
       helpText="Click to add pole, drag to move • Wheel to zoom • Toggle individual pole polarity in controls"
+      panelOpen={panelState.isOpen}
+      onPanelToggle={() => updatePanelState({ isOpen: !panelState.isOpen })}
       settingsContent={
         <div className="space-y-8">
           <GridSettings

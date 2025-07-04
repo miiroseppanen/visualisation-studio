@@ -134,6 +134,7 @@ export interface ZoomSettings {
 
 // Grid field panel state
 export interface PanelState {
+  isOpen: boolean
   gridSettingsExpanded: boolean
   defaultDirectionExpanded: boolean
   polesExpanded: boolean
@@ -142,6 +143,7 @@ export interface PanelState {
 
 // Flow field panel state
 export interface FlowFieldPanelState {
+  isOpen: boolean
   fieldSettingsExpanded: boolean
   polesExpanded: boolean
   particleSettingsExpanded: boolean
@@ -150,6 +152,7 @@ export interface FlowFieldPanelState {
 
 // Turbulence panel state
 export interface TurbulencePanelState {
+  isOpen: boolean
   turbulenceExpanded: boolean
   sourcesExpanded: boolean
   flowSettingsExpanded: boolean
@@ -159,6 +162,7 @@ export interface TurbulencePanelState {
 
 // Topography panel state
 export interface TopographyPanelState {
+  isOpen: boolean
   topographySettingsExpanded: boolean
   elevationPointsExpanded: boolean
   contourSettingsExpanded: boolean
@@ -195,6 +199,7 @@ export interface CircularFieldAnimationSettings {
 
 // Circular field panel state
 export interface CircularFieldPanelState {
+  isOpen: boolean
   fieldSettingsExpanded: boolean
   polesExpanded: boolean
   displaySettingsExpanded: boolean
