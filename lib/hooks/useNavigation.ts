@@ -1,5 +1,6 @@
 import { useRouter, usePathname } from 'next/navigation'
 import { useCallback } from 'react'
+import { pauseAllAnimations } from '../utils'
 
 interface NavigationActions {
   navigateToPath: (path: string) => void
@@ -17,10 +18,14 @@ export function useNavigation(): NavigationActions {
   const pathname = usePathname()
 
   const navigateToPath = useCallback((path: string) => {
+    // Pause all animations before navigating to prevent interference
+    pauseAllAnimations()
     router.push(path)
   }, [router])
 
   const navigateBack = useCallback((fallbackPath: string = '/') => {
+    // Pause all animations before navigating to prevent interference
+    pauseAllAnimations()
     if (window.history.length > 1) {
       router.back()
     } else {
@@ -29,6 +34,8 @@ export function useNavigation(): NavigationActions {
   }, [router])
 
   const navigateHome = useCallback(() => {
+    // Pause all animations before navigating to prevent interference
+    pauseAllAnimations()
     router.push('/')
   }, [router])
 

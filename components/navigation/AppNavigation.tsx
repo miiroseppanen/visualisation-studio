@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Grid3X3, Magnet, Wind, Mountain, Radio } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { H23Logo } from '@/components/ui/h23-logo'
+import { useNavigation } from '@/lib/hooks/useNavigation'
 
 interface NavigationItem {
   title: string
@@ -54,14 +55,26 @@ interface AppNavigationProps {
 
 export default function AppNavigation({ variant = 'header', className = '' }: AppNavigationProps) {
   const pathname = usePathname()
+  const { navigateToPath, navigateHome } = useNavigation()
+
+  const handleNavigationClick = (path: string) => {
+    if (path === '/') {
+      navigateHome()
+    } else {
+      navigateToPath(path)
+    }
+  }
 
   if (variant === 'minimal') {
     return (
       <div className={`flex items-center space-x-4 ${className}`}>
-        <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+        <button 
+          onClick={() => handleNavigationClick('/')}
+          className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+        >
           <H23Logo size="md" />
           <span className="text-lg font-normal">Visualization Studio</span>
-        </Link>
+        </button>
       </div>
     )
   }
@@ -70,18 +83,21 @@ export default function AppNavigation({ variant = 'header', className = '' }: Ap
     <header className={`border-b border-border/40 ${className}`}>
       <div className="container mx-auto px-8 py-6">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-4 hover:opacity-80 transition-opacity">
+          <button 
+            onClick={() => handleNavigationClick('/')}
+            className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
+          >
             <H23Logo size="lg" />
             <h1 className="text-xl font-normal">Visualization Studio</h1>
-          </Link>
+          </button>
           
           <nav className="hidden md:flex items-center space-x-8">
             {navigationItems.map(item => {
               const isActive = pathname === item.path
               return (
-                <Link 
+                <button 
                   key={item.path}
-                  href={item.path} 
+                  onClick={() => handleNavigationClick(item.path)}
                   className={`text-sm transition-colors ${
                     isActive 
                       ? 'text-foreground font-medium' 
@@ -89,7 +105,7 @@ export default function AppNavigation({ variant = 'header', className = '' }: Ap
                   }`}
                 >
                   {item.title}
-                </Link>
+                </button>
               )
             })}
           </nav>
