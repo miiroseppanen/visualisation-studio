@@ -4,8 +4,6 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Lightbulb, ThumbsUp, MessageSquare, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -89,42 +87,8 @@ const statusConfig = {
 
 export default function SuggestionsPage() {
   const [suggestions, setSuggestions] = useState<Suggestion[]>(mockSuggestions)
-  const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState('all')
   const [sortBy, setSortBy] = useState<'votes' | 'date'>('votes')
-
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    author: '',
-    category: '',
-    complexity: 'medium' as const
-  })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const newSuggestion: Suggestion = {
-      id: Date.now().toString(),
-      title: formData.title,
-      description: formData.description,
-      author: formData.author,
-      timestamp: new Date(),
-      votes: 0,
-      status: 'pending',
-      category: formData.category,
-      complexity: formData.complexity
-    }
-    
-    setSuggestions(prev => [newSuggestion, ...prev])
-    setFormData({
-      title: '',
-      description: '',
-      author: '',
-      category: '',
-      complexity: 'medium'
-    })
-    setShowForm(false)
-  }
 
   const handleVote = (id: string) => {
     setSuggestions(prev => 
@@ -148,87 +112,12 @@ export default function SuggestionsPage() {
         </p>
         
         <Button 
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => window.location.href = '/suggestions/new'}
           className="w-full mb-4"
         >
           <Plus className="w-4 h-4 mr-2" />
-          {showForm ? 'Cancel' : 'Suggest New Visualization'}
+          Suggest New Visualization
         </Button>
-
-        {showForm && (
-          <Card className="p-4 mb-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Enter visualization title"
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe your visualization idea..."
-                  rows={4}
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="author">Your Name</Label>
-                <Input
-                  id="author"
-                  value={formData.author}
-                  onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
-                  placeholder="Enter your name"
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <select
-                  id="category"
-                  value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full p-2 border border-border rounded-md bg-background"
-                  required
-                >
-                  <option value="">Select category</option>
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <Label htmlFor="complexity">Complexity</Label>
-                <select
-                  id="complexity"
-                  value={formData.complexity}
-                  onChange={(e) => setFormData(prev => ({ ...prev, complexity: e.target.value as any }))}
-                  className="w-full p-2 border border-border rounded-md bg-background"
-                  required
-                >
-                  {complexityLevels.map(level => (
-                    <option key={level.value} value={level.value}>{level.label}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <Button type="submit" className="w-full">
-                Submit Suggestion
-              </Button>
-            </form>
-          </Card>
-        )}
       </div>
 
       <div>

@@ -276,7 +276,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button variant="outline" size="lg" asChild className="px-8 py-3">
-              <Link href="/suggestions">
+              <Link href="/suggestions/new">
                 Submit New Idea
               </Link>
             </Button>
