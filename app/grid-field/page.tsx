@@ -1,17 +1,161 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
 import GridSettings from '@/components/grid-field/GridSettings'
 import PoleControls from '@/components/grid-field/PoleControls'
 import AnimationControls from '@/components/grid-field/AnimationControls'
 import { useGridField } from '@/lib/hooks/useGridField'
-import { CanvasRenderer, generateSVGExport, downloadSVG } from '@/lib/canvas-renderer'
+import { GridRenderer } from '@/lib/renderers/GridRenderer'
 import { calculateFieldAt, isPoleClicked, generatePoleId, generatePoleName } from '@/lib/physics'
 import type { GridLine } from '@/lib/types'
 import { POLE_CLICK_RADIUS, ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL, FRAME_TIME } from '@/lib/constants'
 
+// Grid generation functions
+function generateRectangularGrid(width: number, height: number, spacing: number): { x: number; y: number }[] {
+  const points: { x: number; y: number }[] = []
+  for (let x = spacing / 2; x < width; x += spacing) {
+    for (let y = spacing / 2; y < height; y += spacing) {
+      points.push({ x, y })
+    }
+  }
+  return points
+}
+
+function generateTriangularGrid(width: number, height: number, spacing: number): { x: number; y: number }[] {
+  const points: { x: number; y: number }[] = []
+  const rowHeight = spacing * Math.sqrt(3) / 2
+  
+  for (let row = 0; row * rowHeight < height; row++) {
+    const y = row * rowHeight + spacing / 2
+    const xOffset = row % 2 === 0 ? 0 : spacing / 2
+    
+    for (let col = 0; col * spacing + xOffset < width; col++) {
+      const x = col * spacing + xOffset
+      points.push({ x, y })
+    }
+  }
+  return points
+}
+
+function generateHexagonalGrid(width: number, height: number, spacing: number): { x: number; y: number }[] {
+  const points: { x: number; y: number }[] = []
+  const hexRadius = spacing / 2
+  const hexHeight = hexRadius * Math.sqrt(3)
+  const hexWidth = spacing * 1.5 // Wider spacing for hexagonal pattern
+  
+  for (let row = 0; row * hexHeight < height; row++) {
+    const y = row * hexHeight + hexRadius
+    const xOffset = row % 2 === 0 ? 0 : hexWidth / 2
+    
+    for (let col = 0; col * hexWidth + xOffset < width; col++) {
+      const x = col * hexWidth + xOffset
+      points.push({ x, y })
+    }
+  }
+  return points
+}
+
+function generateRadialGrid(width: number, height: number, spacing: number): { x: number; y: number }[] {
+  const points: { x: number; y: number }[] = []
+  const centerX = width / 2
+  const centerY = height / 2
+  const maxRadius = Math.sqrt(centerX * centerX + centerY * centerY)
+  
+  // Radial lines
+  const numRings = Math.floor(maxRadius / spacing)
+  
+  for (let ring = 1; ring <= numRings; ring++) {
+    const radius = ring * spacing
+    // Number of points increases with radius (circumference)
+    const numPoints = Math.max(8, Math.floor(2 * Math.PI * radius / (spacing * 0.8)))
+    for (let i = 0; i < numPoints; i++) {
+      const theta = (i / numPoints) * 2 * Math.PI
+      const x = centerX + radius * Math.cos(theta)
+      const y = centerY + radius * Math.sin(theta)
+      
+      if (x >= 0 && x < width && y >= 0 && y < height) {
+        points.push({ x, y })
+      }
+    }
+  }
+  
+  // Add center point
+  points.push({ x: centerX, y: centerY })
+  
+  return points
+}
+
+function generateRandomGrid(width: number, height: number, spacing: number): { x: number; y: number }[] {
+  const points: { x: number; y: number }[] = []
+  const numPoints = Math.floor((width * height) / (spacing * spacing * 2)) // Slightly fewer points for better spacing
+  
+  // Create a grid of potential positions and randomly select from them
+  const potentialPositions: { x: number; y: number }[] = []
+  const gridSize = spacing * 1.5 // Slightly larger than spacing to avoid clustering
+  
+  for (let x = gridSize / 2; x < width; x += gridSize) {
+    for (let y = gridSize / 2; y < height; y += gridSize) {
+      potentialPositions.push({ x, y })
+    }
+  }
+  
+  // Randomly select positions with some jitter
+  for (let i = 0; i < Math.min(numPoints, potentialPositions.length); i++) {
+    const randomIndex = Math.floor(Math.random() * potentialPositions.length)
+    const basePos = potentialPositions.splice(randomIndex, 1)[0]
+    
+    // Add some random jitter within the grid cell
+    const jitterX = (Math.random() - 0.5) * spacing * 0.8
+    const jitterY = (Math.random() - 0.5) * spacing * 0.8
+    
+    points.push({
+      x: Math.max(0, Math.min(width, basePos.x + jitterX)),
+      y: Math.max(0, Math.min(height, basePos.y + jitterY))
+    })
+  }
+  
+  return points
+}
+
+function generateSpiralGrid(width: number, height: number, spacing: number): { x: number; y: number }[] {
+  const points: { x: number; y: number }[] = []
+  const centerX = width / 2
+  const centerY = height / 2
+  const maxRadius = Math.sqrt(centerX * centerX + centerY * centerY)
+  
+  // Spiral parameters
+  const spiralSpacing = spacing * 0.8
+  const numTurns = Math.floor(maxRadius / spiralSpacing)
+  const pointsPerTurn = 8
+  
+  for (let turn = 0; turn < numTurns; turn++) {
+    const radius = turn * spiralSpacing
+    
+    for (let i = 0; i < pointsPerTurn; i++) {
+      const angle = (i / pointsPerTurn) * 2 * Math.PI + turn * 0.3 // Add some rotation per turn
+      const x = centerX + radius * Math.cos(angle)
+      const y = centerY + radius * Math.sin(angle)
+      
+      if (x >= 0 && x < width && y >= 0 && y < height) {
+        points.push({ x, y })
+      }
+    }
+  }
+  
+  // Add center point
+  points.push({ x: centerX, y: centerY })
+  
+  return points
+}
+
 export default function GridFieldPage() {
+  const rendererRef = useRef<GridRenderer | null>(null)
+  // Store random grid points in a ref so they persist
+  const randomGridPointsRef = useRef<{ x: number; y: number }[] | null>(null)
+  // Track the last used width, height, and spacing for random grid
+  const [randomGridMeta, setRandomGridMeta] = useState<{ width: number; height: number; spacing: number } | null>(null)
+
   const {
     canvasRef,
     animationRef,
@@ -60,7 +204,8 @@ export default function GridFieldPage() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const renderer = new CanvasRenderer(canvas)
+    const renderer = new GridRenderer(canvas)
+    rendererRef.current = renderer
     
     const resizeCanvas = () => {
       renderer.setupCanvas()
@@ -71,27 +216,66 @@ export default function GridFieldPage() {
     return () => window.removeEventListener('resize', resizeCanvas)
   }, [])
 
+  // Generate and persist random grid points only when needed
+  useEffect(() => {
+    if (!rendererRef.current || gridSettings.type !== 'random') return
+    const { width, height } = rendererRef.current.getDimensions()
+    const gridSpacing = gridSettings.spacing * zoomSettings.level
+    // Only regenerate if meta changes
+    if (
+      !randomGridMeta ||
+      randomGridMeta.width !== width ||
+      randomGridMeta.height !== height ||
+      randomGridMeta.spacing !== gridSpacing
+    ) {
+      randomGridPointsRef.current = generateRandomGrid(width, height, gridSpacing)
+      setRandomGridMeta({ width, height, spacing: gridSpacing })
+    }
+  }, [gridSettings.type, gridSettings.spacing, zoomSettings.level, randomGridMeta])
+
   // Generate grid lines
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !rendererRef.current) return
 
-    const renderer = new CanvasRenderer(canvas)
-    const { width, height } = renderer.getDimensions()
+    const { width, height } = rendererRef.current.getDimensions()
 
     // Apply zoom to spacing and line length
     const gridSpacing = gridSettings.spacing * zoomSettings.level
     const lineLength = gridSettings.lineLength * zoomSettings.level
 
-    const newLines: GridLine[] = []
-    const gridPoints: { x: number; y: number }[] = []
-
-    // Generate grid points
-    for (let x = gridSpacing / 2; x < width; x += gridSpacing) {
-      for (let y = gridSpacing / 2; y < height; y += gridSpacing) {
-        gridPoints.push({ x, y })
-      }
+    // Generate grid points based on type
+    let gridPoints: { x: number; y: number }[] = []
+    
+    switch (gridSettings.type) {
+      case 'rectangular':
+        gridPoints = generateRectangularGrid(width, height, gridSpacing)
+        break
+      case 'triangular':
+        gridPoints = generateTriangularGrid(width, height, gridSpacing)
+        break
+      case 'hexagonal':
+        gridPoints = generateHexagonalGrid(width, height, gridSpacing)
+        break
+      case 'radial':
+        gridPoints = generateRadialGrid(width, height, gridSpacing)
+        break
+      case 'random':
+        // Use persisted random points
+        if (!randomGridPointsRef.current) {
+          randomGridPointsRef.current = generateRandomGrid(width, height, gridSpacing)
+          setRandomGridMeta({ width, height, spacing: gridSpacing })
+        }
+        gridPoints = randomGridPointsRef.current
+        break
+      case 'spiral':
+        gridPoints = generateSpiralGrid(width, height, gridSpacing)
+        break
+      default:
+        gridPoints = generateRectangularGrid(width, height, gridSpacing)
     }
+
+    const newLines: GridLine[] = []
 
     // Calculate field lines for each grid point
     gridPoints.forEach(point => {
@@ -136,21 +320,20 @@ export default function GridFieldPage() {
   // Canvas drawing
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !rendererRef.current) return
 
-    const renderer = new CanvasRenderer(canvas)
-    renderer.clear()
-    renderer.drawGridLines(gridLines)
-    renderer.drawPoles(poles, zoomSettings.level, gridSettings.showPoles)
-  }, [gridLines, poles, gridSettings.showPoles, zoomSettings.level])
+    rendererRef.current.render(
+      { gridLines, poles, zoomLevel: zoomSettings.level },
+      gridSettings
+    )
+  }, [gridLines, poles, gridSettings, zoomSettings.level])
 
   // Mouse event handlers
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !rendererRef.current) return
 
-    const renderer = new CanvasRenderer(canvas)
-    const { x, y } = renderer.getCanvasCoordinates(e.clientX, e.clientY)
+    const { x, y } = rendererRef.current.getCanvasCoordinates(e.clientX, e.clientY)
 
     // Check if clicking on an existing pole
     const clickedPole = poles.find(pole => isPoleClicked(x, y, pole, POLE_CLICK_RADIUS))
@@ -178,10 +361,9 @@ export default function GridFieldPage() {
     if (!isDragging || !draggedPoleId) return
 
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !rendererRef.current) return
 
-    const renderer = new CanvasRenderer(canvas)
-    const { x, y } = renderer.getCanvasCoordinates(e.clientX, e.clientY)
+    const { x, y } = rendererRef.current.getCanvasCoordinates(e.clientX, e.clientY)
 
     setPoles(poles.map(pole => 
       pole.id === draggedPoleId ? { ...pole, x, y } : pole
@@ -204,8 +386,16 @@ export default function GridFieldPage() {
   }
 
   const exportSVG = () => {
-    const svgContent = generateSVGExport(gridLines, poles, gridSettings.showPoles)
-    downloadSVG(svgContent)
+    if (rendererRef.current) {
+      const svg = rendererRef.current.exportSVG({ gridLines, poles }, gridSettings, { width: 800, height: 600, backgroundColor: '#ffffff' })
+      const blob = new Blob([svg], { type: 'image/svg+xml' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'grid-field.svg'
+      link.click()
+      URL.revokeObjectURL(url)
+    }
   }
 
   return (
@@ -220,6 +410,8 @@ export default function GridFieldPage() {
         </>
       }
       helpText="Click to add pole, drag to move • Wheel to zoom • Toggle individual pole polarity in controls"
+      panelOpen={panelState.isOpen}
+      onPanelToggle={() => updatePanelState({ isOpen: !panelState.isOpen })}
       settingsContent={
         <div className="space-y-8">
           <GridSettings

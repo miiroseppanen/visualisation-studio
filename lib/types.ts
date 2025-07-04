@@ -1,3 +1,5 @@
+import type { TurbulenceSource } from './turbulence-physics'
+
 export interface GridLine {
   x: number
   y: number
@@ -39,7 +41,7 @@ export interface FieldVector {
 export interface GridSettings {
   spacing: number
   lineLength: number
-  type: 'rectangular' | 'triangular'
+  type: 'rectangular' | 'triangular' | 'hexagonal' | 'radial' | 'random' | 'spiral'
   curveStiffness: number
   showPoles: boolean
 }
@@ -50,6 +52,7 @@ export interface TurbulenceSettings {
   lineLength: number
   showSources: boolean
   streamlineMode: boolean // true for streamlines, false for grid vectors
+  sources: TurbulenceSource[]
 }
 
 export interface NoiseSettings {
@@ -134,6 +137,7 @@ export interface ZoomSettings {
 
 // Grid field panel state
 export interface PanelState {
+  isOpen: boolean
   gridSettingsExpanded: boolean
   defaultDirectionExpanded: boolean
   polesExpanded: boolean
@@ -142,6 +146,7 @@ export interface PanelState {
 
 // Flow field panel state
 export interface FlowFieldPanelState {
+  isOpen: boolean
   fieldSettingsExpanded: boolean
   polesExpanded: boolean
   particleSettingsExpanded: boolean
@@ -150,6 +155,7 @@ export interface FlowFieldPanelState {
 
 // Turbulence panel state
 export interface TurbulencePanelState {
+  isOpen: boolean
   turbulenceExpanded: boolean
   sourcesExpanded: boolean
   flowSettingsExpanded: boolean
@@ -159,6 +165,7 @@ export interface TurbulencePanelState {
 
 // Topography panel state
 export interface TopographyPanelState {
+  isOpen: boolean
   topographySettingsExpanded: boolean
   elevationPointsExpanded: boolean
   contourSettingsExpanded: boolean
@@ -195,8 +202,15 @@ export interface CircularFieldAnimationSettings {
 
 // Circular field panel state
 export interface CircularFieldPanelState {
+  isOpen: boolean
   fieldSettingsExpanded: boolean
   polesExpanded: boolean
   displaySettingsExpanded: boolean
   animationExpanded: boolean
+}
+
+interface TurbulenceVisualizationSettings extends TurbulenceSettings {
+  noiseSettings: NoiseSettings
+  flowSettings: FlowSettings
+  sources: TurbulenceSource[]
 } 

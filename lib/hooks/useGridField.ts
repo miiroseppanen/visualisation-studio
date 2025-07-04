@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react'
+import { useState, useCallback, useMemo } from 'react'
+import { useVisualization } from './useVisualization'
 import type { 
   Pole, 
   GridLine, 
@@ -23,153 +24,176 @@ import {
   INITIAL_POLE
 } from '../constants'
 
+// Grid-specific types that extend the base visualization types
+interface GridVisualizationSettings extends GridSettings {
+  directionSettings: DirectionSettings
+  polaritySettings: PolaritySettings
+  zoomSettings: ZoomSettings
+}
+
+interface GridAnimationSettings extends AnimationSettings {}
+
+interface GridPanelState extends PanelState {}
+
 export function useGridField() {
-  // Refs
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationRef = useRef<number>()
-
-  // Core state
+  // Grid-specific state that's not covered by the base hook
   const [gridLines, setGridLines] = useState<GridLine[]>([])
-  const [poles, setPoles] = useState<Pole[]>([INITIAL_POLE])
-  
-  // Grid settings
-  const [gridSettings, setGridSettings] = useState<GridSettings>({
-    spacing: DEFAULT_GRID_SPACING,
-    lineLength: DEFAULT_LINE_LENGTH,
-    type: 'rectangular',
-    curveStiffness: DEFAULT_CURVE_STIFFNESS,
-    showPoles: true
-  })
 
-  // Animation settings
-  const [animationSettings, setAnimationSettings] = useState<AnimationSettings>({
-    isAnimating: true,
-    windStrength: DEFAULT_WIND_STRENGTH,
-    windSpeed: DEFAULT_WIND_SPEED,
-    time: 0
-  })
-
-  // Direction settings
-  const [directionSettings, setDirectionSettings] = useState<DirectionSettings>({
-    enabled: true,
-    angle: DEFAULT_DIRECTION_ANGLE,
-    strength: DEFAULT_DIRECTION_STRENGTH
-  })
-
-  // Polarity settings
-  const [polaritySettings, setPolaritySettings] = useState<PolaritySettings>({
-    attractToPoles: true
-  })
-
-  // Zoom settings
-  const [zoomSettings, setZoomSettings] = useState<ZoomSettings>({
-    level: DEFAULT_ZOOM_LEVEL,
-    baseGridSpacing: BASE_GRID_SPACING,
-    baseLineLength: BASE_LINE_LENGTH
-  })
-
-  // Interaction state
-  const [isDragging, setIsDragging] = useState(false)
-  const [draggedPoleId, setDraggedPoleId] = useState<string | null>(null)
-
-  // Panel state
-  const [panelState, setPanelState] = useState<PanelState>({
-    gridSettingsExpanded: true,
-    defaultDirectionExpanded: true,
-    polesExpanded: true,
-    animationExpanded: true
-  })
-
-  // Update functions
-  const updateGridSettings = (updates: Partial<GridSettings>) => {
-    setGridSettings(prev => ({ ...prev, ...updates }))
-  }
-
-  const updateAnimationSettings = (updates: Partial<AnimationSettings>) => {
-    setAnimationSettings(prev => ({ ...prev, ...updates }))
-  }
-
-  const updateDirectionSettings = (updates: Partial<DirectionSettings>) => {
-    setDirectionSettings(prev => ({ ...prev, ...updates }))
-  }
-
-  const updatePolaritySettings = (updates: Partial<PolaritySettings>) => {
-    setPolaritySettings(prev => ({ ...prev, ...updates }))
-  }
-
-  const updateZoomSettings = (updates: Partial<ZoomSettings>) => {
-    setZoomSettings(prev => ({ ...prev, ...updates }))
-  }
-
-  const updatePanelState = (updates: Partial<PanelState>) => {
-    setPanelState(prev => ({ ...prev, ...updates }))
-  }
-
-  // Reset function
-  const resetAllSettings = () => {
-    setPoles([INITIAL_POLE])
-    setGridSettings({
+  // Use the unified visualization hook with grid-specific configuration
+  const visualization = useVisualization<GridVisualizationSettings, GridAnimationSettings, GridPanelState>({
+    initialSettings: {
       spacing: DEFAULT_GRID_SPACING,
       lineLength: DEFAULT_LINE_LENGTH,
       type: 'rectangular',
       curveStiffness: DEFAULT_CURVE_STIFFNESS,
-      showPoles: true
-    })
-    setAnimationSettings({
+      showPoles: true,
+      directionSettings: {
+        enabled: true,
+        angle: DEFAULT_DIRECTION_ANGLE,
+        strength: DEFAULT_DIRECTION_STRENGTH
+      },
+      polaritySettings: {
+        attractToPoles: true
+      },
+      zoomSettings: {
+        level: DEFAULT_ZOOM_LEVEL,
+        baseGridSpacing: BASE_GRID_SPACING,
+        baseLineLength: BASE_LINE_LENGTH
+      }
+    },
+    initialAnimationSettings: {
       isAnimating: true,
       windStrength: DEFAULT_WIND_STRENGTH,
       windSpeed: DEFAULT_WIND_SPEED,
       time: 0
-    })
-    setDirectionSettings({
-      enabled: true,
-      angle: DEFAULT_DIRECTION_ANGLE,
-      strength: DEFAULT_DIRECTION_STRENGTH
-    })
-    setPolaritySettings({
-      attractToPoles: true
-    })
-    setZoomSettings({
-      level: DEFAULT_ZOOM_LEVEL,
-      baseGridSpacing: BASE_GRID_SPACING,
-      baseLineLength: BASE_LINE_LENGTH
-    })
-    setPanelState({
+    },
+    initialPanelState: {
+      isOpen: true,
       gridSettingsExpanded: true,
       defaultDirectionExpanded: true,
       polesExpanded: true,
       animationExpanded: true
+    },
+    initialPoles: [INITIAL_POLE],
+    resetToDefaults: () => ({
+      settings: {
+        spacing: DEFAULT_GRID_SPACING,
+        lineLength: DEFAULT_LINE_LENGTH,
+        type: 'rectangular',
+        curveStiffness: DEFAULT_CURVE_STIFFNESS,
+        showPoles: true,
+        directionSettings: {
+          enabled: true,
+          angle: DEFAULT_DIRECTION_ANGLE,
+          strength: DEFAULT_DIRECTION_STRENGTH
+        },
+        polaritySettings: {
+          attractToPoles: true
+        },
+        zoomSettings: {
+          level: DEFAULT_ZOOM_LEVEL,
+          baseGridSpacing: BASE_GRID_SPACING,
+          baseLineLength: BASE_LINE_LENGTH
+        }
+      },
+      animationSettings: {
+        isAnimating: true,
+        windStrength: DEFAULT_WIND_STRENGTH,
+        windSpeed: DEFAULT_WIND_SPEED,
+        time: 0
+      },
+      panelState: {
+        isOpen: true,
+        gridSettingsExpanded: true,
+        defaultDirectionExpanded: true,
+        polesExpanded: true,
+        animationExpanded: true
+      },
+      poles: [INITIAL_POLE]
     })
-  }
+  })
+
+  // Grid-specific update functions (convenience wrappers)
+  const updateGridSettings = useCallback((updates: Partial<GridSettings>) => {
+    visualization.updateSettings({ ...updates })
+  }, [visualization.updateSettings])
+
+  const updateDirectionSettings = useCallback((updates: Partial<DirectionSettings>) => {
+    visualization.updateSettings((prev) => ({ 
+      directionSettings: { 
+        ...prev.directionSettings, 
+        ...updates 
+      } 
+    }))
+  }, [visualization.updateSettings])
+
+  const updatePolaritySettings = useCallback((updates: Partial<PolaritySettings>) => {
+    visualization.updateSettings((prev) => ({ 
+      polaritySettings: { 
+        ...prev.polaritySettings, 
+        ...updates 
+      } 
+    }))
+  }, [visualization.updateSettings])
+
+  const updateZoomSettings = useCallback((updates: Partial<ZoomSettings>) => {
+    visualization.updateSettings((prev) => ({ 
+      zoomSettings: { 
+        ...prev.zoomSettings, 
+        ...updates 
+      } 
+    }))
+  }, [visualization.updateSettings])
+
+  // Extract nested settings for backward compatibility (memoized to prevent infinite loops)
+  const gridSettings: GridSettings = useMemo(() => ({
+    spacing: visualization.settings.spacing,
+    lineLength: visualization.settings.lineLength,
+    type: visualization.settings.type,
+    curveStiffness: visualization.settings.curveStiffness,
+    showPoles: visualization.settings.showPoles
+  }), [
+    visualization.settings.spacing,
+    visualization.settings.lineLength,
+    visualization.settings.type,
+    visualization.settings.curveStiffness,
+    visualization.settings.showPoles
+  ])
+
+  const directionSettings = useMemo(() => visualization.settings.directionSettings, [visualization.settings.directionSettings])
+  const polaritySettings = useMemo(() => visualization.settings.polaritySettings, [visualization.settings.polaritySettings])
+  const zoomSettings = useMemo(() => visualization.settings.zoomSettings, [visualization.settings.zoomSettings])
 
   return {
-    // Refs
-    canvasRef,
-    animationRef,
+    // Refs (from base hook)
+    canvasRef: visualization.canvasRef,
+    animationRef: visualization.animationRef,
     
-    // State
+    // Grid-specific state
     gridLines,
     setGridLines,
-    poles,
-    setPoles,
+    
+    // State from base hook with backward compatibility
+    poles: visualization.poles,
+    setPoles: visualization.setPoles,
     gridSettings,
-    animationSettings,
+    animationSettings: visualization.animationSettings,
     directionSettings,
     polaritySettings,
     zoomSettings,
-    isDragging,
-    setIsDragging,
-    draggedPoleId,
-    setDraggedPoleId,
-    panelState,
+    isDragging: visualization.isDragging,
+    setIsDragging: visualization.setIsDragging,
+    draggedPoleId: visualization.draggedItemId,
+    setDraggedPoleId: visualization.setDraggedItemId,
+    panelState: visualization.panelState,
     
     // Update functions
     updateGridSettings,
-    updateAnimationSettings,
+    updateAnimationSettings: visualization.updateAnimationSettings,
     updateDirectionSettings,
     updatePolaritySettings,
     updateZoomSettings,
-    updatePanelState,
-    resetAllSettings
+    updatePanelState: visualization.updatePanelState,
+    resetAllSettings: visualization.resetVisualization
   }
 } 

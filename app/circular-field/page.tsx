@@ -4,22 +4,20 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Download, RotateCcw } from 'lucide-react'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
-import { CircularFieldRenderer } from '@/lib/circular-field-renderer'
+import { CircularFieldRenderer } from '@/lib/renderers/CircularFieldRenderer'
 import { useCircularField } from '@/lib/hooks/useCircularField'
 import { FieldSettings } from '@/components/circular-field/FieldSettings'
 import { PoleControls } from '@/components/circular-field/PoleControls'
 import { DisplaySettings } from '@/components/circular-field/DisplaySettings'
 import { AnimationControls } from '@/components/circular-field/AnimationControls'
-import VisualizationNav from '@/components/VisualizationNav'
-import ControlsPanel from '@/components/ControlsPanel'
+import VisualizationLayout from '@/components/layout/VisualizationLayout'
 
 export default function CircularFieldPage() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<CircularFieldRenderer | null>(null)
-  const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
 
   const {
+    canvasRef,
     poles,
     fieldSettings,
     displaySettings,
@@ -43,40 +41,48 @@ export default function CircularFieldPage() {
 
   // Initialize canvas and renderer
   useEffect(() => {
-    setIsClient(true)
-    if (canvasRef.current) {
-      rendererRef.current = new CircularFieldRenderer(canvasRef.current)
-      
-      const updateSize = () => {
-        const canvas = canvasRef.current
-        if (canvas && rendererRef.current) {
-          const rect = canvas.getBoundingClientRect()
-          const width = rect.width
-          const height = rect.height
-          rendererRef.current.resize(width, height)
-          setCanvasSize({ width, height })
-        }
-      }
+    const canvas = canvasRef.current
+    if (!canvas) return
 
-      updateSize()
-      window.addEventListener('resize', updateSize)
-      return () => window.removeEventListener('resize', updateSize)
+    const renderer = new CircularFieldRenderer(canvas)
+    rendererRef.current = renderer
+    
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      const width = rect.width
+      const height = rect.height
+      renderer.setupCanvas()
+      setCanvasSize({ width, height })
     }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+    return () => window.removeEventListener('resize', resizeCanvas)
   }, [setCanvasSize])
 
   // Render the visualization
   useEffect(() => {
-    if (rendererRef.current && isClient) {
-      rendererRef.current.renderCircularField(poles, fieldLines, displaySettings)
-    }
-  }, [poles, fieldLines, displaySettings, isClient])
+    const canvas = canvasRef.current
+    if (!canvas || !rendererRef.current) return
+
+    rendererRef.current.renderCircularField(poles, fieldLines, displaySettings)
+  }, [poles, fieldLines, displaySettings])
 
   // Mouse event handlers
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     if (!rendererRef.current) return
     const coords = rendererRef.current.getCanvasCoordinates(e.clientX, e.clientY)
-    const findPoleAt = (x: number, y: number) => 
-      rendererRef.current?.findPoleAt(x, y, poles) || null
+    const findPoleAt = (x: number, y: number) => {
+      for (const pole of poles) {
+        const dx = x - pole.x
+        const dy = y - pole.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+        if (distance <= 15) {
+          return pole
+        }
+      }
+      return null
+    }
     
     const existingPole = findPoleAt(coords.x, coords.y)
     if (!existingPole) {
@@ -114,7 +120,7 @@ export default function CircularFieldPage() {
   // Export as SVG
   const exportSVG = () => {
     if (rendererRef.current) {
-      const svg = rendererRef.current.exportAsSVG(poles, fieldLines, displaySettings)
+      const svg = rendererRef.current.exportCircularFieldSVG(poles, fieldLines, displaySettings)
       const blob = new Blob([svg], { type: 'image/svg+xml' })
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -126,95 +132,75 @@ export default function CircularFieldPage() {
   }
 
   return (
-    <div className="h-screen bg-background flex flex-col">
-      <VisualizationNav 
-        actionButtons={
-          <>
-            <Button variant="ghost" size="sm" onClick={resetVisualization}>
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Reset
-            </Button>
-            <Button size="sm" onClick={exportSVG}>
-              <Download className="w-4 h-4 mr-2" />
-              SVG
-            </Button>
-          </>
-        }
-      />
-
-      <div className="flex-1 flex">
-        {/* Canvas - Fullscreen */}
-        <div className="flex-1 relative">
-          <canvas
-            ref={canvasRef}
-            className="w-full h-full cursor-crosshair"
-            style={{ cursor: draggedPole ? 'grabbing' : 'crosshair' }}
-            onMouseDown={handleCanvasMouseDown}
-            onMouseMove={handleCanvasMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onWheel={handleWheel}
+    <VisualizationLayout
+      onReset={resetVisualization}
+      onExportSVG={exportSVG}
+      statusContent={
+        <>
+          Poles: {poles.length} | 
+          Field Lines: {fieldLines.length} | 
+          Zoom: {Math.round(zoomLevel * 100)}% | 
+          Mode: {draggedPole ? 'Dragging' : 'Ready'}
+          {animationSettings.isAnimating && (
+            <span className="text-blue-600"> | ● Animating</span>
+          )}
+        </>
+      }
+      helpText="Click to add pole, drag to move • Wheel to zoom • Circular field lines around magnetic poles"
+      panelOpen={panelState.isOpen}
+      onPanelToggle={() => updatePanelState({ isOpen: !panelState.isOpen })}
+      settingsContent={
+        <div className="space-y-8">
+          <FieldSettings
+            settings={fieldSettings}
+            onSettingsChange={updateFieldSettings}
+            isExpanded={panelState.fieldSettingsExpanded}
+            onToggle={() => updatePanelState({ 
+              fieldSettingsExpanded: !panelState.fieldSettingsExpanded 
+            })}
           />
-          
-          {/* Status overlay */}
-          <div className="absolute top-4 left-4 text-sm text-muted-foreground bg-background/80 px-2 py-1 rounded">
-            Poles: {poles.length} | 
-            Field Lines: {fieldLines.length} | 
-            Zoom: {Math.round(zoomLevel * 100)}% | 
-            Mode: {draggedPole ? 'Dragging' : 'Ready'}
-            {animationSettings.isAnimating && (
-              <span className="text-blue-600"> | ● Animating</span>
-            )}
-          </div>
-          
-          <div className="absolute bottom-4 left-4 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
-            Click to add pole, drag to move • Wheel to zoom • Circular field lines around magnetic poles
-          </div>
+
+          <PoleControls
+            poles={poles}
+            onPoleUpdate={updatePole}
+            onPoleRemove={removePole}
+            isExpanded={panelState.polesExpanded}
+            onToggle={() => updatePanelState({ 
+              polesExpanded: !panelState.polesExpanded 
+            })}
+          />
+
+          <DisplaySettings
+            settings={displaySettings}
+            onSettingsChange={updateDisplaySettings}
+            isExpanded={panelState.displaySettingsExpanded}
+            onToggle={() => updatePanelState({ 
+              displaySettingsExpanded: !panelState.displaySettingsExpanded 
+            })}
+          />
+
+          <AnimationControls
+            settings={animationSettings}
+            onSettingsChange={updateAnimationSettings}
+            onReset={resetVisualization}
+            isExpanded={panelState.animationExpanded}
+            onToggle={() => updatePanelState({ 
+              animationExpanded: !panelState.animationExpanded 
+            })}
+          />
         </div>
-
-        {/* Floating Controls Panel */}
-        <ControlsPanel title="Circular Field Controls">
-          <div className="space-y-8">
-            <FieldSettings
-              settings={fieldSettings}
-              onSettingsChange={updateFieldSettings}
-              isExpanded={panelState.fieldSettingsExpanded}
-              onToggle={() => updatePanelState({ 
-                fieldSettingsExpanded: !panelState.fieldSettingsExpanded 
-              })}
-            />
-
-            <PoleControls
-              poles={poles}
-              onPoleUpdate={updatePole}
-              onPoleRemove={removePole}
-              isExpanded={panelState.polesExpanded}
-              onToggle={() => updatePanelState({ 
-                polesExpanded: !panelState.polesExpanded 
-              })}
-            />
-
-            <DisplaySettings
-              settings={displaySettings}
-              onSettingsChange={updateDisplaySettings}
-              isExpanded={panelState.displaySettingsExpanded}
-              onToggle={() => updatePanelState({ 
-                displaySettingsExpanded: !panelState.displaySettingsExpanded 
-              })}
-            />
-
-            <AnimationControls
-              settings={animationSettings}
-              onSettingsChange={updateAnimationSettings}
-              onReset={resetVisualization}
-              isExpanded={panelState.animationExpanded}
-              onToggle={() => updatePanelState({ 
-                animationExpanded: !panelState.animationExpanded 
-              })}
-            />
-          </div>
-        </ControlsPanel>
-      </div>
-    </div>
+      }
+    >
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full cursor-crosshair"
+        style={{ cursor: draggedPole ? 'grabbing' : 'crosshair' }}
+        onMouseDown={handleCanvasMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+      />
+    </VisualizationLayout>
   )
 } 
