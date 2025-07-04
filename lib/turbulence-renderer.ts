@@ -53,9 +53,18 @@ export class TurbulenceRenderer {
     noiseSettings: NoiseSettings,
     flowSettings: FlowSettings,
     animationSettings: TurbulenceAnimationSettings,
-    particles?: FlowingParticle[]
+    particles?: FlowingParticle[],
+    zoomLevel: number = 1
   ): void {
     this.clear()
+
+    // Apply zoom transformation
+    if (zoomLevel !== 1) {
+      this.ctx.save()
+      this.ctx.translate(this.width / 2, this.height / 2)
+      this.ctx.scale(zoomLevel, zoomLevel)
+      this.ctx.translate(-this.width / 2, -this.height / 2)
+    }
 
     if (turbulenceSettings.streamlineMode) {
       this.renderStreamlines(sources, turbulenceSettings, noiseSettings, flowSettings, animationSettings)
@@ -67,6 +76,11 @@ export class TurbulenceRenderer {
 
     if (turbulenceSettings.showSources) {
       this.renderSources(sources)
+    }
+
+    // Restore transformation
+    if (zoomLevel !== 1) {
+      this.ctx.restore()
     }
   }
 
@@ -242,10 +256,16 @@ export class TurbulenceRenderer {
     turbulenceSettings: TurbulenceSettings,
     noiseSettings: NoiseSettings,
     flowSettings: FlowSettings,
-    animationSettings: TurbulenceAnimationSettings
+    animationSettings: TurbulenceAnimationSettings,
+    zoomLevel: number = 1
   ): string {
     let svg = `<svg width="${this.width}" height="${this.height}" xmlns="http://www.w3.org/2000/svg">\n`
     svg += `<rect width="${this.width}" height="${this.height}" fill="white"/>\n`
+    
+    // Apply zoom transformation to SVG
+    if (zoomLevel !== 1) {
+      svg += `<g transform="translate(${this.width / 2}, ${this.height / 2}) scale(${zoomLevel}) translate(${-this.width / 2}, ${-this.height / 2})">\n`
+    }
 
     // Generate field lines for SVG
     if (turbulenceSettings.streamlineMode) {
@@ -325,6 +345,11 @@ export class TurbulenceRenderer {
         svg += `<text x="${source.x}" y="${source.y + 3}" text-anchor="middle" fill="white" font-size="10" font-family="sans-serif">${symbols[source.type]}</text>\n`
         svg += `<text x="${source.x}" y="${source.y + 18}" text-anchor="middle" fill="black" font-size="10" font-family="sans-serif">${source.name}</text>\n`
       })
+    }
+
+    // Close zoom transformation group
+    if (zoomLevel !== 1) {
+      svg += '</g>\n'
     }
 
     svg += '</svg>'

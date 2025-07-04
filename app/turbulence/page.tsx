@@ -114,7 +114,8 @@ export default function TurbulencePage() {
           noiseSettings,
           flowSettings,
           animationSettings,
-          particles
+          particles,
+          zoomLevel
         )
       }
 
@@ -150,10 +151,12 @@ export default function TurbulencePage() {
         turbulenceSettings,
         noiseSettings,
         flowSettings,
-        animationSettings
+        animationSettings,
+        undefined,
+        zoomLevel
       )
     }
-  }, [sources, turbulenceSettings, noiseSettings, flowSettings, animationSettings, isClient])
+  }, [sources, turbulenceSettings, noiseSettings, flowSettings, animationSettings, isClient, zoomLevel])
 
   // Wheel event handler (direct DOM listener to avoid passive event issues)
   useEffect(() => {
@@ -198,7 +201,8 @@ export default function TurbulencePage() {
         turbulenceSettings,
         noiseSettings,
         flowSettings,
-        animationSettings
+        animationSettings,
+        zoomLevel
       )
       const blob = new Blob([svg], { type: 'image/svg+xml' })
       const url = URL.createObjectURL(blob)
