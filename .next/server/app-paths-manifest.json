@@ -1,7 +1,5 @@
 {
+  "/suggestions/page": "app/suggestions/page.js",
   "/page": "app/page.js",
-  "/circular-field/page": "app/circular-field/page.js",
-  "/topography/page": "app/topography/page.js",
-  "/turbulence/page": "app/turbulence/page.js",
-  "/grid-field/page": "app/grid-field/page.js"
+  "/flow-field/page": "app/flow-field/page.js"
 }

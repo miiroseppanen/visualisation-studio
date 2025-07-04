@@ -62,7 +62,8 @@ const navigationItems: NavigationItem[] = [
 // Page sections for main page navigation
 const pageSections = [
   { id: 'tools', title: 'Tools' },
-  { id: 'about', title: 'About' }
+  { id: 'about', title: 'About' },
+  { id: 'suggestions', title: 'Suggestions' }
 ]
 
 interface AppNavigationProps {
@@ -161,6 +162,12 @@ export default function AppNavigation({
                     {section.title}
                   </button>
                 ))}
+                <button 
+                  onClick={() => handleNavigationClick('/suggestions')}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Suggestions
+                </button>
               </>
             )}
             

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowRight, Grid3X3, Magnet, Wind, Mountain, Radio, Sparkles, Download, Play } from 'lucide-react'
+import { ArrowRight, Grid3X3, Magnet, Wind, Mountain, Radio, Sparkles, Download, Play, Lightbulb } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import AppLayout from '@/components/layout/AppLayout'
@@ -189,9 +189,6 @@ export default function HomePage() {
             <Link key={viz.path} href={viz.path} className="block group">
               <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02]">
                 <CardHeader className="pb-4">
-                  <div className="w-full aspect-[3/2] bg-gray-50 dark:bg-black rounded-lg overflow-hidden mb-4 transition-transform duration-200 group-hover:scale-[1.01] dark:invert dark:hue-rotate-180">
-                    <viz.preview />
-                  </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center transition-colors duration-200 group-hover:bg-accent">
                       <viz.icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
@@ -215,6 +212,13 @@ export default function HomePage() {
               </Card>
             </Link>
           ))}
+        </div>
+        <div className="flex justify-center mt-12">
+          <Button asChild size="lg" className="px-8 py-4 text-base font-semibold">
+            <Link href="/suggestions">
+              Suggest a New Visualization
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -248,6 +252,34 @@ export default function HomePage() {
                 of Visualization Studio, ensuring it meets the needs of professional designers and creative teams.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Suggestions Section */}
+      <section id="suggestions" className="container mx-auto px-8 py-24 bg-muted/30">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex items-center justify-center mb-6">
+            <Lightbulb className="w-8 h-8 text-primary mr-3" />
+            <h3 className="text-3xl md:text-4xl font-normal text-foreground">
+              Community Suggestions
+            </h3>
+          </div>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Help shape the future of Visualization Studio by suggesting new visualization tools and features. 
+            Vote on existing ideas and contribute your own creative concepts.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="px-8 py-3">
+              <Link href="/suggestions">
+                View Suggestions
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild className="px-8 py-3">
+              <Link href="/suggestions">
+                Submit New Idea
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
