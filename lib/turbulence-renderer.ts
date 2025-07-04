@@ -99,6 +99,9 @@ export class TurbulenceRenderer {
     this.ctx.lineWidth = 0.5
     this.ctx.globalAlpha = 0.8
 
+    // Batch drawing operations for better performance
+    this.ctx.beginPath()
+
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         const x = col * spacing + spacing / 2
@@ -121,15 +124,15 @@ export class TurbulenceRenderer {
           const endX = x + normalizedX * lineLength
           const endY = y + normalizedY * lineLength
           
-          // Simple black line without arrows
-          this.ctx.beginPath()
+          // Add to batch drawing
           this.ctx.moveTo(x, y)
           this.ctx.lineTo(endX, endY)
-          this.ctx.stroke()
         }
       }
     }
 
+    // Draw all lines at once
+    this.ctx.stroke()
     this.ctx.globalAlpha = 1
   }
 

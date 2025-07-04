@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowRight, Grid3X3, Magnet, Wind, Mountain, Radio, Sparkles, Download, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import AppLayout from '@/components/layout/AppLayout'
 
 // Static preview SVGs for each visualization
 const GridFieldPreview = () => (
@@ -150,32 +151,7 @@ const visualizations = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/40">
-        <div className="container mx-auto px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-foreground rounded flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-background" />
-              </div>
-              <h1 className="text-xl font-normal">Visualization Studio</h1>
-            </div>
-            <nav className="hidden md:flex items-center space-x-8">
-              {visualizations.map(viz => (
-                <Link 
-                  key={viz.path}
-                  href={viz.path} 
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {viz.title}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        </div>
-      </header>
-
+    <AppLayout>
       {/* Hero Section */}
       <section className="container mx-auto px-8 py-32">
         <div className="max-w-4xl">
@@ -204,125 +180,82 @@ export default function HomePage() {
       </section>
 
       {/* Tools Section */}
-      <section id="tools" className="container mx-auto px-8 py-32">
-        <div className="mb-20">
-          <h3 className="text-4xl font-normal mb-6">Pattern Generation Tools</h3>
-          <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed">
-            Five specialized tools for creating unique patterns and textures for branding and packaging design
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl">
-          {visualizations.map((viz) => {
-            const Icon = viz.icon
-            const PreviewComponent = viz.preview
-            return (
-              <Link key={viz.path} href={viz.path} className="block group">
-                <Card className="hover:shadow-sm transition-all duration-300 border-border/30 hover:border-border/60 cursor-pointer h-full">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
-                        <Icon className="w-4 h-4 text-primary" />
-                      </div>
-                      <CardTitle className="text-lg font-normal">{viz.title}</CardTitle>
+      <section id="tools" className="container mx-auto px-8 py-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {visualizations.map((viz) => (
+            <Link key={viz.path} href={viz.path} className="block group">
+              <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02]">
+                <CardHeader className="pb-4">
+                  <div className="w-full aspect-[3/2] bg-gray-50 rounded-lg overflow-hidden mb-4 transition-transform duration-200 group-hover:scale-[1.01]">
+                    <viz.preview />
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center transition-colors duration-200 group-hover:bg-accent">
+                      <viz.icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
                     </div>
-                    <CardDescription className="text-sm leading-relaxed text-muted-foreground">
-                      {viz.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="aspect-[3/2] bg-muted/20 rounded border border-border/20 overflow-hidden">
-                      <PreviewComponent />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {viz.features.map((feature, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                          <div className="w-1 h-1 bg-primary rounded-full" />
-                          <span className="text-xs text-muted-foreground">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div className="flex items-center justify-between pt-3 border-t border-border/30">
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                        <Download className="w-3 h-3" />
-                        <span>SVG Export</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground group-hover:text-primary transition-colors">
-                        <Play className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                        <span>Open Tool</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )
-          })}
+                    <CardTitle className="text-lg group-hover:text-accent-foreground transition-colors duration-200">{viz.title}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    {viz.description}
+                  </CardDescription>
+                  <ul className="space-y-2 mb-6">
+                    {viz.features.map((feature, index) => (
+                      <li key={index} className="text-sm text-muted-foreground flex items-center">
+                        <div className="w-1 h-1 bg-muted-foreground/50 rounded-full mr-2 flex-shrink-0"></div>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex items-center text-sm font-medium text-accent group-hover:text-accent-foreground transition-colors duration-200">
+                    Open Tool
+                    <ArrowRight className="ml-2 w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
       </section>
 
-      {/* Built for Creators Section */}
-      <section className="container mx-auto px-8 py-32">
-        <div className="mb-20">
-          <h3 className="text-4xl font-normal mb-6">Perfect for Creative Professionals</h3>
-          <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed">
-            From brand identity to packaging design, create distinctive patterns that set your work apart
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-16 max-w-6xl">
-          <div className="space-y-6">
-            <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-primary" />
-            </div>
-            <h4 className="font-normal text-xl">Brand Designers</h4>
-            <p className="text-muted-foreground leading-relaxed text-lg">
-              Develop unique visual languages and pattern systems that strengthen brand identity and recognition.
-            </p>
-          </div>
-          <div className="space-y-6">
-            <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
-              <Download className="w-6 h-6 text-primary" />
-            </div>
-            <h4 className="font-normal text-xl">Packaging Designers</h4>
-            <p className="text-muted-foreground leading-relaxed text-lg">
-              Create distinctive textures and patterns that make products stand out on shelves and enhance unboxing experiences.
-            </p>
-          </div>
-          <div className="space-y-6">
-            <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
-              <Play className="w-6 h-6 text-primary" />
-            </div>
-            <h4 className="font-normal text-xl">Creative Agencies</h4>
-            <p className="text-muted-foreground leading-relaxed text-lg">
-              Generate custom pattern libraries and visual assets that deliver unique solutions for every client project.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border/40">
-        <div className="container mx-auto px-8 py-16">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-6 h-6 bg-foreground rounded flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-background" />
+      {/* Features Section */}
+      <section className="container mx-auto px-8 py-24">
+        <div className="max-w-4xl">
+          <h3 className="text-4xl font-normal mb-12 text-foreground">
+            Built for Professionals
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-4">
+              <div className="w-12 h-12 bg-foreground/10 rounded-lg flex items-center justify-center">
+                <Download className="w-6 h-6" />
               </div>
-              <p className="text-muted-foreground">Visualization Studio</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">
-                Pattern generation toolkit for creative branding
+              <h4 className="text-lg font-medium">Export Ready</h4>
+              <p className="text-muted-foreground">
+                Export your patterns as scalable SVG files, perfect for print and digital applications.
               </p>
-              <p className="text-xs text-muted-foreground/70 mt-1">
-                Vibecoded by Miiro at H23 Agency
+            </div>
+            <div className="space-y-4">
+              <div className="w-12 h-12 bg-foreground/10 rounded-lg flex items-center justify-center">
+                <Play className="w-6 h-6" />
+              </div>
+              <h4 className="text-lg font-medium">Real-time Preview</h4>
+              <p className="text-muted-foreground">
+                See your patterns update in real-time as you adjust parameters and settings.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="w-12 h-12 bg-foreground/10 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h4 className="text-lg font-medium">Infinite Possibilities</h4>
+              <p className="text-muted-foreground">
+                Combine multiple pattern types and effects to create truly unique designs.
               </p>
             </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </section>
+    </AppLayout>
   )
 } 

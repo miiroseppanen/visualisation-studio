@@ -57,34 +57,57 @@ export default function ControlsPanel({
 
   return (
     <>
+      {/* Backdrop for mobile */}
+      {isPanelVisible && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+          onClick={handleClose}
+        />
+      )}
+
       {/* Main Panel Container */}
       <div 
         className={cn(
-          "fixed top-20 right-0 bottom-4 z-50 transition-all duration-500 ease-in-out",
-          isPanelVisible ? "translate-x-0" : "translate-x-full"
+          // Mobile: Full height bottom sheet
+          "fixed inset-x-0 bottom-0 z-50 transition-all duration-500 ease-in-out",
+          isPanelVisible ? "translate-y-0" : "translate-y-full",
+          // Desktop: Side panel on right 
+          "md:fixed md:top-16 md:right-0 md:left-auto md:bottom-0 md:w-80 md:translate-y-0 md:z-40",
+          // Desktop transforms
+          isPanelVisible ? "md:translate-x-0" : "md:translate-x-full"
         )}
       >
         {/* Panel Content */}
-        <div className="relative h-full w-80 bg-white/95 backdrop-blur-md border-l border-gray-200 shadow-2xl flex flex-col">
+        <div className={cn(
+          // Mobile: Bottom sheet style
+          "relative h-[85vh] w-full bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-2xl flex flex-col rounded-t-xl",
+          // Desktop: Side panel style
+          "md:h-full md:w-80 md:bg-white/95 md:backdrop-blur-md md:border-l md:border-t-0 md:shadow-2xl md:rounded-t-none md:rounded-none"
+        )}>
           
           {/* Panel Header */}
           <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
-            <h2 className="text-lg font-normal text-gray-800">{title}</h2>
-            <div className="flex items-center space-x-2">
+            {/* Mobile drag handle */}
+            <div className="md:hidden w-full flex justify-center mb-2">
+              <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
+            </div>
+            
+            <div className="flex items-center justify-between w-full">
+              <h2 className="text-lg font-normal text-gray-800">{title}</h2>
               <button
                 onClick={handleClose}
-                className="p-1.5 rounded-md hover:bg-gray-100 transition-colors group"
+                className="p-1.5 rounded-md hover:bg-gray-100 transition-colors group touch-manipulation"
                 aria-label="Close panel"
                 title="Close (Esc)"
               >
-                <X className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
+                <X className="w-5 h-5 md:w-4 md:h-4 text-gray-600 group-hover:text-gray-800" />
               </button>
             </div>
           </div>
 
           {/* Panel Content */}
           <div className="flex-1 overflow-hidden">
-            <div className="h-full overflow-y-auto p-6">
+            <div className="h-full overflow-y-auto p-4 md:p-6">
               {children}
             </div>
           </div>
@@ -93,14 +116,23 @@ export default function ControlsPanel({
 
       {/* Toggle Button - Always visible when panel is closed */}
       {!isPanelVisible && (
-        <div className="fixed top-20 right-4 z-[60] pointer-events-auto">
+        <div className={cn(
+          // Mobile: Bottom right corner
+          "fixed bottom-4 right-4 z-[60] pointer-events-auto",
+          // Desktop: Top right 
+          "md:fixed md:top-20 md:right-4 md:bottom-auto md:z-50"
+        )}>
           <button
             onClick={handleToggle}
-            className="bg-white hover:bg-gray-50 border border-gray-300 rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 transform-gpu text-gray-800 group"
+            className={cn(
+              "bg-white hover:bg-gray-50 border border-gray-300 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 transform-gpu text-gray-800 group touch-manipulation",
+              // Mobile: Larger touch target
+              "p-4 md:p-3"
+            )}
             aria-label="Open controls"
             title={`Open ${title}`}
           >
-            <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+            <Settings className="w-5 h-5 md:w-4 md:h-4 group-hover:rotate-90 transition-transform duration-300" />
           </button>
         </div>
       )}

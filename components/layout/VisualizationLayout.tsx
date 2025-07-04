@@ -1,8 +1,7 @@
 import React from 'react'
-import { RotateCcw, Download } from 'lucide-react'
-import VisualizationNav from '@/components/VisualizationNav'
+import AppLayout from './AppLayout'
+import { SimpleNavigation } from '@/components/navigation'
 import ControlsPanel from '@/components/ControlsPanel'
-import { Button } from '@/components/ui/button'
 
 interface VisualizationLayoutProps {
   children: React.ReactNode
@@ -13,6 +12,15 @@ interface VisualizationLayoutProps {
   settingsContent: React.ReactNode
   panelOpen?: boolean
   onPanelToggle?: () => void
+  showVisualizationNav?: boolean
+  visualizationNavProps?: {
+    showBackButton?: boolean
+    backButtonText?: string
+    backButtonFallbackPath?: string
+    additionalActionButtons?: React.ReactNode
+    leftContent?: React.ReactNode
+    rightContent?: React.ReactNode
+  }
 }
 
 export default function VisualizationLayout({
@@ -23,62 +31,64 @@ export default function VisualizationLayout({
   helpText,
   settingsContent,
   panelOpen = true,
-  onPanelToggle
+  onPanelToggle,
+  showVisualizationNav = true,
+  visualizationNavProps = {}
 }: VisualizationLayoutProps) {
-  const actionButtons = (
-    <>
-      {onReset && (
-        <Button variant="ghost" size="sm" onClick={onReset}>
-          <RotateCcw className="w-4 h-4 mr-2" />
-          Reset
-        </Button>
-      )}
-      {onExportSVG && (
-        <Button size="sm" onClick={onExportSVG}>
-          <Download className="w-4 h-4 mr-2" />
-          SVG
-        </Button>
-      )}
-    </>
-  )
-
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Fixed Navigation */}
-      <div className="fixed top-0 left-0 w-full z-50 shadow-sm bg-background">
-        <VisualizationNav actionButtons={actionButtons} />
+    <AppLayout showNavigation={false}>
+      <div className="h-screen flex flex-col bg-background overflow-hidden">
+        {/* Visualization Navigation */}
+        {showVisualizationNav && (
+          <SimpleNavigation 
+            onReset={onReset}
+            onExportSVG={onExportSVG}
+            showBackButton={visualizationNavProps.showBackButton}
+            backButtonText={visualizationNavProps.backButtonText}
+            backButtonFallback={visualizationNavProps.backButtonFallbackPath}
+            additionalActionButtons={visualizationNavProps.additionalActionButtons}
+          />
+        )}
+
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col relative">
+          {/* Canvas/Visualization Content */}
+          <div className="flex-1 w-full relative">
+            {children}
+          </div>
+
+          {/* Status Display - Mobile responsive */}
+          {statusContent && (
+            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-40 pointer-events-none">
+              <div className="bg-background/80 backdrop-blur-sm border border-border/20 rounded-md px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm text-muted-foreground max-w-[calc(100vw-2rem)] sm:max-w-none">
+                <div className="line-clamp-2 sm:line-clamp-none">
+                  {statusContent}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Help Text - Mobile responsive */}
+          {helpText && (
+            <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-40 pointer-events-none">
+              <div className="bg-background/80 backdrop-blur-sm border border-border/20 rounded-md px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm text-muted-foreground max-w-[calc(100vw-2rem)] sm:max-w-md">
+                <div className="line-clamp-3 sm:line-clamp-none">
+                  {helpText}
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Settings Panel - Mobile responsive */}
+        <ControlsPanel 
+          title="Settings" 
+          isOpen={panelOpen} 
+          onToggle={onPanelToggle}
+        >
+          {settingsContent}
+        </ControlsPanel>
       </div>
-
-      {/* Main Content Area below nav */}
-      <main className="flex-1 flex flex-col relative" style={{ marginTop: '64px' }}>
-        {/* Canvas/Visualization Content */}
-        <div className="flex-1 w-full relative">
-          {children}
-        </div>
-
-        {/* Status Display */}
-        {statusContent && (
-          <div className="fixed top-20 left-4 z-40 pointer-events-none">
-            <div className="bg-background/80 backdrop-blur-sm border border-border/20 rounded-md px-3 py-2 text-sm text-muted-foreground">
-              {statusContent}
-            </div>
-          </div>
-        )}
-
-        {/* Help Text */}
-        {helpText && (
-          <div className="fixed bottom-4 left-4 z-40 pointer-events-none">
-            <div className="bg-background/80 backdrop-blur-sm border border-border/20 rounded-md px-3 py-2 text-sm text-muted-foreground max-w-md">
-              {helpText}
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Settings Panel */}
-      <ControlsPanel title="Settings" isOpen={panelOpen} onToggle={onPanelToggle}>
-        {settingsContent}
-      </ControlsPanel>
-    </div>
+    </AppLayout>
   )
 } 

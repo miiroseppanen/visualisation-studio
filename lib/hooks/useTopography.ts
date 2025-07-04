@@ -132,11 +132,23 @@ export function useTopography() {
 
   // Topography-specific update functions (convenience wrappers)
   const updateTopographySettings = useCallback((updates: Partial<TopographySettings>) => {
-    visualization.updateSettings({ ...updates })
+    visualization.updateSettings((prev) => {
+      const updatedSettings = { ...prev }
+      
+      // Only update the core topography properties to avoid infinite loops
+      if (updates.contourInterval !== undefined) updatedSettings.contourInterval = updates.contourInterval
+      if (updates.minElevation !== undefined) updatedSettings.minElevation = updates.minElevation
+      if (updates.maxElevation !== undefined) updatedSettings.maxElevation = updates.maxElevation
+      if (updates.smoothing !== undefined) updatedSettings.smoothing = updates.smoothing
+      if (updates.resolution !== undefined) updatedSettings.resolution = updates.resolution
+      
+      return updatedSettings
+    })
   }, [visualization.updateSettings])
 
   const updateDisplaySettings = useCallback((updates: Partial<TopographyDisplaySettings>) => {
     visualization.updateSettings((prev) => ({
+      ...prev,
       displaySettings: { 
         ...prev.displaySettings, 
         ...updates 

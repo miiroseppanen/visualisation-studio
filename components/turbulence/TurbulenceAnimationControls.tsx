@@ -98,9 +98,9 @@ export function TurbulenceAnimationControls({
             />
           </div>
 
-          {/* Animation Time Display */}
+          {/* Animation Time Display - Update less frequently */}
           <div className="text-center text-xs text-muted-foreground">
-            Time: {settings.time.toFixed(1)}s
+            Time: {Math.floor(settings.time * 10) / 10}s
           </div>
         </div>
       )}

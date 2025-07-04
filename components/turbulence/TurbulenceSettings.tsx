@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo, useRef, useCallback } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
@@ -34,6 +34,70 @@ export function TurbulenceSettings({
   onToggleExpanded, 
   onSettingsChange 
 }: TurbulenceSettingsProps) {
+  // Use refs to store previous values and prevent unnecessary updates
+  const prevLineCount = useRef(settings.lineCount);
+  const prevLineLength = useRef(settings.lineLength);
+  const prevStreamlineSteps = useRef(settings.streamlineSteps ?? 150);
+  const prevStreamlineStepSize = useRef(settings.streamlineStepSize ?? 3);
+  
+  // Ensure default values to prevent infinite loops
+  const streamlineSteps = settings.streamlineSteps ?? 150;
+  const streamlineStepSize = settings.streamlineStepSize ?? 3;
+  
+  // Create stable value arrays only when values actually change
+  const lineCountValue = useMemo(() => {
+    if (prevLineCount.current !== settings.lineCount) {
+      prevLineCount.current = settings.lineCount;
+    }
+    return [settings.lineCount];
+  }, [settings.lineCount]);
+  
+  const lineLengthValue = useMemo(() => {
+    if (prevLineLength.current !== settings.lineLength) {
+      prevLineLength.current = settings.lineLength;
+    }
+    return [settings.lineLength];
+  }, [settings.lineLength]);
+  
+  const streamlineStepsValue = useMemo(() => {
+    if (prevStreamlineSteps.current !== streamlineSteps) {
+      prevStreamlineSteps.current = streamlineSteps;
+    }
+    return [streamlineSteps];
+  }, [streamlineSteps]);
+  
+  const streamlineStepSizeValue = useMemo(() => {
+    if (prevStreamlineStepSize.current !== streamlineStepSize) {
+      prevStreamlineStepSize.current = streamlineStepSize;
+    }
+    return [streamlineStepSize];
+  }, [streamlineStepSize]);
+
+  // Memoize onChange handlers to prevent recreation
+  const handleLineCountChange = useCallback(([value]: number[]) => {
+    if (value !== settings.lineCount) {
+      onSettingsChange({ lineCount: value });
+    }
+  }, [settings.lineCount, onSettingsChange]);
+
+  const handleLineLengthChange = useCallback(([value]: number[]) => {
+    if (value !== settings.lineLength) {
+      onSettingsChange({ lineLength: value });
+    }
+  }, [settings.lineLength, onSettingsChange]);
+
+  const handleStreamlineStepsChange = useCallback(([value]: number[]) => {
+    if (value !== streamlineSteps) {
+      onSettingsChange({ streamlineSteps: value });
+    }
+  }, [streamlineSteps, onSettingsChange]);
+
+  const handleStreamlineStepSizeChange = useCallback(([value]: number[]) => {
+    if (value !== streamlineStepSize) {
+      onSettingsChange({ streamlineStepSize: value });
+    }
+  }, [streamlineStepSize, onSettingsChange]);
+
   return (
     <div>
       <button
@@ -104,8 +168,8 @@ export function TurbulenceSettings({
               </span>
             </div>
             <Slider
-              value={[settings.lineCount]}
-              onValueChange={([value]) => onSettingsChange({ lineCount: value })}
+              value={lineCountValue}
+              onValueChange={handleLineCountChange}
               min={MIN_TURBULENCE_LINE_COUNT}
               max={MAX_TURBULENCE_LINE_COUNT}
               step={TURBULENCE_LINE_COUNT_STEP}
@@ -123,8 +187,8 @@ export function TurbulenceSettings({
                 </span>
               </div>
               <Slider
-                value={[settings.lineLength]}
-                onValueChange={([value]) => onSettingsChange({ lineLength: value })}
+                value={lineLengthValue}
+                onValueChange={handleLineLengthChange}
                 min={MIN_TURBULENCE_LINE_LENGTH}
                 max={MAX_TURBULENCE_LINE_LENGTH}
                 step={TURBULENCE_LINE_LENGTH_STEP}
@@ -141,12 +205,12 @@ export function TurbulenceSettings({
                 <div className="flex justify-between">
                   <Label className="text-sm">Streamline Length</Label>
                   <span className="text-xs text-muted-foreground">
-                    {settings.streamlineSteps || 150} steps
+                    {streamlineSteps} steps
                   </span>
                 </div>
                 <Slider
-                  value={[settings.streamlineSteps || 150]}
-                  onValueChange={([value]) => onSettingsChange({ streamlineSteps: value })}
+                  value={streamlineStepsValue}
+                  onValueChange={handleStreamlineStepsChange}
                   min={MIN_STREAMLINE_STEPS}
                   max={MAX_STREAMLINE_STEPS}
                   step={STREAMLINE_STEPS_STEP}
@@ -159,12 +223,12 @@ export function TurbulenceSettings({
                 <div className="flex justify-between">
                   <Label className="text-sm">Step Size</Label>
                   <span className="text-xs text-muted-foreground">
-                    {settings.streamlineStepSize || 3}px
+                    {streamlineStepSize}px
                   </span>
                 </div>
                 <Slider
-                  value={[settings.streamlineStepSize || 3]}
-                  onValueChange={([value]) => onSettingsChange({ streamlineStepSize: value })}
+                  value={streamlineStepSizeValue}
+                  onValueChange={handleStreamlineStepSizeChange}
                   min={MIN_STREAMLINE_STEP_SIZE}
                   max={MAX_STREAMLINE_STEP_SIZE}
                   step={STREAMLINE_STEP_SIZE_STEP}

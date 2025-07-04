@@ -115,7 +115,18 @@ export function useGridField() {
 
   // Grid-specific update functions (convenience wrappers)
   const updateGridSettings = useCallback((updates: Partial<GridSettings>) => {
-    visualization.updateSettings({ ...updates })
+    visualization.updateSettings((prev) => {
+      const updatedSettings = { ...prev }
+      
+      // Only update the core grid properties to avoid infinite loops
+      if (updates.spacing !== undefined) updatedSettings.spacing = updates.spacing
+      if (updates.lineLength !== undefined) updatedSettings.lineLength = updates.lineLength
+      if (updates.type !== undefined) updatedSettings.type = updates.type
+      if (updates.curveStiffness !== undefined) updatedSettings.curveStiffness = updates.curveStiffness
+      if (updates.showPoles !== undefined) updatedSettings.showPoles = updates.showPoles
+      
+      return updatedSettings
+    })
   }, [visualization.updateSettings])
 
   const updateDirectionSettings = useCallback((updates: Partial<DirectionSettings>) => {

@@ -154,6 +154,111 @@ canvas {
   @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
 }
 
+/* Mobile-friendly utilities */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+.touch-pan-x {
+  touch-action: pan-x;
+}
+
+.touch-pan-y {
+  touch-action: pan-y;
+}
+
+.touch-none {
+  touch-action: none;
+}
+
+/* Improved mobile scrolling */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Better mobile input handling */
+.mobile-input {
+  font-size: 16px; /* Prevents zoom on iOS */
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+/* Mobile-friendly buttons */
+.mobile-button {
+  min-height: 44px; /* iOS recommended touch target */
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* Prevent text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Mobile-specific animations */
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-slide-up {
+    animation: slideUpMobile 0.3s ease-out;
+  }
+  
+  .mobile-fade-in {
+    animation: fadeInMobile 0.2s ease-out;
+  }
+}
+
+@keyframes slideUpMobile {
+  from { 
+    opacity: 0; 
+    transform: translateY(100%); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeInMobile {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Line clamping utilities */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Mobile-safe viewport units */
+.vh-mobile {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+}
+
+.min-vh-mobile {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 /* Custom animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }

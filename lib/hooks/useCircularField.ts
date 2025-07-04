@@ -126,7 +126,19 @@ export function useCircularField() {
 
   // Circular-specific update functions (convenience wrappers)
   const updateFieldSettings = useCallback((updates: Partial<CircularFieldSettings>) => {
-    visualization.updateSettings({ ...updates })
+    visualization.updateSettings((prev) => {
+      const updatedSettings = { ...prev }
+      
+      // Only update the core field properties to avoid infinite loops
+      if (updates.lineCount !== undefined) updatedSettings.lineCount = updates.lineCount
+      if (updates.lineSpacing !== undefined) updatedSettings.lineSpacing = updates.lineSpacing
+      if (updates.lineWeight !== undefined) updatedSettings.lineWeight = updates.lineWeight
+      if (updates.opacity !== undefined) updatedSettings.opacity = updates.opacity
+      if (updates.showPoles !== undefined) updatedSettings.showPoles = updates.showPoles
+      if (updates.animationSpeed !== undefined) updatedSettings.animationSpeed = updates.animationSpeed
+      
+      return updatedSettings
+    })
   }, [visualization.updateSettings])
 
   const updateDisplaySettings = useCallback((updates: Partial<CircularFieldDisplaySettings>) => {

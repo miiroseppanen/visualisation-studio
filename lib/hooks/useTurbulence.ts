@@ -104,11 +104,26 @@ export function useTurbulence() {
 
   // Turbulence-specific update functions (convenience wrappers)
   const updateTurbulenceSettings = useCallback((updates: Partial<TurbulenceSettings>) => {
-    visualization.updateSettings({ ...updates })
+    visualization.updateSettings((prev) => {
+      const updatedSettings = { ...prev }
+      
+      // Only update the core turbulence properties to avoid infinite loops
+      if (updates.lineCount !== undefined) updatedSettings.lineCount = updates.lineCount
+      if (updates.lineLength !== undefined) updatedSettings.lineLength = updates.lineLength
+      if (updates.showSources !== undefined) updatedSettings.showSources = updates.showSources
+      if (updates.streamlineMode !== undefined) updatedSettings.streamlineMode = updates.streamlineMode
+      if (updates.flowingMode !== undefined) updatedSettings.flowingMode = updates.flowingMode
+      if (updates.streamlineSteps !== undefined) updatedSettings.streamlineSteps = updates.streamlineSteps
+      if (updates.streamlineStepSize !== undefined) updatedSettings.streamlineStepSize = updates.streamlineStepSize
+      if (updates.sources !== undefined) updatedSettings.sources = updates.sources
+      
+      return updatedSettings
+    })
   }, [visualization.updateSettings])
 
   const updateNoiseSettings = useCallback((updates: Partial<NoiseSettings>) => {
     visualization.updateSettings((prev) => ({ 
+      ...prev,
       noiseSettings: { 
         ...prev.noiseSettings, 
         ...updates 
@@ -118,6 +133,7 @@ export function useTurbulence() {
 
   const updateFlowSettings = useCallback((updates: Partial<FlowSettings>) => {
     visualization.updateSettings((prev) => ({ 
+      ...prev,
       flowSettings: { 
         ...prev.flowSettings, 
         ...updates 
@@ -226,10 +242,10 @@ export function useTurbulence() {
     lineLength: visualization.settings.lineLength,
     showSources: visualization.settings.showSources,
     streamlineMode: visualization.settings.streamlineMode,
-    flowingMode: visualization.settings.flowingMode || false,
-    streamlineSteps: visualization.settings.streamlineSteps || DEFAULT_STREAMLINE_STEPS,
-    streamlineStepSize: visualization.settings.streamlineStepSize || DEFAULT_STREAMLINE_STEP_SIZE,
-    sources: visualization.settings.sources || [],
+    flowingMode: visualization.settings.flowingMode ?? false,
+    streamlineSteps: visualization.settings.streamlineSteps ?? DEFAULT_STREAMLINE_STEPS,
+    streamlineStepSize: visualization.settings.streamlineStepSize ?? DEFAULT_STREAMLINE_STEP_SIZE,
+    sources: visualization.settings.sources ?? [],
   }), [
     visualization.settings.lineCount,
     visualization.settings.lineLength,
@@ -243,7 +259,7 @@ export function useTurbulence() {
 
   const noiseSettings = useMemo(() => visualization.settings.noiseSettings, [visualization.settings.noiseSettings])
   const flowSettings = useMemo(() => visualization.settings.flowSettings, [visualization.settings.flowSettings])
-  const sources = useMemo(() => visualization.settings.sources || [], [visualization.settings.sources])
+  const sources = useMemo(() => visualization.settings.sources ?? [], [visualization.settings.sources])
 
   // Interaction handlers that work with the canvas ref from the base hook
   const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
