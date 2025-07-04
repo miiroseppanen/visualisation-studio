@@ -48,7 +48,7 @@ export default function GridSettings({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium">Grid Type</Label>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
               <Button
                 variant={gridSettings.type === 'rectangular' ? 'default' : 'outline'}
                 size="sm"
@@ -64,6 +64,38 @@ export default function GridSettings({
                 onClick={() => onUpdateGrid({ type: 'triangular' })}
               >
                 Tri
+              </Button>
+              <Button
+                variant={gridSettings.type === 'hexagonal' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => onUpdateGrid({ type: 'hexagonal' })}
+              >
+                Hex
+              </Button>
+              <Button
+                variant={gridSettings.type === 'radial' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => onUpdateGrid({ type: 'radial' })}
+              >
+                Radial
+              </Button>
+              <Button
+                variant={gridSettings.type === 'random' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => onUpdateGrid({ type: 'random' })}
+              >
+                Random
+              </Button>
+              <Button
+                variant={gridSettings.type === 'spiral' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => onUpdateGrid({ type: 'spiral' })}
+              >
+                Spiral
               </Button>
             </div>
           </div>

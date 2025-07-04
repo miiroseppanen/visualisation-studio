@@ -39,7 +39,7 @@ export interface FieldVector {
 export interface GridSettings {
   spacing: number
   lineLength: number
-  type: 'rectangular' | 'triangular'
+  type: 'rectangular' | 'triangular' | 'hexagonal' | 'radial' | 'random' | 'spiral'
   curveStiffness: number
   showPoles: boolean
 }

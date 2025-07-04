@@ -173,23 +173,21 @@ export default function TurbulencePage() {
 
           <SourceControls
             sources={sources}
+            panelState={panelState}
+            onUpdatePanelState={updatePanelState}
             onAddSource={addSource}
             onRemoveSource={removeSource}
             onUpdateSource={updateSource}
             onClearAll={clearAllSources}
-            expanded={panelState.sourcesExpanded}
-            onToggleExpanded={() => updatePanelState({ 
-              sourcesExpanded: !panelState.sourcesExpanded 
-            })}
           />
 
           <FlowControls
-            settings={flowSettings}
-            onSettingsChange={updateFlowSettings}
-            expanded={panelState.flowSettingsExpanded}
-            onToggleExpanded={() => updatePanelState({ 
-              flowSettingsExpanded: !panelState.flowSettingsExpanded 
-            })}
+            flowSettings={flowSettings}
+            noiseSettings={noiseSettings}
+            panelState={panelState}
+            onUpdatePanelState={updatePanelState}
+            onFlowChange={updateFlowSettings}
+            onNoiseChange={updateNoiseSettings}
           />
 
           <TurbulenceAnimationControls
