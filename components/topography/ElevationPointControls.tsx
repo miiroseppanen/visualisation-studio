@@ -105,7 +105,7 @@ export function ElevationPointControls({
                   return (
                     <div
                       key={point.id}
-                      className="p-3 border rounded-lg space-y-2"
+                      className="p-3 border rounded-lg space-y-2 w-full"
                       style={{ borderColor: pointTypeColors[point.type] + '40' }}
                     >
                       <div className="flex items-center justify-between">

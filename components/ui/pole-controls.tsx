@@ -81,7 +81,7 @@ export default function PoleControls({
   )
 
   const renderPoleItem = (pole: Pole, index: number) => (
-    <div key={pole.id} className="space-y-3 p-3 border rounded-lg bg-slate-50/50">
+    <div key={pole.id} className="space-y-3 p-3 border rounded-lg bg-slate-50/50 w-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div 

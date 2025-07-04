@@ -97,7 +97,7 @@ export default function FlowPoleControls({
           <div className="space-y-3">
             <Label className="text-sm font-medium">Current Poles</Label>
             {poles.map(pole => (
-              <div key={pole.id} className="flex items-center space-x-3 p-3 border rounded-lg bg-slate-50/50">
+              <div key={pole.id} className="flex items-center space-x-3 p-3 border rounded-lg bg-slate-50/50 w-full">
                 <div className={`w-4 h-4 rounded-full border-2 border-border flex items-center justify-center ${
                   pole.type === 'north' ? 'bg-black' : 'bg-white'
                 }`}>

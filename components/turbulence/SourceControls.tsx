@@ -120,7 +120,7 @@ export function SourceControls({
               {sources.map((source) => (
                 <div
                   key={source.id}
-                  className="p-3 border rounded-lg space-y-2 bg-slate-50"
+                  className="p-3 border rounded-lg space-y-2 bg-slate-50 w-full"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
