@@ -230,4 +230,76 @@ interface TurbulenceVisualizationSettings extends TurbulenceSettings {
   noiseSettings: NoiseSettings
   flowSettings: FlowSettings
   sources: TurbulenceSource[]
+}
+
+// Visualization Suggestion Types
+export interface VisualizationSuggestion {
+  id: string
+  title: string
+  description: string
+  author: string
+  timestamp: Date
+  upvotes: number
+  downvotes: number
+  status: 'pending' | 'approved' | 'implemented' | 'rejected'
+  category: string
+  complexity: 'low' | 'medium' | 'high'
+  
+  // Implementation details for generating visualizations
+  implementation?: {
+    type: 'grid-field' | 'flow-field' | 'turbulence' | 'circular-field' | 'topography' | 'custom'
+    baseSettings?: Partial<GridSettings | TurbulenceSettings | CircularFieldSettings | TopographyDisplaySettings>
+    animationSettings?: Partial<AnimationSettings | FlowFieldAnimationSettings | TurbulenceAnimationSettings | CircularFieldAnimationSettings | TopographyAnimationSettings>
+    customParameters?: Record<string, any>
+    rendererConfig?: {
+      renderer: string
+      parameters: Record<string, any>
+    }
+  }
+  
+  // Metadata for filtering and organization
+  tags: string[]
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  estimatedDevTime: number // in hours
+  dependencies?: string[]
+  
+  // User interaction data
+  views: number
+  favorites: number
+  comments: Comment[]
+  
+  // Version control
+  version: string
+  lastModified: Date
+  createdBy: string
+}
+
+export interface Comment {
+  id: string
+  author: string
+  content: string
+  timestamp: Date
+  upvotes: number
+  downvotes: number
+}
+
+export interface SuggestionFilters {
+  category?: string
+  complexity?: 'low' | 'medium' | 'high'
+  status?: 'pending' | 'approved' | 'implemented' | 'rejected'
+  difficulty?: 'beginner' | 'intermediate' | 'advanced'
+  tags?: string[]
+  search?: string
+  sortBy?: 'score' | 'date' | 'title' | 'views' | 'favorites'
+  sortOrder?: 'asc' | 'desc'
+}
+
+export interface SuggestionStats {
+  total: number
+  byStatus: Record<string, number>
+  byCategory: Record<string, number>
+  byComplexity: Record<string, number>
+  topRated: VisualizationSuggestion[]
+  mostViewed: VisualizationSuggestion[]
+  recentlyAdded: VisualizationSuggestion[]
 } 

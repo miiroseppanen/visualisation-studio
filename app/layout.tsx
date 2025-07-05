@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/ui/ThemeProvider'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
@@ -12,23 +12,24 @@ export const metadata: Metadata = {
     shortcut: '/h23-logo.svg',
     apple: '/h23-logo.svg'
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover'
-  },
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#000000' }
-  ],
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'Visualization Studio'
   },
   manifest: '/manifest.json'
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' }
+  ]
 }
 
 export default function RootLayout({

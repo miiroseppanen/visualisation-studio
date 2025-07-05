@@ -11,7 +11,7 @@ interface VisualizationLayoutProps {
   onExportSVG?: () => void
   statusContent?: React.ReactNode
   helpText?: string
-  settingsContent: React.ReactNode
+  settingsContent?: React.ReactNode
   panelOpen?: boolean
   onPanelToggle?: () => void
   showVisualizationNav?: boolean
@@ -109,13 +109,15 @@ export default function VisualizationLayout({
           "transition-all duration-300 ease-in-out",
           isUIVisible ? "opacity-100" : "opacity-0 pointer-events-none"
         )}>
-          <ControlsPanel 
-            title="Settings" 
-            isOpen={panelOpen} 
-            onToggle={onPanelToggle}
-          >
-            {settingsContent}
-          </ControlsPanel>
+          {settingsContent && (
+            <ControlsPanel 
+              title="Settings" 
+              isOpen={panelOpen} 
+              onToggle={onPanelToggle}
+            >
+              {settingsContent}
+            </ControlsPanel>
+          )}
         </div>
       </div>
     </AppLayout>
