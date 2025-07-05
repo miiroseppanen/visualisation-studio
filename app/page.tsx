@@ -9,12 +9,13 @@ import AppLayout from '@/components/layout/AppLayout'
 import { useTheme } from '@/components/ui/ThemeProvider'
 import { useTranslation } from 'react-i18next'
 
-// Interactive Mathematical Background Animation
+// Interactive Mathematical Line-Based Background Animation
 const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const { theme } = useTheme()
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 })
+  const [touchPos, setTouchPos] = React.useState({ x: 0, y: 0 })
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -23,33 +24,17 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Set canvas size
+    // Set canvas size - simplified for mobile compatibility
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect()
       
-      // Mobile-first responsive DPR scaling
-      const isMobile = window.innerWidth <= 768
-      const isSmallMobile = window.innerWidth <= 480
+      // Simplified DPR scaling for better mobile performance
+      const dpr = Math.min(window.devicePixelRatio, 2)
       
-      let dpr = window.devicePixelRatio
-      
-      // Aggressive DPR scaling for mobile performance
-      if (isSmallMobile) {
-        dpr = Math.min(dpr, 1.25) // Very small screens
-      } else if (isMobile) {
-        dpr = Math.min(dpr, 1.5) // Regular mobile screens
-      } else {
-        dpr = Math.min(dpr, 2) // Desktop and tablets
-      }
-      
-      // Set canvas dimensions to fill available space
       canvas.width = rect.width * dpr
       canvas.height = rect.height * dpr
       
-      // Scale context for crisp rendering
       ctx.scale(dpr, dpr)
-      
-      // Set canvas style size to match container
       canvas.style.width = rect.width + 'px'
       canvas.style.height = rect.height + 'px'
     }
@@ -61,7 +46,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       setTimeout(resizeCanvas, 100)
     })
 
-    // Mouse move handler
+    // Mouse and touch handlers
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
       setMousePos({
@@ -70,104 +55,139 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       })
     }
 
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault()
+      const rect = canvas.getBoundingClientRect()
+      const touch = e.touches[0]
+      setTouchPos({
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      })
+    }
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const rect = canvas.getBoundingClientRect()
+      const touch = e.touches[0]
+      setTouchPos({
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      })
+    }
+
     // Add event listeners
     canvas.addEventListener('mousemove', handleMouseMove, { passive: true })
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false })
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: true })
 
     // Animation variables
     let time = 0
-    const particles: Array<{
-      x: number
-      y: number
-      vx: number
-      vy: number
+    const lines: Array<{
+      x1: number
+      y1: number
+      x2: number
+      y2: number
       life: number
       maxLife: number
-      type: 'flow' | 'field' | 'wave'
+      type: 'harmonic' | 'fractal' | 'spiral'
     }> = []
 
-    // Mathematical functions with interaction
-    const complexFunction = (x: number, y: number, t: number) => {
-      const scale = 0.005
-      const xScaled = (x - canvas.width / 2) * scale
-      const yScaled = (y - canvas.height / 2) * scale
-      
-      // Base complex function
-      const real = xScaled * xScaled - yScaled * yScaled + Math.sin(t * 0.5) * 0.3
-      const imag = 2 * xScaled * yScaled + Math.cos(t * 0.3) * 0.2
-      
-      // Add mouse interaction - ripple effect
-      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const rippleEffect = Math.sin(mouseDistance * 0.01 - t * 2) * Math.exp(-mouseDistance * 0.0005) * 1.2
-      
-      // Add mouse velocity effect - more dynamic ripples
-      const mouseVelocity = Math.sqrt(mousePos.x ** 2 + mousePos.y ** 2) * 0.0002
-      const velocityEffect = Math.sin(mouseDistance * 0.005 - t * 3) * Math.exp(-mouseDistance * 0.001) * mouseVelocity
-      
-      return { 
-        real: real + rippleEffect + velocityEffect, 
-        imag: imag, 
-        magnitude: Math.sqrt((real + rippleEffect + velocityEffect) ** 2 + imag ** 2) 
-      }
-    }
-
-    const waveFunction = (x: number, y: number, t: number) => {
+    // Mathematical line functions
+    const harmonicFunction = (x: number, y: number, t: number) => {
       const scale = 0.01
       const xScaled = (x - canvas.width / 2) * scale
       const yScaled = (y - canvas.height / 2) * scale
       
-      // Base wave function
-      let wave = Math.sin(xScaled + t * 0.5) * Math.cos(yScaled + t * 0.3) * 
-             Math.sin(Math.sqrt(xScaled * xScaled + yScaled * yScaled) + t * 0.2)
-      
-      // Add mouse interaction - attract particles to mouse
+      // Harmonic oscillator with mouse interaction
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const mouseAttraction = Math.sin(mouseDistance * 0.005 - t * 3) * Math.exp(-mouseDistance * 0.001) * 0.6
+      const touchDistance = Math.sqrt((x - touchPos.x) ** 2 + (y - touchPos.y) ** 2)
+      const minDistance = Math.min(mouseDistance, touchDistance)
       
-      // Add mouse proximity effect - stronger attraction near mouse
-      const proximityEffect = Math.exp(-mouseDistance * 0.001) * 0.5
+      const harmonic = Math.sin(xScaled + t * 0.3) * Math.cos(yScaled + t * 0.2) * 
+                      Math.sin(Math.sqrt(xScaled * xScaled + yScaled * yScaled) + t * 0.1)
       
-      return wave + mouseAttraction + proximityEffect
+      const interaction = Math.sin(minDistance * 0.02 - t * 2) * Math.exp(-minDistance * 0.001) * 0.8
+      
+      return harmonic + interaction
     }
 
-    // Get current theme - cached to prevent flickering
+    const fractalFunction = (x: number, y: number, t: number) => {
+      const scale = 0.008
+      const xScaled = (x - canvas.width / 2) * scale
+      const yScaled = (y - canvas.height / 2) * scale
+      
+      // Fractal-like pattern with mouse interaction
+      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
+      const touchDistance = Math.sqrt((x - touchPos.x) ** 2 + (y - touchPos.y) ** 2)
+      const minDistance = Math.min(mouseDistance, touchDistance)
+      
+      const fractal = Math.sin(xScaled * 2 + t * 0.4) * Math.cos(yScaled * 2 + t * 0.3) * 
+                     Math.sin(xScaled * yScaled + t * 0.2)
+      
+      const interaction = Math.cos(minDistance * 0.015 - t * 1.5) * Math.exp(-minDistance * 0.0008) * 0.6
+      
+      return fractal + interaction
+    }
+
+    const spiralFunction = (x: number, y: number, t: number) => {
+      const scale = 0.012
+      const xScaled = (x - canvas.width / 2) * scale
+      const yScaled = (y - canvas.height / 2) * scale
+      
+      // Spiral pattern with mouse interaction
+      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
+      const touchDistance = Math.sqrt((x - touchPos.x) ** 2 + (y - touchPos.y) ** 2)
+      const minDistance = Math.min(mouseDistance, touchDistance)
+      
+      const angle = Math.atan2(yScaled, xScaled)
+      const radius = Math.sqrt(xScaled * xScaled + yScaled * yScaled)
+      
+      const spiral = Math.sin(angle * 3 + radius * 2 + t * 0.3) * Math.cos(radius + t * 0.2)
+      
+      const interaction = Math.sin(minDistance * 0.01 - t * 2.5) * Math.exp(-minDistance * 0.0012) * 0.7
+      
+      return spiral + interaction
+    }
+
+    // Get current theme
     const getCurrentTheme = () => {
       if (theme === 'dark') return 'dark'
       if (theme === 'light') return 'light'
-      // system theme - cache the result
       if (!window.matchMedia) return 'light'
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
 
-    // Create particles with interaction
-    const createParticle = (x: number, y: number, type: 'flow' | 'field' | 'wave') => {
+    // Create mathematical lines
+    const createLine = (x: number, y: number, type: 'harmonic' | 'fractal' | 'spiral') => {
       const angle = Math.random() * Math.PI * 2
-      const speed = 0.3 + Math.random() * 0.7
+      const length = 50 + Math.random() * 100
       
-      // Add mouse attraction to particle creation
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const mouseInfluence = Math.exp(-mouseDistance * 0.001) * 0.5
+      const touchDistance = Math.sqrt((x - touchPos.x) ** 2 + (y - touchPos.y) ** 2)
+      const minDistance = Math.min(mouseDistance, touchDistance)
       
-      particles.push({
-        x,
-        y,
-        vx: Math.cos(angle) * speed * (1 + mouseInfluence),
-        vy: Math.sin(angle) * speed * (1 + mouseInfluence),
+      const influence = Math.exp(-minDistance * 0.002) * 0.5
+      
+      lines.push({
+        x1: x,
+        y1: y,
+        x2: x + Math.cos(angle) * length * (1 + influence),
+        y2: y + Math.sin(angle) * length * (1 + influence),
         life: 1,
-        maxLife: 0.8 + Math.random() * 0.4,
+        maxLife: 0.6 + Math.random() * 0.4,
         type
       })
     }
 
-    // Initialize particles
-    for (let i = 0; i < 80; i++) {
-      createParticle(
+    // Initialize lines
+    for (let i = 0; i < 60; i++) {
+      createLine(
         Math.random() * canvas.width,
         Math.random() * canvas.height,
-        ['flow', 'field', 'wave'][Math.floor(Math.random() * 3)] as any
+        ['harmonic', 'fractal', 'spiral'][Math.floor(Math.random() * 3)] as any
       )
     }
 
-    // Animation loop
+        // Animation loop
     const animate = () => {
       time += 0.016
       const currentTheme = getCurrentTheme()
@@ -178,122 +198,132 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         return
       }
 
-      // Clear canvas with fade effect - use consistent theme
-      const fadeOpacity = 0.08
+      // Clear canvas with fade effect
+      const fadeOpacity = 0.1
       ctx.fillStyle = currentTheme === 'dark' 
         ? `rgba(0, 0, 0, ${fadeOpacity})` 
         : `rgba(255, 255, 255, ${fadeOpacity})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Create new particles - more near mouse
+      // Create new lines - more near mouse/touch
       const mouseDistance = Math.sqrt((canvas.width / 2 - mousePos.x) ** 2 + (canvas.height / 2 - mousePos.y) ** 2)
-      const baseDensity = 0.4
-      const mouseDensity = Math.exp(-mouseDistance * 0.0005) * 0.8
-      const totalDensity = baseDensity + mouseDensity
+      const touchDistance = Math.sqrt((canvas.width / 2 - touchPos.x) ** 2 + (canvas.height / 2 - touchPos.y) ** 2)
+      const minDistance = Math.min(mouseDistance, touchDistance)
+      
+      const baseDensity = 0.3
+      const interactionDensity = Math.exp(-minDistance * 0.001) * 0.6
+      const totalDensity = baseDensity + interactionDensity
       
       if (Math.random() < totalDensity) {
-        const type = ['flow', 'field', 'wave'][Math.floor(Math.random() * 3)] as any
-        // Create particles more likely near mouse position
-        const x = mousePos.x + (Math.random() - 0.5) * 400
-        const y = mousePos.y + (Math.random() - 0.5) * 400
-        createParticle(
+        const type = ['harmonic', 'fractal', 'spiral'][Math.floor(Math.random() * 3)] as any
+        // Create lines more likely near interaction position
+        const x = (mousePos.x + touchPos.x) / 2 + (Math.random() - 0.5) * 300
+        const y = (mousePos.y + touchPos.y) / 2 + (Math.random() - 0.5) * 300
+        createLine(
           Math.max(0, Math.min(canvas.width, x)),
           Math.max(0, Math.min(canvas.height, y)),
           type
         )
       }
 
-      // Update and draw particles
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const particle = particles[i]
+      // Update and draw lines
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const line = lines[i]
         
-        // Update position based on mathematical functions
-        if (particle.type === 'flow') {
-          const func = complexFunction(particle.x, particle.y, time)
-          const gradientX = Math.cos(func.magnitude * Math.PI) * 0.8
-          const gradientY = Math.sin(func.magnitude * Math.PI) * 0.8
-          particle.x += particle.vx + gradientX
-          particle.y += particle.vy + gradientY
-        } else if (particle.type === 'field') {
-          const func = complexFunction(particle.x, particle.y, time)
-          const gradientX = Math.cos(func.real * Math.PI * 2) * 0.6
-          const gradientY = Math.sin(func.imag * Math.PI * 2) * 0.6
-          particle.x += particle.vx + gradientX
-          particle.y += particle.vy + gradientY
-        } else { // wave
-          const wave = waveFunction(particle.x, particle.y, time)
-          const gradientX = Math.cos(wave * Math.PI) * 0.4
-          const gradientY = Math.sin(wave * Math.PI) * 0.4
-          particle.x += particle.vx + gradientX
-          particle.y += particle.vy + gradientY
+        // Update line positions based on mathematical functions
+        if (line.type === 'harmonic') {
+          const func1 = harmonicFunction(line.x1, line.y1, time)
+          const func2 = harmonicFunction(line.x2, line.y2, time)
+          line.x1 += Math.cos(func1 * Math.PI) * 0.5
+          line.y1 += Math.sin(func1 * Math.PI) * 0.5
+          line.x2 += Math.cos(func2 * Math.PI) * 0.5
+          line.y2 += Math.sin(func2 * Math.PI) * 0.5
+        } else if (line.type === 'fractal') {
+          const func1 = fractalFunction(line.x1, line.y1, time)
+          const func2 = fractalFunction(line.x2, line.y2, time)
+          line.x1 += Math.sin(func1 * Math.PI * 2) * 0.4
+          line.y1 += Math.cos(func1 * Math.PI * 2) * 0.4
+          line.x2 += Math.sin(func2 * Math.PI * 2) * 0.4
+          line.y2 += Math.cos(func2 * Math.PI * 2) * 0.4
+        } else { // spiral
+          const func1 = spiralFunction(line.x1, line.y1, time)
+          const func2 = spiralFunction(line.x2, line.y2, time)
+          line.x1 += Math.cos(func1 * Math.PI) * 0.6
+          line.y1 += Math.sin(func1 * Math.PI) * 0.6
+          line.x2 += Math.cos(func2 * Math.PI) * 0.6
+          line.y2 += Math.sin(func2 * Math.PI) * 0.6
         }
         
-                    // Add mouse attraction to particles
-      const mouseDistance = Math.sqrt((particle.x - mousePos.x) ** 2 + (particle.y - mousePos.y) ** 2)
-      if (mouseDistance < 500) {
-        const attraction = (500 - mouseDistance) / 500 * 0.15
-        const dx = mousePos.x - particle.x
-        const dy = mousePos.y - particle.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-        if (distance > 0) {
-          particle.x += (dx / distance) * attraction
-          particle.y += (dy / distance) * attraction
+        // Add interaction attraction to lines
+        const mouseDistance = Math.sqrt((line.x1 - mousePos.x) ** 2 + (line.y1 - mousePos.y) ** 2)
+        const touchDistance = Math.sqrt((line.x1 - touchPos.x) ** 2 + (line.y1 - touchPos.y) ** 2)
+        const minDistance = Math.min(mouseDistance, touchDistance)
+        
+        if (minDistance < 400) {
+          const attraction = (400 - minDistance) / 400 * 0.1
+          const dx = (mousePos.x + touchPos.x) / 2 - line.x1
+          const dy = (mousePos.y + touchPos.y) / 2 - line.y1
+          const distance = Math.sqrt(dx * dx + dy * dy)
+          if (distance > 0) {
+            line.x1 += (dx / distance) * attraction
+            line.y1 += (dy / distance) * attraction
+            line.x2 += (dx / distance) * attraction * 0.5
+            line.y2 += (dy / distance) * attraction * 0.5
+          }
+          
+          // Add line life extension near interaction
+          if (minDistance < 150) {
+            line.life += 0.003
+          }
         }
         
-        // Add particle size effect near mouse
-        if (mouseDistance < 200) {
-          particle.life += 0.005 // Particles live longer near mouse
-        }
-      }
-        
-        particle.life -= 0.008
+        line.life -= 0.006
 
-        // Remove dead particles or particles outside bounds
-        if (particle.life <= 0 || 
-            particle.x < -50 || particle.x > canvas.width + 50 ||
-            particle.y < -50 || particle.y > canvas.height + 50) {
-          particles.splice(i, 1)
+        // Remove dead lines or lines outside bounds
+        if (line.life <= 0 || 
+            line.x1 < -100 || line.x1 > canvas.width + 100 ||
+            line.y1 < -100 || line.y1 > canvas.height + 100 ||
+            line.x2 < -100 || line.x2 > canvas.width + 100 ||
+            line.y2 < -100 || line.y2 > canvas.height + 100) {
+          lines.splice(i, 1)
           continue
         }
 
-        // Skip rendering if particle is outside visible area
-        if (particle.x < -20 || particle.x > canvas.width + 20 ||
-            particle.y < -20 || particle.y > canvas.height + 20) {
-          continue
-        }
-
-        // Draw particle
-        const alpha = Math.max(0, Math.min(1, particle.life / particle.maxLife))
-        const size = Math.max(2, (1 - alpha) * 5 + 2)
+        // Draw line
+        const alpha = Math.max(0, Math.min(1, line.life / line.maxLife))
+        const lineWidth = Math.max(0.5, alpha * 2)
         
-        if (size < 1 || alpha < 0.1) continue
+        if (alpha < 0.1) continue
         
         ctx.save()
-        ctx.globalAlpha = alpha * 0.7
+        ctx.globalAlpha = alpha * 0.8
+        ctx.lineWidth = lineWidth
         
-        // Black and white theme-aware colors only
+        // Theme-aware colors
         const isDark = currentTheme === 'dark'
-        ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'
         
         ctx.beginPath()
-        ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2)
-        ctx.fill()
+        ctx.moveTo(line.x1, line.y1)
+        ctx.lineTo(line.x2, line.y2)
+        ctx.stroke()
         ctx.restore()
       }
 
-      // Draw mathematical field lines - theme-aware
-      const fieldLineOpacity = 0.04
+      // Draw mathematical grid patterns
+      const gridOpacity = 0.05
       ctx.strokeStyle = currentTheme === 'dark' 
-        ? `rgba(255, 255, 255, ${fieldLineOpacity})` 
-        : `rgba(0, 0, 0, ${fieldLineOpacity})`
-      ctx.lineWidth = 0.5
+        ? `rgba(255, 255, 255, ${gridOpacity})` 
+        : `rgba(0, 0, 0, ${gridOpacity})`
+      ctx.lineWidth = 0.3
       
-      for (let i = 0; i < 12; i++) {
-        const y = (canvas.height / 12) * i
+      // Horizontal harmonic lines
+      for (let i = 0; i < 8; i++) {
+        const y = (canvas.height / 8) * i
         ctx.beginPath()
-        for (let x = 0; x < canvas.width; x += 4) {
-          const func = complexFunction(x, y, time)
-          const offsetY = Math.sin(func.magnitude * Math.PI * 2) * 20
+        for (let x = 0; x < canvas.width; x += 3) {
+          const func = harmonicFunction(x, y, time)
+          const offsetY = Math.sin(func * Math.PI * 2) * 15
           if (x === 0) {
             ctx.moveTo(x, y + offsetY)
           } else {
@@ -303,19 +333,13 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         ctx.stroke()
       }
 
-      // Draw wave patterns - theme-aware
-      const waveLineOpacity = 0.03
-      ctx.strokeStyle = currentTheme === 'dark' 
-        ? `rgba(255, 255, 255, ${waveLineOpacity})` 
-        : `rgba(0, 0, 0, ${waveLineOpacity})`
-      ctx.lineWidth = 0.5
-      
-      for (let i = 0; i < 8; i++) {
-        const x = (canvas.width / 8) * i
+      // Vertical fractal lines
+      for (let i = 0; i < 12; i++) {
+        const x = (canvas.width / 12) * i
         ctx.beginPath()
-        for (let y = 0; y < canvas.height; y += 4) {
-          const wave = waveFunction(x, y, time)
-          const offsetX = Math.cos(wave * Math.PI * 2) * 15
+        for (let y = 0; y < canvas.height; y += 3) {
+          const func = fractalFunction(x, y, time)
+          const offsetX = Math.cos(func * Math.PI * 2) * 12
           if (y === 0) {
             ctx.moveTo(x + offsetX, y)
           } else {
@@ -334,11 +358,13 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       window.removeEventListener('resize', resizeCanvas)
       window.removeEventListener('orientationchange', resizeCanvas)
       canvas.removeEventListener('mousemove', handleMouseMove)
+      canvas.removeEventListener('touchmove', handleTouchMove)
+      canvas.removeEventListener('touchstart', handleTouchStart)
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [theme, mousePos.x, mousePos.y])
+  }, [theme, mousePos.x, mousePos.y, touchPos.x, touchPos.y])
 
   return (
     <canvas
