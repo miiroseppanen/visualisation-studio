@@ -104,7 +104,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       
       // Add mouse interaction - ripple effect
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const rippleEffect = Math.sin(mouseDistance * 0.02 - t * 2) * Math.exp(-mouseDistance * 0.001) * 0.5
+      const rippleEffect = Math.sin(mouseDistance * 0.02 - t * 2) * Math.exp(-mouseDistance * 0.001) * 0.2
       
       // Add scroll interaction - amplitude scaling
       const scrollAmplitude = 1 + (scrollY / 1000) * 0.5 // Increase amplitude with scroll
@@ -127,7 +127,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       
       // Add mouse interaction - attract particles to mouse
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const mouseAttraction = Math.sin(mouseDistance * 0.01 - t * 3) * Math.exp(-mouseDistance * 0.002) * 0.3
+      const mouseAttraction = Math.sin(mouseDistance * 0.01 - t * 3) * Math.exp(-mouseDistance * 0.002) * 0.15
       
       // Add scroll interaction - frequency modulation
       const scrollFrequency = 1 + (scrollY / 2000) * 0.3
@@ -181,7 +181,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       if (!ctx || !canvas) return
 
       // Clear canvas with fade effect - use consistent theme
-      const fadeOpacity = 0.12
+      const fadeOpacity = 0.08
       ctx.fillStyle = currentTheme === 'dark' 
         ? `rgba(0, 0, 0, ${fadeOpacity})` 
         : `rgba(255, 255, 255, ${fadeOpacity})`
@@ -223,18 +223,18 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
           particle.y += particle.vy + gradientY
         }
         
-        // Add mouse attraction to particles
-        const mouseDistance = Math.sqrt((particle.x - mousePos.x) ** 2 + (particle.y - mousePos.y) ** 2)
-        if (mouseDistance < 200) {
-          const attraction = (200 - mouseDistance) / 200 * 0.1
-          const dx = mousePos.x - particle.x
-          const dy = mousePos.y - particle.y
-          const distance = Math.sqrt(dx * dx + dy * dy)
-          if (distance > 0) {
-            particle.x += (dx / distance) * attraction
-            particle.y += (dy / distance) * attraction
-          }
+              // Add mouse attraction to particles
+      const mouseDistance = Math.sqrt((particle.x - mousePos.x) ** 2 + (particle.y - mousePos.y) ** 2)
+      if (mouseDistance < 200) {
+        const attraction = (200 - mouseDistance) / 200 * 0.05
+        const dx = mousePos.x - particle.x
+        const dy = mousePos.y - particle.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+        if (distance > 0) {
+          particle.x += (dx / distance) * attraction
+          particle.y += (dy / distance) * attraction
         }
+      }
         
         particle.life -= 0.008
 
@@ -254,16 +254,16 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
 
         // Draw particle
         const alpha = Math.max(0, Math.min(1, particle.life / particle.maxLife))
-        const size = Math.max(2, (1 - alpha) * 5 + 2)
+        const size = Math.max(1.5, (1 - alpha) * 3 + 1.5)
         
         if (size < 1 || alpha < 0.1) continue
         
         ctx.save()
-        ctx.globalAlpha = alpha * 0.8
+        ctx.globalAlpha = alpha * 0.4
         
         // Black and white theme-aware colors only
         const isDark = currentTheme === 'dark'
-        ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'
+        ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
         
         ctx.beginPath()
         ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2)
@@ -272,11 +272,11 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       }
 
       // Draw mathematical field lines - theme-aware with interaction
-      const fieldLineOpacity = 0.08 + (scrollY / 2000) * 0.04 // More visible when scrolled
+      const fieldLineOpacity = 0.04 + (scrollY / 2000) * 0.02 // More visible when scrolled
       ctx.strokeStyle = currentTheme === 'dark' 
         ? `rgba(255, 255, 255, ${fieldLineOpacity})` 
         : `rgba(0, 0, 0, ${fieldLineOpacity})`
-      ctx.lineWidth = 1
+      ctx.lineWidth = 0.5
       
       for (let i = 0; i < 12; i++) {
         const y = (canvas.height / 12) * i
@@ -294,11 +294,11 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       }
 
       // Draw wave patterns - theme-aware with interaction
-      const waveLineOpacity = 0.06 + (scrollY / 2000) * 0.03
+      const waveLineOpacity = 0.03 + (scrollY / 2000) * 0.015
       ctx.strokeStyle = currentTheme === 'dark' 
         ? `rgba(255, 255, 255, ${waveLineOpacity})` 
         : `rgba(0, 0, 0, ${waveLineOpacity})`
-      ctx.lineWidth = 1
+      ctx.lineWidth = 0.5
       
       for (let i = 0; i < 8; i++) {
         const x = (canvas.width / 8) * i
