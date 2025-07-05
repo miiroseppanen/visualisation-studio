@@ -24,14 +24,40 @@ const MathematicalBackground = () => {
     // Set canvas size
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect()
-      const dpr = Math.min(window.devicePixelRatio, 2) // Limit DPR for mobile performance
+      
+      // Mobile-first responsive DPR scaling
+      const isMobile = window.innerWidth <= 768
+      const isSmallMobile = window.innerWidth <= 480
+      
+      let dpr = window.devicePixelRatio
+      
+      // Aggressive DPR scaling for mobile performance
+      if (isSmallMobile) {
+        dpr = Math.min(dpr, 1.25) // Very small screens
+      } else if (isMobile) {
+        dpr = Math.min(dpr, 1.5) // Regular mobile screens
+      } else {
+        dpr = Math.min(dpr, 2) // Desktop and tablets
+      }
+      
+      // Set canvas dimensions to fill available space
       canvas.width = rect.width * dpr
       canvas.height = rect.height * dpr
+      
+      // Scale context for crisp rendering
       ctx.scale(dpr, dpr)
+      
+      // Set canvas style size to match container
+      canvas.style.width = rect.width + 'px'
+      canvas.style.height = rect.height + 'px'
     }
 
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
+    window.addEventListener('orientationchange', () => {
+      // Delay resize to allow orientation change to complete
+      setTimeout(resizeCanvas, 100)
+    })
 
     // Animation variables
     let time = 0
@@ -235,6 +261,7 @@ const MathematicalBackground = () => {
 
     return () => {
       window.removeEventListener('resize', resizeCanvas)
+      window.removeEventListener('orientationchange', resizeCanvas)
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
@@ -244,7 +271,7 @@ const MathematicalBackground = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none transition-colors duration-500"
+      className="absolute inset-0 w-full h-full pointer-events-none transition-colors duration-500 touch-none"
       style={{ zIndex: -1 }}
     />
   )
