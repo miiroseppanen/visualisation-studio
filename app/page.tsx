@@ -15,7 +15,6 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
   const animationRef = useRef<number>()
   const { theme } = useTheme()
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 })
-  const [scrollY, setScrollY] = React.useState(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -71,14 +70,8 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       })
     }
 
-    // Scroll handler
-    const handleScroll = () => {
-      setScrollY(window.scrollY)
-    }
-
     // Add event listeners
     canvas.addEventListener('mousemove', handleMouseMove, { passive: true })
-    window.addEventListener('scroll', handleScroll, { passive: true })
 
     // Animation variables
     let time = 0
@@ -321,12 +314,11 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       window.removeEventListener('resize', resizeCanvas)
       window.removeEventListener('orientationchange', resizeCanvas)
       canvas.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('scroll', handleScroll)
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [theme, mousePos.x, mousePos.y, scrollY])
+  }, [theme, mousePos.x, mousePos.y])
 
   return (
     <canvas

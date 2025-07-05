@@ -1,8 +1,6 @@
 {
   "/page": "app/page.js",
-  "/grid-field/page": "app/grid-field/page.js",
+  "/wave-interference/page": "app/wave-interference/page.js",
   "/circular-field/page": "app/circular-field/page.js",
-  "/turbulence/page": "app/turbulence/page.js",
-  "/particle-swarm/page": "app/particle-swarm/page.js",
-  "/wave-interference/page": "app/wave-interference/page.js"
+  "/grid-field/page": "app/grid-field/page.js"
 }
