@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Grid3X3, Magnet, Wind, Mountain, Radio, Sun, Moon, Laptop, ChevronDown } from 'lucide-react'
+import { Grid3X3, Magnet, Wind, Mountain, Radio, Sun, Moon, Laptop } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { H23Logo } from '@/components/ui/h23-logo'
 import { useNavigation } from '@/lib/hooks/useNavigation'
@@ -14,7 +14,6 @@ import LanguageSelector from '@/components/ui/LanguageSelector'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -214,4 +213,4 @@ export default function AppNavigation({
   )
 }
 
-export { navigationItems } 
+export { navigationItems }

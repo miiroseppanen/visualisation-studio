@@ -2,14 +2,13 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Home, Lightbulb, Plus } from 'lucide-react'
+import { ArrowLeft, Lightbulb, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/components/ui/ThemeProvider'
 import { Sun, Moon, Laptop } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
