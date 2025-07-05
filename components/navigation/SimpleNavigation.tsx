@@ -12,6 +12,7 @@ interface SimpleNavigationProps {
   backButtonText?: string
   backButtonFallback?: string
   className?: string
+  hideNonEssential?: boolean
 }
 
 /**
@@ -25,7 +26,8 @@ export default function SimpleNavigation({
   showBackButton = true,
   backButtonText = 'Home',
   backButtonFallback = '/',
-  className = ''
+  className = '',
+  hideNonEssential = false
 }: SimpleNavigationProps) {
   return (
     <div className={className}>
@@ -36,6 +38,7 @@ export default function SimpleNavigation({
         showBackButton={showBackButton}
         backButtonText={backButtonText}
         backButtonFallback={backButtonFallback}
+        hideNonEssential={hideNonEssential}
       />
       
       <MobileNavigation
@@ -45,6 +48,7 @@ export default function SimpleNavigation({
         showBackButton={showBackButton}
         backButtonText={backButtonText}
         backButtonFallback={backButtonFallback}
+        hideNonEssential={hideNonEssential}
       />
     </div>
   )

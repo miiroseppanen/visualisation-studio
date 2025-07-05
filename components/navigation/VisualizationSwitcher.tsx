@@ -6,6 +6,7 @@ import VisualizationDropdown from './VisualizationDropdown'
 
 interface VisualizationSwitcherProps {
   className?: string
+  hideNonEssential?: boolean
 }
 
 /**
@@ -13,7 +14,8 @@ interface VisualizationSwitcherProps {
  * Handles only visualization selection logic
  */
 export default function VisualizationSwitcher({
-  className = ''
+  className = '',
+  hideNonEssential = false
 }: VisualizationSwitcherProps) {
   const {
     currentVisualization,
@@ -27,6 +29,7 @@ export default function VisualizationSwitcher({
       allVisualizations={allVisualizations}
       onVisualizationSelect={navigateToVisualization}
       className={className}
+      hideNonEssential={hideNonEssential}
     />
   )
 } 

@@ -21,6 +21,7 @@ interface NavigationBarProps {
   leftContent?: React.ReactNode
   rightContent?: React.ReactNode
   className?: string
+  hideNonEssential?: boolean
 }
 
 /**
@@ -33,7 +34,8 @@ export default function NavigationBar({
   backButtonFallback = '/',
   leftContent,
   rightContent,
-  className = ''
+  className = '',
+  hideNonEssential = false
 }: NavigationBarProps) {
   const { navigateHome } = useNavigation()
 
@@ -47,7 +49,7 @@ export default function NavigationBar({
         <div className="flex items-center justify-between">
           {/* Left side */}
           <div className="flex items-center space-x-4">
-            {showBackButton && (
+            {showBackButton && !hideNonEssential && (
               <NavigationBackButton 
                 onBack={handleBackClick}
                 text={backButtonText}
@@ -58,8 +60,8 @@ export default function NavigationBar({
 
           {/* Right side */}
           <div className="flex items-center space-x-4">
-            {rightContent}
-            <ThemeSwitcher />
+            {!hideNonEssential && rightContent}
+            {!hideNonEssential && <ThemeSwitcher />}
           </div>
         </div>
       </div>

@@ -37,7 +37,13 @@ export default function VisualizationLayout({
   showVisualizationNav = true,
   visualizationNavProps = {}
 }: VisualizationLayoutProps) {
-  const { isUIVisible, isMobile } = useMobileUI()
+  const { isUIVisible, isMobile, showUI } = useMobileUI()
+
+  const handleCanvasClick = () => {
+    if (!isUIVisible) {
+      showUI()
+    }
+  }
 
   return (
     <AppLayout showNavigation={false}>
@@ -46,15 +52,16 @@ export default function VisualizationLayout({
         {showVisualizationNav && (
           <div className={cn(
             "transition-all duration-300 ease-in-out",
-            isUIVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full"
+            isUIVisible ? "opacity-100 translate-y-0" : "opacity-20 -translate-y-0"
           )}>
             <SimpleNavigation 
               onReset={onReset}
               onExportSVG={onExportSVG}
-              showBackButton={visualizationNavProps.showBackButton}
+              showBackButton={isUIVisible ? visualizationNavProps.showBackButton : false}
               backButtonText={visualizationNavProps.backButtonText}
               backButtonFallback={visualizationNavProps.backButtonFallbackPath}
-              additionalActionButtons={visualizationNavProps.additionalActionButtons}
+              additionalActionButtons={isUIVisible ? visualizationNavProps.additionalActionButtons : undefined}
+              hideNonEssential={!isUIVisible}
             />
           </div>
         )}
@@ -62,7 +69,10 @@ export default function VisualizationLayout({
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col relative">
           {/* Canvas/Visualization Content */}
-          <div className="flex-1 w-full relative min-h-0 canvas-container">
+          <div 
+            className="flex-1 w-full relative min-h-0 canvas-container cursor-pointer"
+            onClick={handleCanvasClick}
+          >
             {children}
           </div>
 

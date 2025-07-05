@@ -16,16 +16,32 @@ interface VisualizationDropdownProps {
   allVisualizations: VisualizationOption[]
   onVisualizationSelect: (id: string) => void
   className?: string
+  hideNonEssential?: boolean
 }
 
 export default function VisualizationDropdown({
   currentVisualization,
   allVisualizations,
   onVisualizationSelect,
-  className = ''
+  className = '',
+  hideNonEssential = false
 }: VisualizationDropdownProps) {
   const handleVisualizationClick = (id: string) => {
     onVisualizationSelect(id)
+  }
+
+  // When hiding non-essential elements, show only the visualization name
+  if (hideNonEssential) {
+    return (
+      <div className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 ${className}`}>
+        {currentVisualization?.icon && (
+          <currentVisualization.icon className="w-4 h-4 flex-shrink-0" />
+        )}
+        <span className="text-base sm:text-lg font-normal truncate">
+          {currentVisualization?.name || 'Select Visualization'}
+        </span>
+      </div>
+    )
   }
 
   return (

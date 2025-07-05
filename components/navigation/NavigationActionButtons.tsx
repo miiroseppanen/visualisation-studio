@@ -9,14 +9,21 @@ interface NavigationActionButtonsProps {
   onExportSVG?: () => void
   additionalButtons?: React.ReactNode
   className?: string
+  hideNonEssential?: boolean
 }
 
 export default function NavigationActionButtons({
   onReset,
   onExportSVG,
   additionalButtons,
-  className = ''
+  className = '',
+  hideNonEssential = false
 }: NavigationActionButtonsProps) {
+  // When hiding non-essential elements, don't render anything
+  if (hideNonEssential) {
+    return null
+  }
+
   return (
     <div className={`flex items-center space-x-1 sm:space-x-2 ${className}`}>
       {onReset && (

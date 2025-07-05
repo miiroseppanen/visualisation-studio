@@ -13,6 +13,7 @@ interface DesktopNavigationProps {
   backButtonText?: string
   backButtonFallback?: string
   className?: string
+  hideNonEssential?: boolean
 }
 
 /**
@@ -26,7 +27,8 @@ export default function DesktopNavigation({
   showBackButton = true,
   backButtonText = 'Home',
   backButtonFallback = '/',
-  className = ''
+  className = '',
+  hideNonEssential = false
 }: DesktopNavigationProps) {
   return (
     <div className={`hidden md:block ${className}`}>
@@ -34,14 +36,16 @@ export default function DesktopNavigation({
         showBackButton={showBackButton}
         backButtonText={backButtonText}
         backButtonFallback={backButtonFallback}
-        leftContent={<VisualizationSwitcher />}
+        leftContent={<VisualizationSwitcher hideNonEssential={hideNonEssential} />}
         rightContent={
           <NavigationActionButtons
             onReset={onReset}
             onExportSVG={onExportSVG}
             additionalButtons={additionalActionButtons}
+            hideNonEssential={hideNonEssential}
           />
         }
+        hideNonEssential={hideNonEssential}
       />
     </div>
   )

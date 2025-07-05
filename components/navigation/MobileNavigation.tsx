@@ -16,6 +16,7 @@ interface MobileNavigationProps {
   backButtonText?: string
   backButtonFallback?: string
   className?: string
+  hideNonEssential?: boolean
 }
 
 /**
@@ -29,7 +30,8 @@ export default function MobileNavigation({
   showBackButton = true,
   backButtonText = 'Home',
   backButtonFallback = '/',
-  className = ''
+  className = '',
+  hideNonEssential = false
 }: MobileNavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { navigateHome } = useNavigation()
@@ -54,7 +56,7 @@ export default function MobileNavigation({
         {/* Mobile Header */}
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center space-x-3">
-            {showBackButton && (
+            {showBackButton && !hideNonEssential && (
               <NavigationBackButton 
                 onBack={handleBackClick}
                 text=""
@@ -73,30 +75,35 @@ export default function MobileNavigation({
           </div>
 
           <div className="flex items-center space-x-2">
-            <NavigationActionButtons
-              onReset={onReset}
-              onExportSVG={onExportSVG}
-              className="flex-shrink-0"
-            />
+            {!hideNonEssential && (
+              <NavigationActionButtons
+                onReset={onReset}
+                onExportSVG={onExportSVG}
+                className="flex-shrink-0"
+                hideNonEssential={hideNonEssential}
+              />
+            )}
             
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleMenu}
-              className="p-2 min-w-0"
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </Button>
+            {!hideNonEssential && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleMenu}
+                className="p-2 min-w-0"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Mobile Menu */}
-        {isMenuOpen && (
+        {isMenuOpen && !hideNonEssential && (
           <div className="border-t border-border/40 bg-background/70 backdrop-blur-md rounded-b-xl dark:bg-background/50">
             <div className="px-4 py-3 max-h-[70vh] overflow-y-auto">
               <div className="space-y-3">
