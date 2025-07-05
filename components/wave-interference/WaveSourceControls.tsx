@@ -90,14 +90,21 @@ export default function WaveSourceControls({
           
           {/* Add Source Button */}
           <Button
-            variant="outline"
+            variant={isAddingSource ? "destructive" : "default"}
             size="sm"
             onClick={() => onSetIsAddingSource(!isAddingSource)}
-            className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="w-full"
           >
             <Plus className="w-4 h-4 mr-2" />
             {isAddingSource ? 'Cancel Adding' : 'Add Wave Source'}
           </Button>
+          
+          {isAddingSource && (
+            <div className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 p-2 rounded border border-blue-200 dark:border-blue-800">
+              💡 <strong>Desktop:</strong> Click anywhere on canvas to add source<br/>
+              📱 <strong>Mobile:</strong> Tap canvas or use long press anywhere
+            </div>
+          )}
           
           {/* Quick Type Selection for New Sources */}
           {isAddingSource && (

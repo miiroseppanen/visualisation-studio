@@ -11,6 +11,8 @@ import type { WaveInterferenceAnimationSettings, WaveInterferencePanelState } fr
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
+import { useTouchEvents } from '@/lib/hooks/useTouchEvents'
+import { useMobileDetection } from '@/lib/hooks/useMobileDetection'
 
 interface WaveSource {
   id: string
@@ -29,6 +31,7 @@ export default function WaveInterferencePage() {
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const { theme } = useTheme()
+  const { isMobile } = useMobileDetection()
 
   // Wave sources state
   const [waveSources, setWaveSources] = useState<WaveSource[]>([
@@ -65,6 +68,89 @@ export default function WaveInterferencePage() {
   const [isDragging, setIsDragging] = useState(false)
   const [draggedSourceId, setDraggedSourceId] = useState<string | null>(null)
 
+  // Helper function to find source at coordinates
+  const findSourceAt = (x: number, y: number): WaveSource | undefined => {
+    return waveSources.find((source: WaveSource) => {
+      const distance = Math.sqrt((x - source.x) ** 2 + (y - source.y) ** 2)
+      return distance <= (isMobile ? 20 : 15) // Larger touch target for mobile
+    })
+  }
+
+  // Touch event handlers for mobile
+  const handleTouchStart = (x: number, y: number) => {
+    const clickedSource = findSourceAt(x, y)
+    
+    if (clickedSource) {
+      setIsDragging(true)
+      setDraggedSourceId(clickedSource.id)
+    } else if (isAddingSource) {
+      // Add new source at touch location
+      const newSource: WaveSource = {
+        id: Date.now().toString(),
+        x,
+        y,
+        frequency: selectedSourceType === 'sine' ? 2 : 1.5,
+        amplitude: 50,
+        phase: 0,
+        wavelength: 100,
+        active: true
+      }
+      setWaveSources(prev => [...prev, newSource])
+      setIsDragging(true)
+      setDraggedSourceId(newSource.id)
+      // Auto-disable adding mode after adding one source on mobile
+      if (isMobile) {
+        setIsAddingSource(false)
+      }
+    }
+  }
+
+  const handleTouchMove = (x: number, y: number) => {
+    if (!isDragging || !draggedSourceId) return
+    
+    setWaveSources(prev => prev.map(source => 
+      source.id === draggedSourceId ? { ...source, x, y } : source
+    ))
+  }
+
+  const handleTouchEnd = () => {
+    setIsDragging(false)
+    setDraggedSourceId(null)
+  }
+
+  const handlePinchZoom = (scale: number, centerX: number, centerY: number) => {
+    const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel * scale))
+    setZoomLevel(newZoom)
+  }
+
+  const handleLongPress = (x: number, y: number) => {
+    // Long press to add source on mobile without needing to enable adding mode first
+    const newSource: WaveSource = {
+      id: Date.now().toString(),
+      x,
+      y,
+      frequency: selectedSourceType === 'sine' ? 2 : 1.5,
+      amplitude: 50,
+      phase: 0,
+      wavelength: 100,
+      active: true
+    }
+    setWaveSources(prev => [...prev, newSource])
+  }
+
+  // Initialize touch events for mobile
+  useTouchEvents(canvasRef, {
+    onTouchStart: handleTouchStart,
+    onTouchMove: handleTouchMove,
+    onTouchEnd: handleTouchEnd,
+    onPinchZoom: handlePinchZoom,
+    onLongPress: handleLongPress
+  }, {
+    enablePinchZoom: true,
+    enableLongPress: true,
+    longPressDelay: 500
+  })
+
   // Initialize client-side rendering
   useEffect(() => {
     setIsClient(true)
@@ -79,19 +165,34 @@ export default function WaveInterferencePage() {
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect()
-      canvas.width = rect.width * window.devicePixelRatio
-      canvas.height = rect.height * window.devicePixelRatio
+      
+      // Use lower DPI on mobile for better performance
+      const dpr = isMobile ? Math.min(window.devicePixelRatio, 1.5) : window.devicePixelRatio
+      
+      canvas.width = rect.width * dpr
+      canvas.height = rect.height * dpr
       canvas.style.width = rect.width + 'px'
       canvas.style.height = rect.height + 'px'
+      
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.scale(dpr, dpr)
+        // Apply mobile performance optimizations
+        if (isMobile) {
+          ctx.imageSmoothingEnabled = false
+        }
+      }
     }
 
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
+    window.addEventListener('orientationchange', resizeCanvas)
     
     return () => {
       window.removeEventListener('resize', resizeCanvas)
+      window.removeEventListener('orientationchange', resizeCanvas)
     }
-  }, [isClient])
+  }, [isClient, isMobile])
 
   // Calculate wave amplitude at a point
   const calculateWaveAmplitude = (x: number, y: number, time: number): number => {
@@ -191,8 +292,11 @@ export default function WaveInterferencePage() {
     if (showInterference) {
       const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
       
-      for (let x = 0; x < width; x += resolution) {
-        for (let y = 0; y < height; y += resolution) {
+      // Use larger resolution on mobile for better performance
+      const effectiveResolution = isMobile ? Math.max(resolution, 3) : resolution
+      
+      for (let x = 0; x < width; x += effectiveResolution) {
+        for (let y = 0; y < height; y += effectiveResolution) {
           const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
           const normalizedAmplitude = (amplitude + 100) / 200 // Normalize to 0-1
           
@@ -205,7 +309,7 @@ export default function WaveInterferencePage() {
             : `rgba(0, 0, 0, ${alpha})`
           
           ctx.fillStyle = color
-          ctx.fillRect(x, y, resolution, resolution)
+          ctx.fillRect(x, y, effectiveResolution, effectiveResolution)
         }
       }
     }
@@ -271,11 +375,7 @@ export default function WaveInterferencePage() {
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
 
-    // Check if clicking on an existing source for dragging
-    const clickedSource = waveSources.find(source => {
-      const distance = Math.sqrt((x - source.x) ** 2 + (y - source.y) ** 2)
-      return distance <= 15 // Click radius
-    })
+    const clickedSource = findSourceAt(x, y)
 
     if (clickedSource) {
       setIsDragging(true)
@@ -286,7 +386,7 @@ export default function WaveInterferencePage() {
         id: Date.now().toString(),
         x,
         y,
-        frequency: 2,
+        frequency: selectedSourceType === 'sine' ? 2 : 1.5,
         amplitude: 50,
         phase: 0,
         wavelength: 100,
@@ -419,7 +519,10 @@ export default function WaveInterferencePage() {
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
       }
-      helpText="Click to add source, drag to move • Wheel to zoom • Use controls to adjust wave properties"
+      helpText={isMobile 
+        ? "Tap 'Add Wave Source' then tap canvas • Long press to add quickly • Pinch to zoom • Drag sources to move"
+        : "Click 'Add Wave Source' then click canvas • Drag sources to move • Wheel to zoom • Use controls to adjust properties"
+      }
       panelOpen={panelState.isOpen}
       onPanelToggle={() => setPanelState(prev => ({ ...prev, isOpen: !prev.isOpen }))}
       settingsContent={
@@ -467,11 +570,17 @@ export default function WaveInterferencePage() {
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair dark:invert dark:hue-rotate-180"
-        onMouseDown={handleCanvasMouseDown}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseUp={handleCanvasMouseUp}
-        onMouseLeave={handleCanvasMouseUp}
+        className={`w-full h-full dark:invert dark:hue-rotate-180 ${
+          isMobile ? 'touch-none' : 'cursor-crosshair'
+        }`}
+        style={{ 
+          cursor: isMobile ? 'default' : (isDragging ? 'grabbing' : 'crosshair'),
+          touchAction: 'none' // Prevent default touch behaviors
+        }}
+        onMouseDown={!isMobile ? handleCanvasMouseDown : undefined}
+        onMouseMove={!isMobile ? handleCanvasMouseMove : undefined}
+        onMouseUp={!isMobile ? handleCanvasMouseUp : undefined}
+        onMouseLeave={!isMobile ? handleCanvasMouseUp : undefined}
       />
     </VisualizationLayout>
   )
