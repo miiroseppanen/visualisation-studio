@@ -460,8 +460,9 @@ const WaveInterferencePreview = () => {
       }
 
       // Draw sources
-      sources.forEach(source => {
-        ctx.fillStyle = '#3b82f6'
+      sources.forEach((source, index) => {
+        const colors = ['#ef4444', '#3b82f6', '#10b981'] // red, blue, green
+        ctx.fillStyle = colors[index % colors.length]
         ctx.beginPath()
         ctx.arc(source.x, source.y, 4, 0, Math.PI * 2)
         ctx.fill()
@@ -562,8 +563,9 @@ const ParticleSwarmPreview = () => {
       })
 
       // Draw attractors
-      attractors.forEach(attractor => {
-        ctx.fillStyle = attractor.strength > 0 ? '#ef4444' : '#3b82f6'
+      attractors.forEach((attractor, index) => {
+        const colors = ['#ef4444', '#3b82f6'] // red, blue
+        ctx.fillStyle = colors[index % colors.length]
         ctx.beginPath()
         ctx.arc(attractor.x, attractor.y, 6, 0, Math.PI * 2)
         ctx.fill()
@@ -773,8 +775,8 @@ const NeuralNetworkPreview = () => {
         const weight = conn.weight
         
         ctx.strokeStyle = weight > 0 
-          ? (currentTheme ? 'rgba(34, 197, 94, 0.4)' : 'rgba(22, 163, 74, 0.4)')
-          : (currentTheme ? 'rgba(239, 68, 68, 0.4)' : 'rgba(220, 38, 38, 0.4)')
+          ? 'rgba(16, 185, 129, 0.4)' // green
+          : 'rgba(239, 68, 68, 0.4)' // red
         ctx.lineWidth = Math.abs(weight) * 2 + 1
         ctx.beginPath()
         ctx.moveTo(fromNode.x, fromNode.y)
@@ -789,12 +791,12 @@ const NeuralNetworkPreview = () => {
         
         let color: string
         if (node.layer === 0) {
-          color = currentTheme ? '#3b82f6' : '#1d4ed8'
+          color = '#3b82f6' // blue
         } else if (node.layer === layers.length - 1) {
-          color = currentTheme ? '#10b981' : '#059669'
+          color = '#10b981' // green
         } else {
           const intensity = Math.floor(activation * 255)
-          color = currentTheme ? `rgb(${intensity}, ${intensity}, 255)` : `rgb(0, 0, ${intensity})`
+          color = `rgb(${intensity}, ${intensity}, 255)` // blue gradient
         }
 
         ctx.fillStyle = color
@@ -925,8 +927,8 @@ const CellularAutomataPreview = () => {
         for (let x = 0; x < gridSize; x++) {
           if (nextGrid[y][x]) {
             const age = Math.floor(time * 2) % 8
-            const hue = (age * 45) % 360
-            ctx.fillStyle = `hsl(${hue}, 70%, 50%)`
+            const colors = ['#ef4444', '#3b82f6', '#10b981'] // red, blue, green
+            ctx.fillStyle = colors[age % colors.length]
             ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1)
           }
         }
@@ -990,7 +992,7 @@ const SoundWavePreview = () => {
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       // Draw waveform
-      ctx.strokeStyle = currentTheme ? '#3b82f6' : '#1d4ed8'
+      ctx.strokeStyle = '#3b82f6' // blue
       ctx.lineWidth = 2
       ctx.beginPath()
 
@@ -1024,8 +1026,8 @@ const SoundWavePreview = () => {
         const barX = i * binWidth
         const barY = spectrumY + spectrumHeight - barHeight
         
-        const hue = (i * 25) % 360
-        ctx.fillStyle = `hsl(${hue}, 70%, 60%)`
+        const colors = ['#ef4444', '#3b82f6', '#10b981'] // red, blue, green
+        ctx.fillStyle = colors[i % colors.length]
         ctx.fillRect(barX, barY, binWidth - 1, barHeight)
       }
 
@@ -1037,8 +1039,8 @@ const SoundWavePreview = () => {
         const y = canvas.height * 0.2
         
         const radius = harmonicAmp * 15
-        const hue = (harmonicFreq * 50) % 360
-        ctx.fillStyle = `hsl(${hue}, 70%, 60%)`
+        const colors = ['#ef4444', '#3b82f6', '#10b981'] // red, blue, green
+        ctx.fillStyle = colors[(h - 1) % colors.length]
         ctx.beginPath()
         ctx.arc(x, y, radius, 0, 2 * Math.PI)
         ctx.fill()
