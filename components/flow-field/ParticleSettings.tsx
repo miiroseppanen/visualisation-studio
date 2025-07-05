@@ -8,32 +8,28 @@ import { Checkbox } from '@/components/ui/checkbox'
 
 interface ParticleSettingsProps {
   particleCount: number
-  particleSpeed: number
-  particleLife: number
   showParticleTrails: boolean
-  fieldLineDensity: number
+  showWaveFunctions: boolean
+  showSuperposition: boolean
   expanded: boolean
   onToggleExpanded: () => void
   onSetParticleCount: (count: number) => void
-  onSetParticleSpeed: (speed: number) => void
-  onSetParticleLife: (life: number) => void
   onSetShowParticleTrails: (show: boolean) => void
-  onSetFieldLineDensity: (density: number) => void
+  onSetShowWaveFunctions: (show: boolean) => void
+  onSetShowSuperposition: (show: boolean) => void
 }
 
 export default function ParticleSettings({
   particleCount,
-  particleSpeed,
-  particleLife,
   showParticleTrails,
-  fieldLineDensity,
+  showWaveFunctions,
+  showSuperposition,
   expanded,
   onToggleExpanded,
   onSetParticleCount,
-  onSetParticleSpeed,
-  onSetParticleLife,
   onSetShowParticleTrails,
-  onSetFieldLineDensity
+  onSetShowWaveFunctions,
+  onSetShowSuperposition
 }: ParticleSettingsProps) {
   return (
     <div>
@@ -60,38 +56,6 @@ export default function ParticleSettings({
             <Slider
               value={[particleCount]}
               onValueChange={([value]) => onSetParticleCount(value)}
-              max={500}
-              min={10}
-              step={10}
-              className="w-full"
-            />
-          </div>
-
-          {/* Particle Speed */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Particle Speed</Label>
-              <div className="text-sm text-muted-foreground">{particleSpeed.toFixed(1)}</div>
-            </div>
-            <Slider
-              value={[particleSpeed]}
-              onValueChange={([value]) => onSetParticleSpeed(value)}
-              max={10}
-              min={0.1}
-              step={0.1}
-              className="w-full"
-            />
-          </div>
-
-          {/* Particle Life */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Particle Life</Label>
-              <div className="text-sm text-muted-foreground">{particleLife}</div>
-            </div>
-            <Slider
-              value={[particleLife]}
-              onValueChange={([value]) => onSetParticleLife(value)}
               max={200}
               min={20}
               step={10}
@@ -101,7 +65,7 @@ export default function ParticleSettings({
 
           {/* Visual Effects */}
           <div className="space-y-3 pt-2 border-t">
-            <Label className="text-sm font-medium">Visual Effects</Label>
+            <Label className="text-sm font-medium">Quantum Effects</Label>
             
             {/* Particle Trails */}
             <div className="flex items-center space-x-2">
@@ -113,20 +77,24 @@ export default function ParticleSettings({
               <Label htmlFor="particle-trails" className="text-sm">Show Particle Trails</Label>
             </div>
 
-            {/* Field Line Density */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm">Field Line Density</Label>
-                <div className="text-sm text-muted-foreground">{fieldLineDensity}</div>
-              </div>
-              <Slider
-                value={[fieldLineDensity]}
-                onValueChange={([value]) => onSetFieldLineDensity(value)}
-                max={30}
-                min={5}
-                step={1}
-                className="w-full"
+            {/* Wave Functions */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="wave-functions"
+                checked={showWaveFunctions}
+                onCheckedChange={onSetShowWaveFunctions}
               />
+              <Label htmlFor="wave-functions" className="text-sm">Show Wave Functions</Label>
+            </div>
+
+            {/* Superposition Effects */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="superposition"
+                checked={showSuperposition}
+                onCheckedChange={onSetShowSuperposition}
+              />
+              <Label htmlFor="superposition" className="text-sm">Show Superposition Effects</Label>
             </div>
           </div>
         </div>

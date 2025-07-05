@@ -13,28 +13,33 @@ import type { Pole } from '@/lib/types'
 import type { FlowFieldPanelState } from '@/lib/types'
 import { COLOR_PALETTE } from '@/lib/constants'
 
-interface MagneticPole {
+interface QuantumPole {
   id: string
   x: number
   y: number
   strength: number
-  type: 'north' | 'south'
+  type: 'attractor' | 'repeller' | 'vortex' | 'quantum'
+  phase: number
+  frequency: number
+  radius: number
 }
 
 interface FlowPoleControlsProps {
-  poles: MagneticPole[]
-  selectedPoleType: 'north' | 'south'
+  poles: QuantumPole[]
+  selectedPoleType: 'attractor' | 'repeller' | 'vortex' | 'quantum'
   isAddingPole: boolean
   showPoles: boolean
   showFieldLines: boolean
+  fieldLineDensity: number
   expanded: boolean
   onToggleExpanded: () => void
-  onSetSelectedPoleType: (type: 'north' | 'south') => void
+  onSetSelectedPoleType: (type: 'attractor' | 'repeller' | 'vortex' | 'quantum') => void
   onSetIsAddingPole: (adding: boolean) => void
   onRemovePole: (id: string) => void
   onSetShowPoles: (show: boolean) => void
   onSetShowFieldLines: (show: boolean) => void
-  onUpdatePole?: (id: string, updates: Partial<MagneticPole>) => void
+  onSetFieldLineDensity: (density: number) => void
+  onUpdatePole?: (id: string, updates: Partial<QuantumPole>) => void
 }
 
 export default function FlowPoleControls({
@@ -43,6 +48,7 @@ export default function FlowPoleControls({
   isAddingPole,
   showPoles,
   showFieldLines,
+  fieldLineDensity,
   expanded,
   onToggleExpanded,
   onSetSelectedPoleType,
@@ -50,26 +56,39 @@ export default function FlowPoleControls({
   onRemovePole,
   onSetShowPoles,
   onSetShowFieldLines,
+  onSetFieldLineDensity,
   onUpdatePole
 }: FlowPoleControlsProps) {
   const poleTypeOptions = [
     {
-      value: 'north',
-      label: 'North',
+      value: 'attractor',
+      label: 'Attractor',
       icon: <Magnet className="w-4 h-4 text-white" />,
-      color: COLOR_PALETTE.positive // Red for north
+      color: COLOR_PALETTE.positive
     },
     {
-      value: 'south',
-      label: 'South',
+      value: 'repeller',
+      label: 'Repeller',
       icon: <Magnet className="w-4 h-4 text-white" />,
-      color: COLOR_PALETTE.negative // Blue for south
+      color: COLOR_PALETTE.negative
+    },
+    {
+      value: 'vortex',
+      label: 'Vortex',
+      icon: <Magnet className="w-4 h-4 text-white" />,
+      color: COLOR_PALETTE.neutral
+    },
+    {
+      value: 'quantum',
+      label: 'Quantum',
+      icon: <Magnet className="w-4 h-4 text-white" />,
+      color: COLOR_PALETTE.positive
     }
   ]
 
   const switchPoleType = (id: string, newType: string) => {
     if (onUpdatePole) {
-      onUpdatePole(id, { type: newType as 'north' | 'south' })
+      onUpdatePole(id, { type: newType as 'attractor' | 'repeller' | 'vortex' | 'quantum' })
     }
   }
 
@@ -98,24 +117,42 @@ export default function FlowPoleControls({
           {isAddingPole && (
             <div className="space-y-2">
               <Label className="text-xs text-gray-600 dark:text-gray-300">Default Type for New Poles</Label>
-              <div className="flex space-x-2">
+              <div className="grid grid-cols-2 gap-2">
                 <Button
-                  variant={selectedPoleType === 'north' ? 'default' : 'outline'}
+                  variant={selectedPoleType === 'attractor' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => onSetSelectedPoleType('north')}
-                  className="flex-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => onSetSelectedPoleType('attractor')}
+                  className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <Magnet className="w-3 h-3 mr-1" />
-                  North
+                  Attractor
                 </Button>
                 <Button
-                  variant={selectedPoleType === 'south' ? 'default' : 'outline'}
+                  variant={selectedPoleType === 'repeller' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => onSetSelectedPoleType('south')}
-                  className="flex-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  onClick={() => onSetSelectedPoleType('repeller')}
+                  className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <Magnet className="w-3 h-3 mr-1" />
-                  South
+                  Repeller
+                </Button>
+                <Button
+                  variant={selectedPoleType === 'vortex' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => onSetSelectedPoleType('vortex')}
+                  className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <Magnet className="w-3 h-3 mr-1" />
+                  Vortex
+                </Button>
+                <Button
+                  variant={selectedPoleType === 'quantum' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => onSetSelectedPoleType('quantum')}
+                  className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <Magnet className="w-3 h-3 mr-1" />
+                  Quantum
                 </Button>
               </div>
             </div>
@@ -159,7 +196,9 @@ export default function FlowPoleControls({
               <div key={pole.id} className="space-y-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <ListCard
                   icon={<Magnet className="w-8 h-8 text-white" />}
-                  iconColor={pole.type === 'north' ? COLOR_PALETTE.positive : COLOR_PALETTE.negative}
+                  iconColor={pole.type === 'attractor' ? COLOR_PALETTE.positive : 
+                             pole.type === 'repeller' ? COLOR_PALETTE.negative :
+                             pole.type === 'vortex' ? COLOR_PALETTE.neutral : COLOR_PALETTE.positive}
                   title={pole.type}
                   subtitle={`Position: (${Math.round(pole.x)}, ${Math.round(pole.y)})`}
                   onRemove={() => onRemovePole(pole.id)}

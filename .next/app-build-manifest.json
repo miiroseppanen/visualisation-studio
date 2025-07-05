@@ -35,11 +35,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/suggestions/page.js"
-    ],
-    "/flow-field/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/flow-field/page.js"
     ]
   }
 }

@@ -14,12 +14,43 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { useTheme } from '@/components/ui/ThemeProvider'
 
-interface MagneticPole {
+interface QuantumPole {
   id: string
   x: number
   y: number
   strength: number
-  type: 'north' | 'south'
+  type: 'attractor' | 'repeller' | 'vortex' | 'quantum'
+  phase: number
+  frequency: number
+  radius: number
+}
+
+interface QuantumParticle {
+  id: string
+  x: number
+  y: number
+  vx: number
+  vy: number
+  life: number
+  maxLife: number
+  trail: Array<{ x: number; y: number; life: number; phase: number }>
+  maxTrailLength: number
+  age: number
+  state: 'particle' | 'wave' | 'superposition'
+  phase: number
+  amplitude: number
+  wavelength: number
+  tunnelingProbability: number
+  entangledWith: string | null
+}
+
+interface WaveFunction {
+  x: number
+  y: number
+  amplitude: number
+  phase: number
+  frequency: number
+  decay: number
 }
 
 export default function FlowFieldPage() {
@@ -29,50 +60,35 @@ export default function FlowFieldPage() {
   const [zoomLevel, setZoomLevel] = useState(1)
   const { theme } = useTheme()
 
-  // Poles state
-  const [poles, setPoles] = useState<MagneticPole[]>([
-    { id: '1', x: 200, y: 300, strength: 100, type: 'north' },
-    { id: '2', x: 600, y: 300, strength: 100, type: 'south' }
+  // Quantum poles state
+  const [poles, setPoles] = useState<QuantumPole[]>([
+    { id: '1', x: 200, y: 300, strength: 100, type: 'attractor', phase: 0, frequency: 1, radius: 80 },
+    { id: '2', x: 600, y: 300, strength: 100, type: 'repeller', phase: 0, frequency: 1, radius: 80 },
+    { id: '3', x: 400, y: 200, strength: 80, type: 'vortex', phase: 0, frequency: 2, radius: 60 }
   ])
 
-  // Particles state
-  const [particles, setParticles] = useState<Array<{
-    x: number
-    y: number
-    vx: number
-    vy: number
-    life: number
-    maxLife: number
-    trail: Array<{ x: number; y: number; life: number }>
-    maxTrailLength: number
-    age: number
-  }>>([])
+  // Quantum particles state
+  const [particles, setParticles] = useState<QuantumParticle[]>([])
 
-  // Background noise particles state
-  const [noiseParticles, setNoiseParticles] = useState<Array<{
-    x: number
-    y: number
-    vx: number
-    vy: number
-    life: number
-    maxLife: number
-    size: number
-  }>>([])
+  // Wave functions state
+  const [waveFunctions, setWaveFunctions] = useState<WaveFunction[]>([])
 
   // Settings state
-  const [particleCount, setParticleCount] = useState(100)
+  const [particleCount, setParticleCount] = useState(80)
   const [showPoles, setShowPoles] = useState(true)
   const [showFieldLines, setShowFieldLines] = useState(true)
-  const [selectedPoleType, setSelectedPoleType] = useState<'north' | 'south'>('north')
+  const [selectedPoleType, setSelectedPoleType] = useState<'attractor' | 'repeller' | 'vortex' | 'quantum'>('attractor')
   const [showParticleTrails, setShowParticleTrails] = useState(true)
-  const [fieldLineDensity, setFieldLineDensity] = useState(15)
+  const [showWaveFunctions, setShowWaveFunctions] = useState(true)
+  const [showSuperposition, setShowSuperposition] = useState(true)
+  const [fieldLineDensity, setFieldLineDensity] = useState(12)
 
   // Animation settings
   const [animationSettings, setAnimationSettings] = useState<FlowFieldAnimationSettings>({
     isAnimating: true,
-    particleSpeed: 2,
-    particleLife: 100,
-    flowIntensity: 1.0,
+    particleSpeed: 1.5,
+    particleLife: 120,
+    flowIntensity: 1.2,
     time: 0
   })
 
@@ -117,10 +133,12 @@ export default function FlowFieldPage() {
     return () => window.removeEventListener('resize', resizeCanvas)
   }, [isClient])
 
-  // Calculate magnetic field at a point
-  const calculateField = (x: number, y: number): { x: number; y: number; magnitude: number } => {
+  // Calculate quantum field at a point
+  const calculateQuantumField = (x: number, y: number, time: number): { x: number; y: number; magnitude: number; phase: number } => {
     let fieldX = 0
     let fieldY = 0
+    let totalPhase = 0
+    let totalMagnitude = 0
 
     poles.forEach(pole => {
       const dx = x - pole.x
@@ -129,63 +147,119 @@ export default function FlowFieldPage() {
       
       if (distance < 1) return // Avoid division by zero
       
-      // Use pole strength more directly in the force calculation
-      const force = (pole.strength / 100) / (distance * distance)
-      const angle = Math.atan2(dy, dx)
+      const polePhase = pole.phase + time * pole.frequency
+      const poleStrength = pole.strength / 100
       
-      // Magnetic field direction depends on pole type
-      const direction = pole.type === 'north' ? 1 : -1
+      switch (pole.type) {
+        case 'attractor':
+          {
+            const force = poleStrength / (distance * distance)
+            const angle = Math.atan2(dy, dx)
+            fieldX += Math.cos(angle) * force
+            fieldY += Math.sin(angle) * force
+            totalPhase += Math.sin(polePhase) * force
+          }
+          break
+        case 'repeller':
+          {
+            const force = poleStrength / (distance * distance)
+            const angle = Math.atan2(dy, dx)
+            fieldX -= Math.cos(angle) * force
+            fieldY -= Math.sin(angle) * force
+            totalPhase += Math.cos(polePhase) * force
+          }
+          break
+        case 'vortex':
+          {
+            const force = poleStrength / (distance * distance)
+            const angle = Math.atan2(dy, dx) + Math.PI / 2
+            fieldX += Math.cos(angle) * force
+            fieldY += Math.sin(angle) * force
+            totalPhase += Math.sin(polePhase + distance * 0.1) * force
+          }
+          break
+        case 'quantum':
+          {
+            const quantumForce = poleStrength * Math.exp(-distance / pole.radius) * Math.sin(polePhase + distance * 0.05)
+            const angle = Math.atan2(dy, dx)
+            fieldX += Math.cos(angle) * quantumForce
+            fieldY += Math.sin(angle) * quantumForce
+            totalPhase += quantumForce
+          }
+          break
+      }
       
-      fieldX += Math.cos(angle) * force * direction
-      fieldY += Math.sin(angle) * force * direction
+      totalMagnitude += poleStrength / (distance * distance)
     })
 
-    // Apply flow intensity to both field components and magnitude
+    // Apply flow intensity
     const adjustedFieldX = fieldX * animationSettings.flowIntensity
     const adjustedFieldY = fieldY * animationSettings.flowIntensity
 
     return {
       x: adjustedFieldX,
       y: adjustedFieldY,
-      magnitude: Math.sqrt(adjustedFieldX * adjustedFieldX + adjustedFieldY * adjustedFieldY)
+      magnitude: Math.sqrt(adjustedFieldX * adjustedFieldX + adjustedFieldY * adjustedFieldY),
+      phase: totalPhase
     }
   }
 
-  // Generate particles
+  // Generate quantum particles
   useEffect(() => {
     if (!isClient) return
 
-    const newParticles = []
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const width = canvas.width / window.devicePixelRatio
+    const height = canvas.height / window.devicePixelRatio
+
+    const newParticles: QuantumParticle[] = []
     for (let i = 0; i < particleCount; i++) {
+      const state = Math.random() > 0.7 ? 'wave' : Math.random() > 0.5 ? 'superposition' : 'particle'
       newParticles.push({
-        x: Math.random() * (canvasRef.current?.width || 800),
-        y: Math.random() * (canvasRef.current?.height || 600),
+        id: `particle-${i}`,
+        x: Math.random() * width,
+        y: Math.random() * height,
         vx: 0,
         vy: 0,
         life: Math.random() * animationSettings.particleLife,
         maxLife: animationSettings.particleLife,
         trail: [],
-        maxTrailLength: 20,
-        age: 0
+        maxTrailLength: 25,
+        age: 0,
+        state,
+        phase: Math.random() * Math.PI * 2,
+        amplitude: Math.random() * 0.5 + 0.5,
+        wavelength: Math.random() * 20 + 10,
+        tunnelingProbability: Math.random() * 0.3,
+        entangledWith: null
       })
     }
+
+    // Create some entangled pairs
+    for (let i = 0; i < newParticles.length - 1; i += 2) {
+      if (Math.random() > 0.7) {
+        newParticles[i].entangledWith = newParticles[i + 1].id
+        newParticles[i + 1].entangledWith = newParticles[i].id
+      }
+    }
+
     setParticles(newParticles)
 
-    // Generate background noise particles
-    const newNoiseParticles = []
-    const noiseCount = Math.floor(particleCount * 0.3) // 30% of main particles
-    for (let i = 0; i < noiseCount; i++) {
-      newNoiseParticles.push({
-        x: Math.random() * (canvasRef.current?.width || 800),
-        y: Math.random() * (canvasRef.current?.height || 600),
-        vx: (Math.random() - 0.5) * 2, // Random initial velocity
-        vy: (Math.random() - 0.5) * 2,
-        life: Math.random() * animationSettings.particleLife * 0.5, // Shorter life
-        maxLife: animationSettings.particleLife * 0.5,
-        size: Math.random() * 3 + 1 // Increased size range
+    // Generate wave functions
+    const newWaveFunctions: WaveFunction[] = []
+    for (let i = 0; i < 15; i++) {
+      newWaveFunctions.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        amplitude: Math.random() * 0.8 + 0.2,
+        phase: Math.random() * Math.PI * 2,
+        frequency: Math.random() * 2 + 0.5,
+        decay: Math.random() * 0.02 + 0.01
       })
     }
-    setNoiseParticles(newNoiseParticles)
+    setWaveFunctions(newWaveFunctions)
   }, [particleCount, animationSettings.particleLife, isClient])
 
   // Animation loop
@@ -195,95 +269,119 @@ export default function FlowFieldPage() {
     const animate = () => {
       setParticles(prevParticles => 
         prevParticles.map(particle => {
-          // Calculate field at particle position
-          const field = calculateField(particle.x, particle.y)
+          // Calculate quantum field at particle position
+          const field = calculateQuantumField(particle.x, particle.y, animationSettings.time)
           
-          // Update velocity based on field with improved physics
-          const fieldStrength = Math.min(field.magnitude, 5)
-          particle.vx += field.x * animationSettings.particleSpeed * 0.02 * fieldStrength
-          particle.vy += field.y * animationSettings.particleSpeed * 0.02 * fieldStrength
-          
-          // Apply damping with velocity-dependent factor
-          const velocity = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
-          const damping = Math.max(0.95, 1 - velocity * 0.01)
-          particle.vx *= damping
-          particle.vy *= damping
-          
+          // Update particle based on its quantum state
+          let newVx = particle.vx
+          let newVy = particle.vy
+          let newPhase = particle.phase
+
+          switch (particle.state) {
+            case 'particle':
+              // Classical particle behavior
+              newVx += field.x * 0.1
+              newVy += field.y * 0.1
+              break
+            case 'wave':
+              // Wave-like behavior with interference
+              newVx += field.x * 0.05 + Math.sin(particle.phase) * 0.5
+              newVy += field.y * 0.05 + Math.cos(particle.phase) * 0.5
+              newPhase += field.phase * 0.1
+              break
+            case 'superposition':
+              // Superposition of particle and wave states
+              const superpositionFactor = Math.sin(animationSettings.time * 0.5)
+              newVx += (field.x * 0.1 * (1 + superpositionFactor) + Math.sin(particle.phase) * 0.3) * 0.5
+              newVy += (field.y * 0.1 * (1 + superpositionFactor) + Math.cos(particle.phase) * 0.3) * 0.5
+              newPhase += field.phase * 0.15
+              break
+          }
+
+          // Quantum tunneling effect
+          if (Math.random() < particle.tunnelingProbability * 0.01) {
+            const tunnelDistance = 50 + Math.random() * 100
+            const tunnelAngle = Math.random() * Math.PI * 2
+            particle.x += Math.cos(tunnelAngle) * tunnelDistance
+            particle.y += Math.sin(tunnelAngle) * tunnelDistance
+          }
+
+          // Entanglement effects
+          if (particle.entangledWith) {
+            const entangledParticle = prevParticles.find(p => p.id === particle.entangledWith)
+            if (entangledParticle) {
+              const distance = Math.sqrt(
+                Math.pow(particle.x - entangledParticle.x, 2) + 
+                Math.pow(particle.y - entangledParticle.y, 2)
+              )
+              if (distance > 200) {
+                // Quantum correlation at a distance
+                newVx += (entangledParticle.vx - particle.vx) * 0.01
+                newVy += (entangledParticle.vy - particle.vy) * 0.01
+              }
+            }
+          }
+
+          // Limit speed
+          const speed = Math.sqrt(newVx * newVx + newVy * newVy)
+          const maxSpeed = animationSettings.particleSpeed * (particle.state === 'wave' ? 1.5 : 1)
+          if (speed > maxSpeed) {
+            newVx = (newVx / speed) * maxSpeed
+            newVy = (newVy / speed) * maxSpeed
+          }
+
           // Update position
-          particle.x += particle.vx
-          particle.y += particle.vy
+          const newX = particle.x + newVx
+          const newY = particle.y + newVy
+
+          // Wrap around edges
+          const canvas = canvasRef.current
+          const width = canvas ? canvas.width / window.devicePixelRatio : 800
+          const height = canvas ? canvas.height / window.devicePixelRatio : 600
           
+          const finalX = newX < 0 ? width : newX > width ? 0 : newX
+          const finalY = newY < 0 ? height : newY > height ? 0 : newY
+
           // Update trail
-          if (showParticleTrails) {
-            particle.trail.push({ x: particle.x, y: particle.y, life: particle.life })
-            if (particle.trail.length > particle.maxTrailLength) {
-              particle.trail.shift()
-            }
+          const newTrail = [...particle.trail, { 
+            x: particle.x, 
+            y: particle.y, 
+            life: 1, 
+            phase: particle.phase 
+          }]
+          if (newTrail.length > particle.maxTrailLength) {
+            newTrail.shift()
           }
-          
-          // Update life and age
-          particle.life -= 1
-          particle.age += 1
-          
-          // Reset particle if it's dead or out of bounds
-          if (particle.life <= 0 || 
-              particle.x < -50 || particle.x > (canvasRef.current?.width || 800) + 50 ||
-              particle.y < -50 || particle.y > (canvasRef.current?.height || 600) + 50) {
-            return {
-              x: Math.random() * (canvasRef.current?.width || 800),
-              y: Math.random() * (canvasRef.current?.height || 600),
-              vx: 0,
-              vy: 0,
-              life: animationSettings.particleLife,
-              maxLife: animationSettings.particleLife,
-              trail: [],
-              maxTrailLength: 20,
-              age: 0
-            }
+
+          // Fade trail
+          newTrail.forEach(point => {
+            point.life *= 0.95
+          })
+
+          return {
+            ...particle,
+            x: finalX,
+            y: finalY,
+            vx: newVx,
+            vy: newVy,
+            phase: newPhase,
+            trail: newTrail,
+            life: particle.life - 1,
+            age: particle.age + 1
           }
-          
-          return particle
-        })
+        }).filter(particle => particle.life > 0)
       )
 
-      // Animate noise particles
-      setNoiseParticles(prevNoiseParticles => 
-        prevNoiseParticles.map(particle => {
-          // Add some random movement
-          particle.vx += (Math.random() - 0.5) * 0.5
-          particle.vy += (Math.random() - 0.5) * 0.5
-          
-          // Apply damping
-          particle.vx *= 0.98
-          particle.vy *= 0.98
-          
-          // Update position
-          particle.x += particle.vx
-          particle.y += particle.vy
-          
-          // Update life
-          particle.life -= 1
-          
-          // Reset particle if it's dead or out of bounds
-          if (particle.life <= 0 || 
-              particle.x < -50 || particle.x > (canvasRef.current?.width || 800) + 50 ||
-              particle.y < -50 || particle.y > (canvasRef.current?.height || 600) + 50) {
-            return {
-              x: Math.random() * (canvasRef.current?.width || 800),
-              y: Math.random() * (canvasRef.current?.height || 600),
-              vx: (Math.random() - 0.5) * 2,
-              vy: (Math.random() - 0.5) * 2,
-              life: animationSettings.particleLife * 0.5,
-              maxLife: animationSettings.particleLife * 0.5,
-              size: Math.random() * 3 + 1
-            }
-          }
-          
-          return particle
-        })
+      // Update wave functions
+      setWaveFunctions(prevWaves => 
+        prevWaves.map(wave => ({
+          ...wave,
+          phase: wave.phase + wave.frequency * 0.1,
+          amplitude: wave.amplitude * (1 - wave.decay)
+        })).filter(wave => wave.amplitude > 0.01)
       )
 
-      setAnimationSettings(prev => ({ ...prev, time: prev.time + 1 }))
+      setAnimationSettings(prev => ({ ...prev, time: prev.time + 0.02 }))
       const frameId = requestAnimationFrame(animate)
       animationRef.current = frameId
       registerAnimationFrame(frameId)
@@ -299,7 +397,7 @@ export default function FlowFieldPage() {
         unregisterAnimationFrame(animationRef.current)
       }
     }
-  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, showParticleTrails, isClient])
+  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, isClient])
 
   // Handle pause all animations
   useEffect(() => {
@@ -318,107 +416,6 @@ export default function FlowFieldPage() {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         handlePauseAllAnimations()
-      } else if (animationSettings.isAnimating) {
-        const animate = () => {
-          setParticles(prevParticles => 
-            prevParticles.map(particle => {
-              // Calculate field at particle position
-              const field = calculateField(particle.x, particle.y)
-              
-              // Update velocity based on field with improved physics
-              const fieldStrength = Math.min(field.magnitude, 5)
-              particle.vx += field.x * animationSettings.particleSpeed * 0.02 * fieldStrength
-              particle.vy += field.y * animationSettings.particleSpeed * 0.02 * fieldStrength
-              
-              // Apply damping with velocity-dependent factor
-              const velocity = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
-              const damping = Math.max(0.95, 1 - velocity * 0.01)
-              particle.vx *= damping
-              particle.vy *= damping
-              
-              // Update position
-              particle.x += particle.vx
-              particle.y += particle.vy
-              
-              // Update trail
-              if (showParticleTrails) {
-                particle.trail.push({ x: particle.x, y: particle.y, life: particle.life })
-                if (particle.trail.length > particle.maxTrailLength) {
-                  particle.trail.shift()
-                }
-              }
-              
-              // Update life and age
-              particle.life -= 1
-              particle.age += 1
-              
-              // Reset particle if it's dead or out of bounds
-              if (particle.life <= 0 || 
-                  particle.x < -50 || particle.x > (canvasRef.current?.width || 800) + 50 ||
-                  particle.y < -50 || particle.y > (canvasRef.current?.height || 600) + 50) {
-                return {
-                  x: Math.random() * (canvasRef.current?.width || 800),
-                  y: Math.random() * (canvasRef.current?.height || 600),
-                  vx: 0,
-                  vy: 0,
-                  life: animationSettings.particleLife,
-                  maxLife: animationSettings.particleLife,
-                  trail: [],
-                  maxTrailLength: 20,
-                  age: 0
-                }
-              }
-              
-              return particle
-            })
-          )
-
-          // Animate noise particles
-          setNoiseParticles(prevNoiseParticles => 
-            prevNoiseParticles.map(particle => {
-              // Add some random movement
-              particle.vx += (Math.random() - 0.5) * 0.5
-              particle.vy += (Math.random() - 0.5) * 0.5
-              
-              // Apply damping
-              particle.vx *= 0.98
-              particle.vy *= 0.98
-              
-              // Update position
-              particle.x += particle.vx
-              particle.y += particle.vy
-              
-              // Update life
-              particle.life -= 1
-              
-              // Reset particle if it's dead or out of bounds
-              if (particle.life <= 0 || 
-                  particle.x < -50 || particle.x > (canvasRef.current?.width || 800) + 50 ||
-                  particle.y < -50 || particle.y > (canvasRef.current?.height || 600) + 50) {
-                return {
-                  x: Math.random() * (canvasRef.current?.width || 800),
-                  y: Math.random() * (canvasRef.current?.height || 600),
-                  vx: (Math.random() - 0.5) * 2,
-                  vy: (Math.random() - 0.5) * 2,
-                  life: animationSettings.particleLife * 0.5,
-                  maxLife: animationSettings.particleLife * 0.5,
-                  size: Math.random() * 3 + 1
-                }
-              }
-              
-              return particle
-            })
-          )
-
-          setAnimationSettings(prev => ({ ...prev, time: prev.time + 1 }))
-          const frameId = requestAnimationFrame(animate)
-          animationRef.current = frameId
-          registerAnimationFrame(frameId)
-        }
-
-        const frameId = requestAnimationFrame(animate)
-        animationRef.current = frameId
-        registerAnimationFrame(frameId)
       }
     }
 
@@ -430,7 +427,7 @@ export default function FlowFieldPage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       handlePauseAllAnimations()
     }
-  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, showParticleTrails])
+  }, [])
 
   // Render loop
   useEffect(() => {
@@ -440,59 +437,88 @@ export default function FlowFieldPage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Clear canvas with subtle fade effect
+    // Clear canvas
     ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
     ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
 
-    // Draw field lines
+    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+    // Draw quantum field lines
     if (showFieldLines) {
-      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      const fieldLineColor = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
-      
-      ctx.strokeStyle = fieldLineColor
-      ctx.lineWidth = 1
+      const width = canvas.width / window.devicePixelRatio
+      const height = canvas.height / window.devicePixelRatio
+      const spacing = width / fieldLineDensity
 
-      // Draw field lines from poles
-      poles.forEach(pole => {
-        const startAngle = 0
-        const endAngle = 2 * Math.PI
-        const angleStep = (endAngle - startAngle) / fieldLineDensity
-
-        for (let angle = startAngle; angle < endAngle; angle += angleStep) {
-          let x = pole.x + Math.cos(angle) * 20
-          let y = pole.y + Math.sin(angle) * 20
-          const length = 100
-
-          // Draw field line
-          const field = calculateField(x, y)
-          if (field.magnitude > 0.1) {
-            const endX = x + (field.x / field.magnitude) * length
-            const endY = y + (field.y / field.magnitude) * length
+      for (let x = 0; x < width; x += spacing) {
+        for (let y = 0; y < height; y += spacing) {
+          const field = calculateQuantumField(x, y, animationSettings.time)
+          const magnitude = field.magnitude
+          
+          if (magnitude > 0.01) {
+            const angle = Math.atan2(field.y, field.x)
+            const length = Math.min(magnitude * 20, 15)
             
-            // Draw arrowhead
-            const arrowAngle = Math.atan2(field.y, field.x)
-            const arrowLength = 8
-            const arrowAngleOffset = Math.PI / 6
-            
+            const endX = x + Math.cos(angle) * length
+            const endY = y + Math.sin(angle) * length
+
+            // Color based on field phase
+            const hue = (field.phase * 180 / Math.PI + 180) % 360
+            const color = isDark 
+              ? `hsl(${hue}, 70%, 60%)`
+              : `hsl(${hue}, 70%, 40%)`
+
+            ctx.strokeStyle = color
+            ctx.lineWidth = 1
             ctx.beginPath()
             ctx.moveTo(x, y)
             ctx.lineTo(endX, endY)
             ctx.stroke()
-            
+
             // Draw arrowhead
+            const arrowLength = 5
+            const arrowAngle = Math.PI / 6
             ctx.beginPath()
             ctx.moveTo(endX, endY)
             ctx.lineTo(
-              endX - arrowLength * Math.cos(arrowAngle - arrowAngleOffset),
-              endY - arrowLength * Math.sin(arrowAngle - arrowAngleOffset)
+              endX - arrowLength * Math.cos(angle - arrowAngle),
+              endY - arrowLength * Math.sin(angle - arrowAngle)
             )
             ctx.moveTo(endX, endY)
             ctx.lineTo(
-              endX - arrowLength * Math.cos(arrowAngle + arrowAngleOffset),
-              endY - arrowLength * Math.sin(arrowAngle + arrowAngleOffset)
+              endX - arrowLength * Math.cos(angle + arrowAngle),
+              endY - arrowLength * Math.sin(angle + arrowAngle)
             )
             ctx.stroke()
           }
+        }
+      }
+    }
+
+    // Draw wave functions
+    if (showWaveFunctions) {
+      waveFunctions.forEach(wave => {
+        const color = isDark 
+          ? `rgba(100, 150, 255, ${wave.amplitude * 0.3})`
+          : `rgba(50, 100, 200, ${wave.amplitude * 0.3})`
+
+        ctx.fillStyle = color
+        ctx.beginPath()
+        ctx.arc(wave.x, wave.y, wave.amplitude * 30, 0, 2 * Math.PI)
+        ctx.fill()
+
+        // Draw wave rings
+        for (let i = 1; i <= 3; i++) {
+          const ringRadius = wave.amplitude * 30 + i * 20
+          const ringAlpha = wave.amplitude * 0.1 / i
+          const ringColor = isDark 
+            ? `rgba(100, 150, 255, ${ringAlpha})`
+            : `rgba(50, 100, 200, ${ringAlpha})`
+
+          ctx.strokeStyle = ringColor
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.arc(wave.x, wave.y, ringRadius, 0, 2 * Math.PI)
+          ctx.stroke()
         }
       })
     }
@@ -501,84 +527,155 @@ export default function FlowFieldPage() {
     if (showParticleTrails) {
       particles.forEach(particle => {
         if (particle.trail.length < 2) return
+
+        ctx.beginPath()
+        ctx.moveTo(particle.trail[0].x, particle.trail[0].y)
         
-        // Draw trail with fade effect
-        for (let i = 0; i < particle.trail.length - 1; i++) {
-          const current = particle.trail[i]
-          const next = particle.trail[i + 1]
-          const progress = i / particle.trail.length
-          const alpha = 0.2 + progress * 0.6 // Increased opacity
+        for (let i = 1; i < particle.trail.length; i++) {
+          const point = particle.trail[i]
+          const alpha = point.life * 0.8
           
-          // Black and white theme-aware colors
-          const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-          const trailColor = isDark ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 0, 0, ${alpha})`
+          let color: string
+          switch (particle.state) {
+            case 'particle':
+              color = isDark 
+                ? `rgba(255, 255, 255, ${alpha})`
+                : `rgba(0, 0, 0, ${alpha})`
+              break
+            case 'wave':
+              const waveHue = (point.phase * 180 / Math.PI + 180) % 360
+              color = `hsla(${waveHue}, 70%, 60%, ${alpha})`
+              break
+            case 'superposition':
+              const superHue = (point.phase * 180 / Math.PI + 90) % 360
+              color = `hsla(${superHue}, 80%, 70%, ${alpha})`
+              break
+            default:
+              color = isDark 
+                ? `rgba(255, 255, 255, ${alpha})`
+                : `rgba(0, 0, 0, ${alpha})`
+          }
           
-          ctx.strokeStyle = trailColor
-          ctx.lineWidth = 1.5 // Increased line width
-          ctx.beginPath()
-          ctx.moveTo(current.x, current.y)
-          ctx.lineTo(next.x, next.y)
-          ctx.stroke()
+          ctx.strokeStyle = color
+          ctx.lineWidth = particle.state === 'wave' ? 2 : 1
+          ctx.lineTo(point.x, point.y)
         }
+        ctx.stroke()
       })
     }
 
-    // Draw enhanced particles
+    // Draw particles
     particles.forEach(particle => {
-      const velocity = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
-      const field = calculateField(particle.x, particle.y)
-      const alpha = particle.life / particle.maxLife
-      const size = Math.max(2, Math.min(6, velocity * 3 + 2)) // Increased size range
+      const lifeRatio = particle.life / particle.maxLife
+      const size = particle.state === 'wave' ? 4 : particle.state === 'superposition' ? 6 : 3
       
-      // Black and white theme-aware colors with higher opacity
-      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      const baseColor = isDark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.95)'
-      
-      ctx.fillStyle = baseColor.replace('0.95', (alpha * 0.95).toString())
+      let color: string
+      switch (particle.state) {
+        case 'particle':
+          color = isDark ? '#ffffff' : '#000000'
+          break
+        case 'wave':
+          const waveHue = (particle.phase * 180 / Math.PI + 180) % 360
+          color = `hsl(${waveHue}, 70%, 60%)`
+          break
+        case 'superposition':
+          const superHue = (particle.phase * 180 / Math.PI + 90) % 360
+          color = `hsl(${superHue}, 80%, 70%)`
+          break
+        default:
+          color = isDark ? '#ffffff' : '#000000'
+      }
+
+      ctx.fillStyle = color
       ctx.beginPath()
       ctx.arc(particle.x, particle.y, size, 0, 2 * Math.PI)
       ctx.fill()
+
+      // Draw entanglement lines
+      if (particle.entangledWith) {
+        const entangledParticle = particles.find(p => p.id === particle.entangledWith)
+        if (entangledParticle) {
+          const distance = Math.sqrt(
+            Math.pow(particle.x - entangledParticle.x, 2) + 
+            Math.pow(particle.y - entangledParticle.y, 2)
+          )
+          if (distance < 200) {
+            ctx.strokeStyle = isDark ? 'rgba(255, 100, 255, 0.3)' : 'rgba(200, 50, 200, 0.3)'
+            ctx.lineWidth = 1
+            ctx.setLineDash([5, 5])
+            ctx.beginPath()
+            ctx.moveTo(particle.x, particle.y)
+            ctx.lineTo(entangledParticle.x, entangledParticle.y)
+            ctx.stroke()
+            ctx.setLineDash([])
+          }
+        }
+      }
+
+      // Draw superposition effects
+      if (particle.state === 'superposition' && showSuperposition) {
+        const superpositionRadius = size * 2 + Math.sin(animationSettings.time * 2) * 5
+        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.arc(particle.x, particle.y, superpositionRadius, 0, 2 * Math.PI)
+        ctx.stroke()
+      }
     })
 
-    // Draw noise particles
-    noiseParticles.forEach(particle => {
-      const alpha = particle.life / particle.maxLife
-      
-      // Black and white theme-aware colors with higher opacity for noise particles
-      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      const baseColor = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'
-      
-      ctx.fillStyle = baseColor.replace('0.6', (alpha * 0.6).toString())
-      ctx.beginPath()
-      ctx.arc(particle.x, particle.y, particle.size * 1.5, 0, 2 * Math.PI) // Increased size
-      ctx.fill()
-    })
-
-    // Draw enhanced poles
+    // Draw quantum poles
     if (showPoles) {
       poles.forEach(pole => {
-        const color = pole.type === 'north' ? '#ef4444' : '#3b82f6'
-        
-        // Draw pole circle
+        let color: string
+        switch (pole.type) {
+          case 'attractor':
+            color = '#10b981'
+            break
+          case 'repeller':
+            color = '#ef4444'
+            break
+          case 'vortex':
+            color = '#3b82f6'
+            break
+          case 'quantum':
+            color = '#8b5cf6'
+            break
+          default:
+            color = '#6b7280'
+        }
+
+        // Draw pole
         ctx.fillStyle = color
         ctx.beginPath()
-        ctx.arc(pole.x, pole.y, 10, 0, 2 * Math.PI)
+        ctx.arc(pole.x, pole.y, 8, 0, 2 * Math.PI)
         ctx.fill()
-        
+
         // Draw pole border
         ctx.strokeStyle = '#000000'
         ctx.lineWidth = 2
         ctx.stroke()
-        
-        // Draw pole symbol
+
+        // Draw pole label
         ctx.fillStyle = 'white'
-        ctx.font = 'bold 14px sans-serif'
+        ctx.font = 'bold 12px sans-serif'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText(pole.type === 'north' ? 'N' : 'S', pole.x, pole.y)
+        const label = pole.type === 'attractor' ? 'A' : pole.type === 'repeller' ? 'R' : pole.type === 'vortex' ? 'V' : 'Q'
+        ctx.fillText(label, pole.x, pole.y)
+
+        // Draw quantum field radius for quantum poles
+        if (pole.type === 'quantum') {
+          ctx.strokeStyle = color
+          ctx.lineWidth = 1
+          ctx.setLineDash([3, 3])
+          ctx.beginPath()
+          ctx.arc(pole.x, pole.y, pole.radius, 0, 2 * Math.PI)
+          ctx.stroke()
+          ctx.setLineDash([])
+        }
       })
     }
-  }, [particles, noiseParticles, poles, showPoles, showFieldLines, showParticleTrails, fieldLineDensity, animationSettings.flowIntensity, theme, isClient])
+  }, [particles, waveFunctions, showPoles, showFieldLines, showParticleTrails, showWaveFunctions, showSuperposition, fieldLineDensity, animationSettings, poles, theme, isClient])
 
   // Handle canvas mouse down for adding/dragging poles
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -598,14 +695,17 @@ export default function FlowFieldPage() {
     if (clickedPole) {
       setIsDragging(true)
       setDraggedPoleId(clickedPole.id)
-    } else {
+    } else if (isAddingPole) {
       // Add new pole at click location
-      const newPole: MagneticPole = {
+      const newPole: QuantumPole = {
         id: Date.now().toString(),
         x,
         y,
         strength: 100,
-        type: selectedPoleType
+        type: selectedPoleType,
+        phase: 0,
+        frequency: 1,
+        radius: 80
       }
       setPoles(prev => [...prev, newPole])
       setIsDragging(true)
@@ -635,7 +735,7 @@ export default function FlowFieldPage() {
     setDraggedPoleId(null)
   }
 
-  // Wheel event handler (direct DOM listener to avoid passive event issues)
+  // Wheel event handler
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas || !isClient) return
@@ -663,7 +763,7 @@ export default function FlowFieldPage() {
   }
 
   // Update pole
-  const updatePole = (id: string, updates: Partial<MagneticPole>) => {
+  const updatePole = (id: string, updates: Partial<QuantumPole>) => {
     setPoles(prev => prev.map(pole => 
       pole.id === id ? { ...pole, ...updates } : pole
     ))
@@ -678,8 +778,8 @@ export default function FlowFieldPage() {
       <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="white"/>
         ${poles.map(pole => `
-          <circle cx="${pole.x}" cy="${pole.y}" r="8" fill="${pole.type === 'north' ? '#ef4444' : '#3b82f6'}"/>
-          <text x="${pole.x}" y="${pole.y}" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12">${pole.type === 'north' ? 'N' : 'S'}</text>
+          <circle cx="${pole.x}" cy="${pole.y}" r="8" fill="${pole.type === 'attractor' ? '#10b981' : pole.type === 'repeller' ? '#ef4444' : pole.type === 'vortex' ? '#3b82f6' : '#8b5cf6'}"/>
+          <text x="${pole.x}" y="${pole.y}" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12">${pole.type === 'attractor' ? 'A' : pole.type === 'repeller' ? 'R' : pole.type === 'vortex' ? 'V' : 'Q'}</text>
         `).join('')}
       </svg>
     `
@@ -688,7 +788,7 @@ export default function FlowFieldPage() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = 'flow-field.svg'
+    link.download = 'quantum-flow-field.svg'
     link.click()
     URL.revokeObjectURL(url)
   }
@@ -696,28 +796,31 @@ export default function FlowFieldPage() {
   // Reset to defaults
   const resetToDefaults = () => {
     setPoles([
-      { id: '1', x: 200, y: 300, strength: 100, type: 'north' },
-      { id: '2', x: 600, y: 300, strength: 100, type: 'south' }
+      { id: '1', x: 200, y: 300, strength: 100, type: 'attractor', phase: 0, frequency: 1, radius: 80 },
+      { id: '2', x: 600, y: 300, strength: 100, type: 'repeller', phase: 0, frequency: 1, radius: 80 },
+      { id: '3', x: 400, y: 200, strength: 80, type: 'vortex', phase: 0, frequency: 2, radius: 60 }
     ])
-    setParticleCount(100)
     setAnimationSettings({
       isAnimating: true,
-      particleSpeed: 2,
-      particleLife: 100,
-      flowIntensity: 1.0,
+      particleSpeed: 1.5,
+      particleLife: 120,
+      flowIntensity: 1.2,
       time: 0
     })
     setShowPoles(true)
     setShowFieldLines(true)
     setShowParticleTrails(true)
-    setFieldLineDensity(15)
+    setShowWaveFunctions(true)
+    setShowSuperposition(true)
+    setFieldLineDensity(12)
+    setSelectedPoleType('attractor')
     setIsAddingPole(false)
   }
 
   if (!isClient) {
     return (
       <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading flow field visualizer...</div>
+        <div className="text-muted-foreground">Loading quantum flow field visualizer...</div>
       </div>
     )
   }
@@ -728,14 +831,14 @@ export default function FlowFieldPage() {
       onExportSVG={exportSVG}
       statusContent={
         <>
-          Mode: Flow Simulation | 
+          Mode: Quantum Flow Field | 
+          Particles: {particles.length} | 
           Poles: {poles.length} | 
-          Particles: {particleCount} | 
-          Trails: {showParticleTrails ? 'On' : 'Off'} | 
+          Waves: {waveFunctions.length} | 
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
       }
-      helpText="Click to add pole, drag to move • Wheel to zoom • Use controls to adjust settings"
+      helpText="Click to add quantum pole, drag to move • Wheel to zoom • Watch quantum effects emerge"
       panelOpen={panelState.isOpen}
       onPanelToggle={() => setPanelState(prev => ({ ...prev, isOpen: !prev.isOpen }))}
       settingsContent={
@@ -746,6 +849,7 @@ export default function FlowFieldPage() {
             isAddingPole={isAddingPole}
             showPoles={showPoles}
             showFieldLines={showFieldLines}
+            fieldLineDensity={fieldLineDensity}
             expanded={panelState.polesExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ 
               ...prev, polesExpanded: !prev.polesExpanded 
@@ -755,24 +859,23 @@ export default function FlowFieldPage() {
             onRemovePole={removePole}
             onSetShowPoles={setShowPoles}
             onSetShowFieldLines={setShowFieldLines}
+            onSetFieldLineDensity={setFieldLineDensity}
             onUpdatePole={updatePole}
           />
 
           <ParticleSettings
             particleCount={particleCount}
-            particleSpeed={animationSettings.particleSpeed}
-            particleLife={animationSettings.particleLife}
             showParticleTrails={showParticleTrails}
-            fieldLineDensity={fieldLineDensity}
+            showWaveFunctions={showWaveFunctions}
+            showSuperposition={showSuperposition}
             expanded={panelState.particleSettingsExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ 
               ...prev, particleSettingsExpanded: !prev.particleSettingsExpanded 
             }))}
             onSetParticleCount={setParticleCount}
-            onSetParticleSpeed={(speed) => setAnimationSettings(prev => ({ ...prev, particleSpeed: speed }))}
-            onSetParticleLife={(life) => setAnimationSettings(prev => ({ ...prev, particleLife: life }))}
             onSetShowParticleTrails={setShowParticleTrails}
-            onSetFieldLineDensity={setFieldLineDensity}
+            onSetShowWaveFunctions={setShowWaveFunctions}
+            onSetShowSuperposition={setShowSuperposition}
           />
 
           <AnimationControls
