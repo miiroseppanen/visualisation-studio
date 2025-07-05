@@ -247,7 +247,7 @@ export default function DrawingPage() {
                 <Checkbox
                   id="random-thickness"
                   checked={randomThickness}
-                  onCheckedChange={setRandomThickness}
+                  onCheckedChange={(checked) => setRandomThickness(checked === true)}
                 />
                 <Label htmlFor="random-thickness" className="text-sm">
                   Satunnainen paksuus
