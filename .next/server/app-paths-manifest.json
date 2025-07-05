@@ -1,6 +1,19 @@
 {
-  "/page": "app/page.js",
-  "/suggestions/page": "app/suggestions/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/circular-field/page": "app/circular-field/page.js",
-  "/flow-field/page": "app/flow-field/page.js"
+  "/cellular-automata/page": "app/cellular-automata/page.js",
+  "/flow-field/page": "app/flow-field/page.js",
+  "/neural-network/page": "app/neural-network/page.js",
+  "/page": "app/page.js",
+  "/simple-test/page": "app/simple-test/page.js",
+  "/particle-swarm/page": "app/particle-swarm/page.js",
+  "/suggestions/new/page": "app/suggestions/new/page.js",
+  "/sound-wave/page": "app/sound-wave/page.js",
+  "/test/page": "app/test/page.js",
+  "/topography/page": "app/topography/page.js",
+  "/turbulence/page": "app/turbulence/page.js",
+  "/suggestions/page": "app/suggestions/page.js",
+  "/wave-interference/page": "app/wave-interference/page.js",
+  "/fractal-tree/page": "app/fractal-tree/page.js",
+  "/grid-field/page": "app/grid-field/page.js"
 }
