@@ -106,6 +106,7 @@
 canvas {
   display: block;
   cursor: crosshair;
+  touch-action: none; /* Prevents default touch behaviors like scrolling */
 }
 
 /* Mobile canvas fixes */
@@ -113,14 +114,62 @@ canvas {
   canvas {
     width: 100% !important;
     height: 100% !important;
-    max-height: calc(100vh - 120px) !important; /* Account for navigation and controls */
+    max-height: calc(100vh - 60px) !important; /* Reduced padding for more canvas space */
+    max-height: calc(100dvh - 60px) !important; /* Use dynamic viewport height */
   }
   
   /* Ensure canvas container has proper height on mobile */
   .canvas-container {
-    height: calc(100vh - 120px);
-    min-height: 400px;
-    max-height: calc(100vh - 120px);
+    height: calc(100vh - 60px);
+    height: calc(100dvh - 60px); /* Use dynamic viewport height */
+    min-height: 300px; /* Reduced minimum height */
+    max-height: calc(100vh - 60px);
+    max-height: calc(100dvh - 60px);
+    overflow: hidden; /* Prevent scrolling */
+  }
+}
+
+/* Landscape mobile optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .canvas-container {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 250px;
+    max-height: 100vh;
+    max-height: 100dvh;
+  }
+  
+  canvas {
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+  }
+}
+
+/* Touch-friendly canvas improvements */
+@media (hover: none) and (pointer: coarse) {
+  canvas {
+    cursor: default; /* Remove crosshair on touch devices */
+    touch-action: none; /* Prevent default touch behaviors */
+    user-select: none; /* Prevent text selection */
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* Performance optimizations for mobile */
+@media (max-width: 768px) {
+  canvas {
+    /* Reduce rendering quality on mobile for better performance */
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    image-rendering: pixelated;
+    
+    /* Enable hardware acceleration */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
   }
 }
 
