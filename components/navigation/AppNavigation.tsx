@@ -1,20 +1,17 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Grid3X3, Magnet, Wind, Mountain, Radio, Sun, Moon, Laptop, ChevronDown } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Grid3X3, Magnet, Wind, Mountain, Radio, Sun, Moon, Laptop } from 'lucide-react'
 import { H23Logo } from '@/components/ui/h23-logo'
 import { useNavigation } from '@/lib/hooks/useNavigation'
-import { useTheme } from '@/components/ui/ThemeProvider'
+import { useTheme, type Theme } from '@/components/ui/ThemeProvider'
 import { useVisualizationNavigation } from '@/lib/hooks/useVisualizationNavigation'
 import VisualizationDropdown from './VisualizationDropdown'
 import LanguageSelector from '@/components/ui/LanguageSelector'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -109,7 +106,7 @@ export default function AppNavigation({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuRadioGroup value={theme} onValueChange={v => setTheme(v as any)}>
+        <DropdownMenuRadioGroup value={theme} onValueChange={(v: string) => setTheme(v as Theme)}>
           <DropdownMenuRadioItem value="light">
             <Sun className="w-4 h-4 mr-2 inline" /> Light
           </DropdownMenuRadioItem>
@@ -214,4 +211,4 @@ export default function AppNavigation({
   )
 }
 
-export { navigationItems } 
+export { navigationItems }

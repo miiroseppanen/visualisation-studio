@@ -3,12 +3,11 @@
 import React from 'react'
 import { useNavigation } from '@/lib/hooks/useNavigation'
 import NavigationBackButton from './NavigationBackButton'
-import { useTheme } from '@/components/ui/ThemeProvider'
+import { useTheme, type Theme } from '@/components/ui/ThemeProvider'
 import { Sun, Moon, Laptop } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -82,7 +81,7 @@ function ThemeSwitcher() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuRadioGroup value={theme} onValueChange={v => setTheme(v as any)}>
+        <DropdownMenuRadioGroup value={theme} onValueChange={(v: string) => setTheme(v as Theme)}>
           <DropdownMenuRadioItem value="light">
             <Sun className="w-4 h-4 mr-2 inline" /> Light
           </DropdownMenuRadioItem>
