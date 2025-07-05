@@ -539,4 +539,60 @@ body {
 
 .animate-slide-in {
   animation: slideIn 0.3s ease-out;
+}
+
+/* Drawing app specific styles */
+.drawing-page {
+  touch-action: none;
+  overflow: hidden;
+}
+
+.drawing-page .canvas-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  max-height: calc(100vh - 200px);
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.drawing-page .canvas-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+@media (max-width: 768px) {
+  .drawing-page .canvas-container {
+    height: 400px;
+    max-height: calc(100vh - 300px);
+  }
+  
+  .drawing-page .canvas-container canvas {
+    cursor: default;
+  }
+  
+  .drawing-page .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .drawing-page .controls-grid .full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .drawing-page .canvas-container {
+    height: 350px;
+    max-height: calc(100vh - 250px);
+  }
+  
+  .drawing-page .color-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
 } 
