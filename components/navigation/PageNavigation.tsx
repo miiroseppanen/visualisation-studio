@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Lightbulb, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useTheme } from '@/components/ui/ThemeProvider'
+import { useTheme, type Theme } from '@/components/ui/ThemeProvider'
 import { Sun, Moon, Laptop } from 'lucide-react'
 import {
   DropdownMenu,
@@ -93,7 +93,7 @@ function ThemeSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuRadioGroup value={theme} onValueChange={v => setTheme(v as any)}>
+        <DropdownMenuRadioGroup value={theme} onValueChange={(v: string) => setTheme(v as Theme)}>
           <DropdownMenuRadioItem value="light">
             <Sun className="w-4 h-4 mr-2 inline" /> Light
           </DropdownMenuRadioItem>
