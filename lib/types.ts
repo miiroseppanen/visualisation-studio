@@ -332,6 +332,46 @@ export interface FractalTreePanelState {
   animationExpanded: boolean
 }
 
+// Neural Network types
+export interface NeuralNetworkAnimationSettings extends BaseAnimationSettings {
+  pulseSpeed: number
+  learningSpeed: number
+}
+
+export interface NeuralNetworkPanelState {
+  isOpen: boolean
+  networkSettingsExpanded: boolean
+  trainingExpanded: boolean
+  animationExpanded: boolean
+}
+
+// Cellular Automata types
+export interface CellularAutomataAnimationSettings extends BaseAnimationSettings {
+  speed: number
+  cellSize: number
+}
+
+export interface CellularAutomataPanelState {
+  isOpen: boolean
+  rulesExpanded: boolean
+  patternExpanded: boolean
+  animationExpanded: boolean
+}
+
+// Sound Wave types
+export interface SoundWaveAnimationSettings extends BaseAnimationSettings {
+  frequency: number
+  amplitude: number
+  waveSpeed: number
+}
+
+export interface SoundWavePanelState {
+  isOpen: boolean
+  waveSettingsExpanded: boolean
+  frequencyExpanded: boolean
+  animationExpanded: boolean
+}
+
 export interface SuggestionStats {
   total: number
   byStatus: Record<string, number>

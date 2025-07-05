@@ -1,4 +1,4 @@
-import { Grid3X3, Magnet, Wind, Mountain, Radio, Waves, Users, TreePine } from 'lucide-react'
+import { Grid3X3, Magnet, Wind, Mountain, Radio, Waves, Users, TreePine, Brain, Grid, Volume2 } from 'lucide-react'
 
 export interface VisualizationOption {
   id: string
@@ -73,6 +73,30 @@ export const visualizationOptions: VisualizationOption[] = [
     icon: Mountain,
     description: 'Generate topographic contour lines from elevation points',
     category: 'terrain'
+  },
+  {
+    id: 'neural-network',
+    name: 'Neural Network',
+    path: '/neural-network',
+    icon: Brain,
+    description: 'Interactive neural network with animated connections and learning',
+    category: 'flow'
+  },
+  {
+    id: 'cellular-automata',
+    name: 'Cellular Automata',
+    path: '/cellular-automata',
+    icon: Grid,
+    description: "Conway's Game of Life with custom rules and patterns",
+    category: 'field'
+  },
+  {
+    id: 'sound-wave',
+    name: 'Sound Wave',
+    path: '/sound-wave',
+    icon: Volume2,
+    description: 'Real-time audio waveform with frequency analysis',
+    category: 'flow'
   }
 ]
 
