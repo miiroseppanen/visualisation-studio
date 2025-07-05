@@ -1,11 +1,168 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Grid3X3, Magnet, Wind, Mountain, Radio, Sparkles, Download, Play, Lightbulb } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import AppLayout from '@/components/layout/AppLayout'
+
+// Interactive Super Saddle Background Animation
+const SuperSaddleBackground = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationRef = useRef<number>()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    // Set canvas size
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * window.devicePixelRatio
+      canvas.height = rect.height * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    // Animation variables
+    let time = 0
+    const particles: Array<{
+      x: number
+      y: number
+      vx: number
+      vy: number
+      life: number
+      maxLife: number
+    }> = []
+
+    // Super saddle function: z = x² - y²
+    const superSaddle = (x: number, y: number, t: number) => {
+      const scale = 0.01
+      const xScaled = (x - canvas.width / 2) * scale
+      const yScaled = (y - canvas.height / 2) * scale
+      return Math.sin(xScaled * xScaled - yScaled * yScaled + t * 0.5) * 0.5 + 0.5
+    }
+
+    // Check if dark mode
+    const isDarkMode = () => {
+      return document.documentElement.classList.contains('dark') || 
+             window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+
+    // Create particles
+    const createParticle = (x: number, y: number) => {
+      const angle = Math.random() * Math.PI * 2
+      const speed = 0.5 + Math.random() * 1
+      particles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        maxLife: 0.5 + Math.random() * 0.5
+      })
+    }
+
+    // Animation loop
+    const animate = () => {
+      time += 0.016
+      const dark = isDarkMode()
+
+      // Clear canvas with fade effect
+      ctx.fillStyle = dark ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.02)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Create new particles
+      if (Math.random() < 0.3) {
+        createParticle(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height
+        )
+      }
+
+      // Update and draw particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const particle = particles[i]
+        
+        // Update position based on super saddle gradient
+        const saddleValue = superSaddle(particle.x, particle.y, time)
+        const gradientX = Math.cos(saddleValue * Math.PI * 2) * 0.5
+        const gradientY = Math.sin(saddleValue * Math.PI * 2) * 0.5
+        
+        particle.x += particle.vx + gradientX
+        particle.y += particle.vy + gradientY
+        particle.life -= 0.01
+
+        // Remove dead particles
+        if (particle.life <= 0 || 
+            particle.x < 0 || particle.x > canvas.width ||
+            particle.y < 0 || particle.y > canvas.height) {
+          particles.splice(i, 1)
+          continue
+        }
+
+        // Draw particle
+        const alpha = particle.life / particle.maxLife
+        const size = (1 - alpha) * 3 + 1
+        
+        ctx.save()
+        ctx.globalAlpha = alpha * 0.6
+        const hue = saddleValue * 360 + time * 50
+        const saturation = 70
+        const lightness = dark ? 60 : 50
+        ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`
+        ctx.beginPath()
+        ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+      }
+
+      // Draw super saddle contour lines
+      ctx.strokeStyle = dark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'
+      ctx.lineWidth = 1
+      
+      for (let i = 0; i < 20; i++) {
+        const y = (canvas.height / 20) * i
+        ctx.beginPath()
+        for (let x = 0; x < canvas.width; x += 2) {
+          const saddleValue = superSaddle(x, y, time)
+          const offsetY = Math.sin(saddleValue * Math.PI * 4) * 10
+          if (x === 0) {
+            ctx.moveTo(x, y + offsetY)
+          } else {
+            ctx.lineTo(x, y + offsetY)
+          }
+        }
+        ctx.stroke()
+      }
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ zIndex: -1 }}
+    />
+  )
+}
 
 // Static preview SVGs for each visualization
 const GridFieldPreview = () => (
@@ -152,38 +309,52 @@ const visualizations = [
 export default function HomePage() {
   return (
     <AppLayout showNavigation={true} navigationVariant="header">
-      {/* Hero Section */}
-      <section className="container mx-auto px-8 py-32">
-        <div className="max-w-4xl">
-          <h2 className="text-6xl md:text-8xl font-normal tracking-tight mb-12 text-foreground leading-none">
-            Visualization
-            <span className="block text-muted-foreground font-light">Studio</span>
-          </h2>
-          <p className="text-xl text-muted-foreground mb-16 leading-relaxed max-w-3xl">
-            Professional pattern generation toolkit for creative branding and packaging design. 
-            Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.
-          </p>
-          <p className="text-base text-muted-foreground mb-12 max-w-2xl">
-            Visualization Studio is designed and developed by <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>, a creative technology agency specializing in digital tools, branding, and interactive experiences for ambitious brands.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-6">
-            <Button asChild size="lg" className="group w-fit text-base px-8 py-3">
-              <Link href="/grid-field">
-                Start Creating
-                <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild className="w-fit text-base px-8 py-3">
-              <Link href="#tools">
-                Explore Tools
-              </Link>
-            </Button>
+      {/* Hero Section - Golden ratio proportions */}
+      <section className="container mx-auto px-8 py-24 relative overflow-hidden">
+        {/* Animated Background */}
+        <SuperSaddleBackground />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start relative z-10">
+          {/* Main content - 3/5 of width (golden ratio) */}
+          <div className="lg:col-span-3">
+            <h2 className="text-6xl md:text-7xl font-normal tracking-tight mb-8 text-foreground leading-none">
+              Visualization
+              <span className="block text-muted-foreground font-light mt-2">Studio</span>
+            </h2>
+            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+              Professional pattern generation toolkit for creative branding and packaging design. 
+              Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button asChild size="lg" className="group w-fit text-base px-8 py-3">
+                <Link href="/grid-field">
+                  Start Creating
+                  <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild className="w-fit text-base px-8 py-3">
+                <Link href="#tools">
+                  Explore Tools
+                </Link>
+              </Button>
+            </div>
+          </div>
+          
+          {/* Side content - 2/5 of width */}
+          <div className="lg:col-span-2">
           </div>
         </div>
       </section>
 
-      {/* Tools Section */}
+      {/* Tools Section - Structured grid */}
       <section id="tools" className="container mx-auto px-8 py-24">
+        <div className="mb-12">
+          <h3 className="text-3xl font-normal mb-4 text-foreground">Visualization Tools</h3>
+          <p className="text-muted-foreground max-w-2xl">
+            Comprehensive toolkit for creating sophisticated patterns and textures for professional design applications.
+          </p>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {visualizations.map((viz) => (
             <Link key={viz.path} href={viz.path} className="block group">
@@ -200,7 +371,7 @@ export default function HomePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <ul className="space-y-2">
+                  <ul className="space-y-2 mb-4">
                     {viz.features.map((feature, index) => (
                       <li key={index} className="flex items-center text-sm text-muted-foreground">
                         <Sparkles className="w-3 h-3 mr-2 text-accent flex-shrink-0" />
@@ -208,78 +379,89 @@ export default function HomePage() {
                       </li>
                     ))}
                   </ul>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="opacity-60 group-hover:opacity-100 group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent transition-all duration-200"
+                  >
+                    <Play className="w-3 h-3 mr-2" />
+                    Try Now
+                  </Button>
                 </CardContent>
               </Card>
             </Link>
           ))}
         </div>
-        <div className="flex justify-center mt-12">
-          <Button asChild size="lg" className="px-8 py-4 text-base font-semibold">
-            <Link href="/suggestions">
-              Suggest a New Visualization
-            </Link>
-          </Button>
+      </section>
+
+      {/* Suggestions Section - Structured layout */}
+      <section id="suggestions" className="container mx-auto px-8 py-24 bg-muted/30">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+          <div className="lg:col-span-2">
+            <div className="flex items-start space-x-3 mb-4">
+              <Lightbulb className="w-8 h-8 text-primary mt-1" />
+              <div>
+                <h3 className="text-3xl font-normal text-foreground">
+                  Community Suggestions
+                </h3>
+              </div>
+            </div>
+            <p className="text-lg text-muted-foreground mb-6">
+              Help shape the future of Visualization Studio by suggesting new visualization tools and features. 
+              Vote on existing ideas and contribute your own creative concepts.
+            </p>
+          </div>
+          
+          <div className="lg:col-span-2">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button asChild size="lg" className="px-8 py-3">
+                <Link href="/suggestions">
+                  View Suggestions
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild className="px-8 py-3">
+                <Link href="/suggestions/new">
+                  Submit New Idea
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* About Section */}
+      {/* About Section - Asymmetrical layout */}
       <section id="about" className="container mx-auto px-8 py-24">
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-3xl md:text-4xl font-normal mb-8 text-foreground">
-            About Visualization Studio
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <h4 className="text-xl font-medium mb-4 text-foreground">Professional Pattern Generation</h4>
-              <p className="text-muted-foreground leading-relaxed mb-6">
-                Visualization Studio provides a comprehensive toolkit for creating sophisticated patterns and textures. 
-                Whether you're designing packaging, branding materials, or digital assets, our tools offer the precision 
-                and flexibility needed for professional results.
-              </p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-span-2">
+            <h3 className="text-3xl font-normal mb-6 text-foreground">
+              About Visualization Studio
+            </h3>
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-xl font-medium mb-3 text-foreground">Professional Pattern Generation</h4>
+                <p className="text-muted-foreground leading-relaxed">
+                  Visualization Studio provides a comprehensive toolkit for creating sophisticated patterns and textures. 
+                  Whether you're designing packaging, branding materials, or digital assets, our tools offer the precision 
+                  and flexibility needed for professional results.
+                </p>
+              </div>
               <p className="text-muted-foreground leading-relaxed">
                 Each visualization tool is designed with both creative freedom and technical precision in mind, 
                 allowing you to explore endless possibilities while maintaining control over every aspect of your design.
               </p>
             </div>
-            <div>
-              <h4 className="text-xl font-medium mb-4 text-foreground">Powered by H23</h4>
-              <p className="text-muted-foreground leading-relaxed mb-6">
-                Developed by <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>, 
-                a creative technology agency that specializes in building digital tools and experiences for ambitious brands.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                Our expertise in creative technology, branding, and interactive experiences informs every aspect 
-                of Visualization Studio, ensuring it meets the needs of professional designers and creative teams.
-              </p>
-            </div>
           </div>
-        </div>
-      </section>
-
-      {/* Suggestions Section */}
-      <section id="suggestions" className="container mx-auto px-8 py-24 bg-muted/30">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="flex items-center justify-center mb-6">
-            <Lightbulb className="w-8 h-8 text-primary mr-3" />
-            <h3 className="text-3xl md:text-4xl font-normal text-foreground">
-              Community Suggestions
-            </h3>
-          </div>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Help shape the future of Visualization Studio by suggesting new visualization tools and features. 
-            Vote on existing ideas and contribute your own creative concepts.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="px-8 py-3">
-              <Link href="/suggestions">
-                View Suggestions
-              </Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild className="px-8 py-3">
-              <Link href="/suggestions/new">
-                Submit New Idea
-              </Link>
-            </Button>
+          
+          <div>
+            <h4 className="text-xl font-medium mb-4 text-foreground">Powered by H23</h4>
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              Developed by <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>, 
+              a creative technology agency that specializes in building digital tools and experiences for ambitious brands.
+            </p>
+            <p className="text-muted-foreground leading-relaxed">
+              Our expertise in creative technology, branding, and interactive experiences informs every aspect 
+              of Visualization Studio, ensuring it meets the needs of professional designers and creative teams.
+            </p>
           </div>
         </div>
       </section>
