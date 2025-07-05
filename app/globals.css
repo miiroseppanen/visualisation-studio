@@ -49,8 +49,17 @@
     --ring: 0 0% 83.1%;
   }
 
-  html, body {
-    height: 100%;
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 }
 
@@ -357,16 +366,15 @@ canvas {
   }
 }
 
-/* Fullscreen mobile experience */
+/* Mobile viewport optimization */
 @media screen and (max-width: 768px) {
   html, body {
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height */
-    overflow: hidden;
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height */
   }
   
   #__next {
-    height: 100%;
+    min-height: 100%;
   }
 }
 
@@ -377,10 +385,9 @@ canvas {
 
 @media screen and (max-width: 768px) {
   .canvas-container {
-    height: 100vh;
-    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
     width: 100vw;
-    overflow: hidden;
   }
   
   .canvas-container canvas {
@@ -399,13 +406,12 @@ canvas {
   }
 }
 
-/* Prevent overscroll bounce on iOS */
+/* Enable smooth scrolling */
 html {
-  overscroll-behavior: none;
+  scroll-behavior: smooth;
 }
 
 body {
-  overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
 }
 
