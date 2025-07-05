@@ -292,13 +292,27 @@ export default function FractalTreePage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Clear canvas
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-    ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
+    const render = () => {
+      // Clear canvas
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
 
-    // Render tree
-    renderBranch(ctx, tree, tree.x, tree.y)
-  }, [tree, showBranches, showLeaves, theme, isClient])
+      // Render tree
+      renderBranch(ctx, tree, tree.x, tree.y)
+    }
+
+    // Initial render
+    render()
+
+    // Set up animation loop for continuous rendering
+    if (animationSettings.isAnimating) {
+      const animate = () => {
+        render()
+        requestAnimationFrame(animate)
+      }
+      requestAnimationFrame(animate)
+    }
+  }, [tree, showBranches, showLeaves, theme, isClient, animationSettings.isAnimating])
 
   // Wheel event handler
   useEffect(() => {

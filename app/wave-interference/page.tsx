@@ -180,85 +180,99 @@ export default function WaveInterferencePage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Clear canvas
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-    ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
+    const render = () => {
+      // Clear canvas
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
 
-    const width = canvas.width / window.devicePixelRatio
-    const height = canvas.height / window.devicePixelRatio
+      const width = canvas.width / window.devicePixelRatio
+      const height = canvas.height / window.devicePixelRatio
 
-    // Draw interference pattern
-    if (showInterference) {
-      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      
-      for (let x = 0; x < width; x += resolution) {
-        for (let y = 0; y < height; y += resolution) {
-          const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
-          const normalizedAmplitude = (amplitude + 100) / 200 // Normalize to 0-1
-          
-          // Create interference pattern colors
-          const intensity = Math.abs(normalizedAmplitude - 0.5) * 2
-          const alpha = 0.3 + intensity * 0.7
-          
-          const color = isDark 
-            ? `rgba(255, 255, 255, ${alpha})`
-            : `rgba(0, 0, 0, ${alpha})`
-          
-          ctx.fillStyle = color
-          ctx.fillRect(x, y, resolution, resolution)
+      // Draw interference pattern
+      if (showInterference) {
+        const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        
+        for (let x = 0; x < width; x += resolution) {
+          for (let y = 0; y < height; y += resolution) {
+            const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
+            const normalizedAmplitude = (amplitude + 100) / 200 // Normalize to 0-1
+            
+            // Create interference pattern colors
+            const intensity = Math.abs(normalizedAmplitude - 0.5) * 2
+            const alpha = 0.3 + intensity * 0.7
+            
+            const color = isDark 
+              ? `rgba(255, 255, 255, ${alpha})`
+              : `rgba(0, 0, 0, ${alpha})`
+            
+            ctx.fillStyle = color
+            ctx.fillRect(x, y, resolution, resolution)
+          }
         }
+      }
+
+      // Draw wavefronts
+      if (showWavefronts) {
+        const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        const wavefrontColor = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
+        
+        ctx.strokeStyle = wavefrontColor
+        ctx.lineWidth = 1
+
+        waveSources.forEach(source => {
+          if (!source.active) return
+
+          const phase = source.phase + (animationSettings.time * source.frequency * animationSettings.waveSpeed)
+          const wavefrontCount = 8
+
+          for (let i = 0; i < wavefrontCount; i++) {
+            const radius = (i * source.wavelength) + (phase * source.wavelength / (2 * Math.PI))
+            
+            ctx.beginPath()
+            ctx.arc(source.x, source.y, radius, 0, 2 * Math.PI)
+            ctx.stroke()
+          }
+        })
+      }
+
+      // Draw wave sources
+      if (showWaveSources) {
+        waveSources.forEach(source => {
+          if (!source.active) return
+
+          const color = source.active ? '#3b82f6' : '#6b7280'
+          
+          // Draw source circle
+          ctx.fillStyle = color
+          ctx.beginPath()
+          ctx.arc(source.x, source.y, 8, 0, 2 * Math.PI)
+          ctx.fill()
+          
+          // Draw source border
+          ctx.strokeStyle = '#000000'
+          ctx.lineWidth = 2
+          ctx.stroke()
+          
+          // Draw source label
+          ctx.fillStyle = 'white'
+          ctx.font = 'bold 12px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(source.id, source.x, source.y)
+        })
       }
     }
 
-    // Draw wavefronts
-    if (showWavefronts) {
-      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      const wavefrontColor = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
-      
-      ctx.strokeStyle = wavefrontColor
-      ctx.lineWidth = 1
+    // Initial render
+    render()
 
-      waveSources.forEach(source => {
-        if (!source.active) return
-
-        const phase = source.phase + (animationSettings.time * source.frequency * animationSettings.waveSpeed)
-        const wavefrontCount = 8
-
-        for (let i = 0; i < wavefrontCount; i++) {
-          const radius = (i * source.wavelength) + (phase * source.wavelength / (2 * Math.PI))
-          
-          ctx.beginPath()
-          ctx.arc(source.x, source.y, radius, 0, 2 * Math.PI)
-          ctx.stroke()
-        }
-      })
-    }
-
-    // Draw wave sources
-    if (showWaveSources) {
-      waveSources.forEach(source => {
-        if (!source.active) return
-
-        const color = source.active ? '#3b82f6' : '#6b7280'
-        
-        // Draw source circle
-        ctx.fillStyle = color
-        ctx.beginPath()
-        ctx.arc(source.x, source.y, 8, 0, 2 * Math.PI)
-        ctx.fill()
-        
-        // Draw source border
-        ctx.strokeStyle = '#000000'
-        ctx.lineWidth = 2
-        ctx.stroke()
-        
-        // Draw source label
-        ctx.fillStyle = 'white'
-        ctx.font = 'bold 12px sans-serif'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(source.id, source.x, source.y)
-      })
+    // Set up animation loop for continuous rendering
+    if (animationSettings.isAnimating) {
+      const animate = () => {
+        render()
+        requestAnimationFrame(animate)
+      }
+      requestAnimationFrame(animate)
     }
   }, [waveSources, showWaveSources, showInterference, showWavefronts, resolution, selectedSourceType, animationSettings, theme, isClient])
 

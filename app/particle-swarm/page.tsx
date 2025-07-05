@@ -334,88 +334,102 @@ export default function ParticleSwarmPage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Clear canvas
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-    ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
+    const render = () => {
+      // Clear canvas
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
 
-    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
-    // Draw particle trails
-    if (showTrails) {
-      particles.forEach(particle => {
-        if (particle.trail.length < 2) return
+      // Draw particle trails
+      if (showTrails) {
+        particles.forEach(particle => {
+          if (particle.trail.length < 2) return
 
-        ctx.beginPath()
-        ctx.moveTo(particle.trail[0].x, particle.trail[0].y)
-        
-        for (let i = 1; i < particle.trail.length; i++) {
-          const point = particle.trail[i]
-          const alpha = point.opacity * 0.3
-          const color = isDark 
-            ? `rgba(255, 255, 255, ${alpha})`
-            : `rgba(0, 0, 0, ${alpha})`
+          ctx.beginPath()
+          ctx.moveTo(particle.trail[0].x, particle.trail[0].y)
           
+          for (let i = 1; i < particle.trail.length; i++) {
+            const point = particle.trail[i]
+            const alpha = point.opacity * 0.3
+            const color = isDark 
+              ? `rgba(255, 255, 255, ${alpha})`
+              : `rgba(0, 0, 0, ${alpha})`
+            
+            ctx.strokeStyle = color
+            ctx.lineWidth = 1
+            ctx.lineTo(point.x, point.y)
+          }
+          ctx.stroke()
+        })
+      }
+
+      // Draw particles
+      if (showParticles) {
+        particles.forEach(particle => {
+          const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
+          const normalizedSpeed = Math.min(speed / maxSpeed, 1)
+          
+          // Color based on speed
+          const hue = 200 + normalizedSpeed * 60 // Blue to cyan
+          const color = `hsl(${hue}, 70%, 50%)`
+          
+          ctx.fillStyle = color
+          ctx.beginPath()
+          ctx.arc(particle.x, particle.y, particle.size, 0, 2 * Math.PI)
+          ctx.fill()
+        })
+      }
+
+      // Draw attractors
+      if (showAttractors) {
+        attractors.forEach(attractor => {
+          if (!attractor.active) return
+
+          const color = attractor.strength > 0 ? '#10b981' : '#ef4444'
+          
+          // Draw attractor circle
+          ctx.fillStyle = color
+          ctx.beginPath()
+          ctx.arc(attractor.x, attractor.y, 8, 0, 2 * Math.PI)
+          ctx.fill()
+          
+          // Draw attractor border
+          ctx.strokeStyle = '#000000'
+          ctx.lineWidth = 2
+          ctx.stroke()
+          
+          // Draw influence radius
           ctx.strokeStyle = color
           ctx.lineWidth = 1
-          ctx.lineTo(point.x, point.y)
-        }
-        ctx.stroke()
-      })
+          ctx.setLineDash([5, 5])
+          ctx.beginPath()
+          ctx.arc(attractor.x, attractor.y, attractor.radius, 0, 2 * Math.PI)
+          ctx.stroke()
+          ctx.setLineDash([])
+          
+          // Draw attractor label
+          ctx.fillStyle = 'white'
+          ctx.font = 'bold 12px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(attractor.strength > 0 ? '+' : '-', attractor.x, attractor.y)
+        })
+      }
     }
 
-    // Draw particles
-    if (showParticles) {
-      particles.forEach(particle => {
-        const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
-        const normalizedSpeed = Math.min(speed / maxSpeed, 1)
-        
-        // Color based on speed
-        const hue = 200 + normalizedSpeed * 60 // Blue to cyan
-        const color = `hsl(${hue}, 70%, 50%)`
-        
-        ctx.fillStyle = color
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, particle.size, 0, 2 * Math.PI)
-        ctx.fill()
-      })
-    }
+    // Initial render
+    render()
 
-    // Draw attractors
-    if (showAttractors) {
-      attractors.forEach(attractor => {
-        if (!attractor.active) return
-
-        const color = attractor.strength > 0 ? '#10b981' : '#ef4444'
-        
-        // Draw attractor circle
-        ctx.fillStyle = color
-        ctx.beginPath()
-        ctx.arc(attractor.x, attractor.y, 8, 0, 2 * Math.PI)
-        ctx.fill()
-        
-        // Draw attractor border
-        ctx.strokeStyle = '#000000'
-        ctx.lineWidth = 2
-        ctx.stroke()
-        
-        // Draw influence radius
-        ctx.strokeStyle = color
-        ctx.lineWidth = 1
-        ctx.setLineDash([5, 5])
-        ctx.beginPath()
-        ctx.arc(attractor.x, attractor.y, attractor.radius, 0, 2 * Math.PI)
-        ctx.stroke()
-        ctx.setLineDash([])
-        
-        // Draw attractor label
-        ctx.fillStyle = 'white'
-        ctx.font = 'bold 12px sans-serif'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(attractor.strength > 0 ? '+' : '-', attractor.x, attractor.y)
-      })
+    // Set up animation loop for continuous rendering
+    if (animationSettings.isAnimating) {
+      const animate = () => {
+        render()
+        requestAnimationFrame(animate)
+      }
+      requestAnimationFrame(animate)
     }
-  }, [particles, showParticles, showTrails, showAttractors, attractors, maxSpeed, theme, isClient])
+  }, [particles, showParticles, showTrails, showAttractors, attractors, maxSpeed, theme, isClient, animationSettings.isAnimating])
 
   // Handle canvas mouse down for adding/dragging attractors
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {

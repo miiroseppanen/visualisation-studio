@@ -295,105 +295,118 @@ export default function NeuralNetworkPage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Clear canvas
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-    ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
+    const render = () => {
+      // Clear canvas
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
 
-    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
-    // Draw connections
-    nodes.forEach(node => {
-      node.connections.forEach(connection => {
-        const targetNode = nodes.find(n => n.id === connection.targetId)
-        if (!targetNode) return
+      // Draw connections
+      nodes.forEach(node => {
+        node.connections.forEach(connection => {
+          const targetNode = nodes.find(n => n.id === connection.targetId)
+          if (!targetNode) return
 
-        const weight = connection.weight
-        const isActive = connection.isActive
+          const weight = connection.weight
+          const isActive = connection.isActive
+          
+          // Color based on weight
+          let color: string
+          if (weight > 0) {
+            color = isDark ? `rgba(34, 197, 94, ${connectionOpacity * (isActive ? 1 : 0.3)})` : `rgba(22, 163, 74, ${connectionOpacity * (isActive ? 1 : 0.3)})`
+          } else {
+            color = isDark ? `rgba(239, 68, 68, ${connectionOpacity * (isActive ? 1 : 0.3)})` : `rgba(220, 38, 38, ${connectionOpacity * (isActive ? 1 : 0.3)})`
+          }
+
+          ctx.strokeStyle = color
+          ctx.lineWidth = Math.abs(weight) * 3 + 1
+          ctx.beginPath()
+          ctx.moveTo(node.x, node.y)
+          ctx.lineTo(targetNode.x, targetNode.y)
+          ctx.stroke()
+
+          // Draw weight value
+          if (showWeights) {
+            const midX = (node.x + targetNode.x) / 2
+            const midY = (node.y + targetNode.y) / 2
+            ctx.fillStyle = isDark ? '#ffffff' : '#000000'
+            ctx.font = '10px sans-serif'
+            ctx.textAlign = 'center'
+            ctx.fillText(weight.toFixed(2), midX, midY)
+          }
+        })
+      })
+
+      // Draw nodes
+      nodes.forEach(node => {
+        const activation = node.activation
+        const pulse = node.pulse
         
-        // Color based on weight
+        // Node color based on activation
         let color: string
-        if (weight > 0) {
-          color = isDark ? `rgba(34, 197, 94, ${connectionOpacity * (isActive ? 1 : 0.3)})` : `rgba(22, 163, 74, ${connectionOpacity * (isActive ? 1 : 0.3)})`
+        if (node.isInput) {
+          color = isDark ? '#3b82f6' : '#1d4ed8'
+        } else if (node.isOutput) {
+          color = isDark ? '#10b981' : '#059669'
         } else {
-          color = isDark ? `rgba(239, 68, 68, ${connectionOpacity * (isActive ? 1 : 0.3)})` : `rgba(220, 38, 38, ${connectionOpacity * (isActive ? 1 : 0.3)})`
+          const intensity = Math.floor(activation * 255)
+          color = isDark ? `rgb(${intensity}, ${intensity}, 255)` : `rgb(0, 0, ${intensity})`
         }
 
-        ctx.strokeStyle = color
-        ctx.lineWidth = Math.abs(weight) * 3 + 1
+        // Draw node
+        ctx.fillStyle = color
         ctx.beginPath()
-        ctx.moveTo(node.x, node.y)
-        ctx.lineTo(targetNode.x, targetNode.y)
+        ctx.arc(node.x, node.y, nodeSize + pulse * 5, 0, 2 * Math.PI)
+        ctx.fill()
+
+        // Draw node border
+        ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
+        ctx.lineWidth = 2
         ctx.stroke()
 
-        // Draw weight value
-        if (showWeights) {
-          const midX = (node.x + targetNode.x) / 2
-          const midY = (node.y + targetNode.y) / 2
+        // Draw activation value
+        if (showActivations) {
           ctx.fillStyle = isDark ? '#ffffff' : '#000000'
-          ctx.font = '10px sans-serif'
+          ctx.font = '12px sans-serif'
           ctx.textAlign = 'center'
-          ctx.fillText(weight.toFixed(2), midX, midY)
+          ctx.fillText(activation.toFixed(2), node.x, node.y + 4)
+        }
+
+        // Draw pulse effect
+        if (showPulses && pulse > 0) {
+          ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.arc(node.x, node.y, nodeSize + pulse * 15, 0, 2 * Math.PI)
+          ctx.stroke()
         }
       })
-    })
 
-    // Draw nodes
-    nodes.forEach(node => {
-      const activation = node.activation
-      const pulse = node.pulse
-      
-      // Node color based on activation
-      let color: string
-      if (node.isInput) {
-        color = isDark ? '#3b82f6' : '#1d4ed8'
-      } else if (node.isOutput) {
-        color = isDark ? '#10b981' : '#059669'
-      } else {
-        const intensity = Math.floor(activation * 255)
-        color = isDark ? `rgb(${intensity}, ${intensity}, 255)` : `rgb(0, 0, ${intensity})`
-      }
-
-      // Draw node
-      ctx.fillStyle = color
-      ctx.beginPath()
-      ctx.arc(node.x, node.y, nodeSize + pulse * 5, 0, 2 * Math.PI)
-      ctx.fill()
-
-      // Draw node border
-      ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
-      ctx.lineWidth = 2
-      ctx.stroke()
-
-      // Draw activation value
-      if (showActivations) {
+      // Draw layer labels
+      const layerSpacing = (canvas.width / window.devicePixelRatio) / (layers.length + 1)
+      layers.forEach((layerSize, layerIndex) => {
+        const layerX = layerSpacing * (layerIndex + 1)
+        const label = layerIndex === 0 ? 'Input' : layerIndex === layers.length - 1 ? 'Output' : `Hidden ${layerIndex}`
+        
         ctx.fillStyle = isDark ? '#ffffff' : '#000000'
-        ctx.font = '12px sans-serif'
+        ctx.font = 'bold 14px sans-serif'
         ctx.textAlign = 'center'
-        ctx.fillText(activation.toFixed(2), node.x, node.y + 4)
+        ctx.fillText(label, layerX, 30)
+      })
+    }
+
+    // Initial render
+    render()
+
+    // Set up animation loop for continuous rendering
+    if (animationSettings.isAnimating) {
+      const animate = () => {
+        render()
+        requestAnimationFrame(animate)
       }
-
-      // Draw pulse effect
-      if (showPulses && pulse > 0) {
-        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.arc(node.x, node.y, nodeSize + pulse * 15, 0, 2 * Math.PI)
-        ctx.stroke()
-      }
-    })
-
-    // Draw layer labels
-    const layerSpacing = (canvas.width / window.devicePixelRatio) / (layers.length + 1)
-    layers.forEach((layerSize, layerIndex) => {
-      const layerX = layerSpacing * (layerIndex + 1)
-      const label = layerIndex === 0 ? 'Input' : layerIndex === layers.length - 1 ? 'Output' : `Hidden ${layerIndex}`
-      
-      ctx.fillStyle = isDark ? '#ffffff' : '#000000'
-      ctx.font = 'bold 14px sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText(label, layerX, 30)
-    })
-
+      requestAnimationFrame(animate)
+    }
   }, [nodes, showWeights, showActivations, showPulses, nodeSize, connectionOpacity, animationSettings, theme, isClient])
 
   // Export as SVG
