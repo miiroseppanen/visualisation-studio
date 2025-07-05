@@ -129,7 +129,8 @@ export default function FlowFieldPage() {
       
       if (distance < 1) return // Avoid division by zero
       
-      const force = pole.strength / (distance * distance)
+      // Use pole strength more directly in the force calculation
+      const force = (pole.strength / 100) / (distance * distance)
       const angle = Math.atan2(dy, dx)
       
       // Magnetic field direction depends on pole type
@@ -139,10 +140,14 @@ export default function FlowFieldPage() {
       fieldY += Math.sin(angle) * force * direction
     })
 
+    // Apply flow intensity to both field components and magnitude
+    const adjustedFieldX = fieldX * animationSettings.flowIntensity
+    const adjustedFieldY = fieldY * animationSettings.flowIntensity
+
     return {
-      x: fieldX * animationSettings.flowIntensity,
-      y: fieldY * animationSettings.flowIntensity,
-      magnitude: Math.sqrt(fieldX * fieldX + fieldY * fieldY)
+      x: adjustedFieldX,
+      y: adjustedFieldY,
+      magnitude: Math.sqrt(adjustedFieldX * adjustedFieldX + adjustedFieldY * adjustedFieldY)
     }
   }
 
@@ -177,7 +182,7 @@ export default function FlowFieldPage() {
         vy: (Math.random() - 0.5) * 2,
         life: Math.random() * animationSettings.particleLife * 0.5, // Shorter life
         maxLife: animationSettings.particleLife * 0.5,
-        size: Math.random() * 2 + 0.5 // Random size
+        size: Math.random() * 3 + 1 // Increased size range
       })
     }
     setNoiseParticles(newNoiseParticles)
@@ -270,7 +275,7 @@ export default function FlowFieldPage() {
               vy: (Math.random() - 0.5) * 2,
               life: animationSettings.particleLife * 0.5,
               maxLife: animationSettings.particleLife * 0.5,
-              size: Math.random() * 2 + 0.5
+              size: Math.random() * 3 + 1
             }
           }
           
@@ -397,7 +402,7 @@ export default function FlowFieldPage() {
                   vy: (Math.random() - 0.5) * 2,
                   life: animationSettings.particleLife * 0.5,
                   maxLife: animationSettings.particleLife * 0.5,
-                  size: Math.random() * 2 + 0.5
+                  size: Math.random() * 3 + 1
                 }
               }
               
@@ -502,14 +507,14 @@ export default function FlowFieldPage() {
           const current = particle.trail[i]
           const next = particle.trail[i + 1]
           const progress = i / particle.trail.length
-          const alpha = 0.1 + progress * 0.4
+          const alpha = 0.2 + progress * 0.6 // Increased opacity
           
           // Black and white theme-aware colors
           const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
           const trailColor = isDark ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 0, 0, ${alpha})`
           
           ctx.strokeStyle = trailColor
-          ctx.lineWidth = 1
+          ctx.lineWidth = 1.5 // Increased line width
           ctx.beginPath()
           ctx.moveTo(current.x, current.y)
           ctx.lineTo(next.x, next.y)
@@ -523,13 +528,13 @@ export default function FlowFieldPage() {
       const velocity = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
       const field = calculateField(particle.x, particle.y)
       const alpha = particle.life / particle.maxLife
-      const size = Math.max(1, Math.min(4, velocity * 2 + 1))
+      const size = Math.max(2, Math.min(6, velocity * 3 + 2)) // Increased size range
       
-      // Black and white theme-aware colors only
+      // Black and white theme-aware colors with higher opacity
       const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      const baseColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'
+      const baseColor = isDark ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.95)'
       
-      ctx.fillStyle = baseColor.replace('0.8', (alpha * 0.8).toString())
+      ctx.fillStyle = baseColor.replace('0.95', (alpha * 0.95).toString())
       ctx.beginPath()
       ctx.arc(particle.x, particle.y, size, 0, 2 * Math.PI)
       ctx.fill()
@@ -539,13 +544,13 @@ export default function FlowFieldPage() {
     noiseParticles.forEach(particle => {
       const alpha = particle.life / particle.maxLife
       
-      // Black and white theme-aware colors with lower opacity
+      // Black and white theme-aware colors with higher opacity for noise particles
       const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      const baseColor = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+      const baseColor = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'
       
-      ctx.fillStyle = baseColor.replace('0.3', (alpha * 0.3).toString())
+      ctx.fillStyle = baseColor.replace('0.6', (alpha * 0.6).toString())
       ctx.beginPath()
-      ctx.arc(particle.x, particle.y, particle.size, 0, 2 * Math.PI)
+      ctx.arc(particle.x, particle.y, particle.size * 1.5, 0, 2 * Math.PI) // Increased size
       ctx.fill()
     })
 
