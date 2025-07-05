@@ -320,44 +320,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         ctx.restore()
       }
 
-      // Draw mathematical grid patterns
-      const gridOpacity = 0.05
-      ctx.strokeStyle = currentTheme === 'dark' 
-        ? `rgba(255, 255, 255, ${gridOpacity})` 
-        : `rgba(0, 0, 0, ${gridOpacity})`
-      ctx.lineWidth = 0.3
-      
-      // Horizontal harmonic lines
-      for (let i = 0; i < 8; i++) {
-        const y = (canvas.height / 8) * i
-        ctx.beginPath()
-        for (let x = 0; x < canvas.width; x += 3) {
-          const func = harmonicFunction(x, y, time)
-          const offsetY = Math.sin(func * Math.PI * 2) * 15
-          if (x === 0) {
-            ctx.moveTo(x, y + offsetY)
-          } else {
-            ctx.lineTo(x, y + offsetY)
-          }
-        }
-        ctx.stroke()
-      }
 
-      // Vertical fractal lines
-      for (let i = 0; i < 12; i++) {
-        const x = (canvas.width / 12) * i
-        ctx.beginPath()
-        for (let y = 0; y < canvas.height; y += 3) {
-          const func = fractalFunction(x, y, time)
-          const offsetX = Math.cos(func * Math.PI * 2) * 12
-          if (y === 0) {
-            ctx.moveTo(x + offsetX, y)
-          } else {
-            ctx.lineTo(x + offsetX, y)
-          }
-        }
-        ctx.stroke()
-      }
 
       animationRef.current = requestAnimationFrame(animate)
     }
