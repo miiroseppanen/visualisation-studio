@@ -41,28 +41,32 @@ export default function PageNavigation({
 }: PageNavigationProps) {
   return (
     <div className={`sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/10 ${className}`}>
-      <div className="container mx-auto px-8 py-4">
+      <div className="container mx-auto px-4 sm:px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Left side */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4 sm:space-x-6">
             {showBackButton && (
               <Link href={backButtonPath}>
                 <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                   <ArrowLeft className="w-4 h-4" />
-                  <span>{backButtonText}</span>
+                  <span className="hidden sm:inline">{backButtonText}</span>
                 </Button>
               </Link>
             )}
             
             {title && (
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-foreground/5 border border-foreground/10 rounded flex items-center justify-center">
+                <div className="w-8 h-8 bg-foreground/5 border border-foreground/10 rounded flex items-center justify-center flex-shrink-0">
                   <Lightbulb className="w-4 h-4 text-foreground/60" />
                 </div>
-                <div>
-                  <h1 className="text-lg font-medium text-foreground">{title}</h1>
+                <div className="min-w-0">
+                  <h1 className="text-base sm:text-lg font-medium text-foreground truncate">
+                    {title}
+                  </h1>
                   {subtitle && (
-                    <p className="text-sm text-foreground/60">{subtitle}</p>
+                    <p className="text-xs sm:text-sm text-foreground/60 hidden md:block truncate">
+                      {subtitle}
+                    </p>
                   )}
                 </div>
               </div>
@@ -119,7 +123,7 @@ export function SuggestionsNavigation() {
         <Link href="/suggestions/new">
           <Button size="sm" className="flex items-center space-x-2">
             <Plus className="w-4 h-4" />
-            <span>New Suggestion</span>
+            <span className="hidden sm:inline">New Suggestion</span>
           </Button>
         </Link>
       }
