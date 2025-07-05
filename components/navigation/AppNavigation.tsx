@@ -10,6 +10,7 @@ import { useNavigation } from '@/lib/hooks/useNavigation'
 import { useTheme } from '@/components/ui/ThemeProvider'
 import { useVisualizationNavigation } from '@/lib/hooks/useVisualizationNavigation'
 import VisualizationDropdown from './VisualizationDropdown'
+import LanguageSelector from '@/components/ui/LanguageSelector'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -201,6 +202,7 @@ export default function AppNavigation({
           </nav>
           
           <div className="flex items-center space-x-4">
+            <LanguageSelector />
             <ThemeSwitcher />
             <div className="md:hidden">
               {/* Mobile menu placeholder */}

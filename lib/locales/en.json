@@ -1,0 +1,156 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "tryAgain": "Try again",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "download": "Download",
+    "language": "Language"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "tools": "Tools",
+    "suggestions": "Suggestions"
+  },
+  "hero": {
+    "title": "Visualization",
+    "subtitle": "Studio",
+    "description": "Professional pattern generation toolkit for creative branding and packaging design. Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.",
+    "startCreating": "Start Creating",
+    "exploreTools": "Explore Tools"
+  },
+  "tools": {
+    "title": "Visualization Tools",
+    "description": "Comprehensive toolkit for creating sophisticated patterns and textures for professional design applications.",
+    "tryNow": "Try Now",
+    "gridField": {
+      "title": "Grid Field",
+      "description": "Generate structured geometric patterns perfect for packaging backgrounds and brand textures.",
+      "features": {
+        "gridControl": "Precise grid control",
+        "linePatterns": "Dynamic line patterns",
+        "scalableGeometry": "Scalable geometry"
+      }
+    },
+    "flowField": {
+      "title": "Flow Field",
+      "description": "Create flowing, organic patterns ideal for modern brand identities and packaging wraps.",
+      "features": {
+        "motionPatterns": "Fluid motion patterns",
+        "trailEffects": "Particle trail effects",
+        "flowLines": "Organic flow lines"
+      }
+    },
+    "turbulence": {
+      "title": "Turbulence",
+      "description": "Design complex swirling patterns and textures for premium packaging and brand elements.",
+      "features": {
+        "vortexGeneration": "Vortex pattern generation",
+        "turbulentTextures": "Turbulent textures",
+        "noiseVariation": "Noise-based variation"
+      }
+    },
+    "topography": {
+      "title": "Topography",
+      "description": "Build layered contour patterns for sophisticated packaging design and brand depth.",
+      "features": {
+        "contourLines": "Layered contour lines",
+        "elevationPatterns": "Elevation-based patterns",
+        "depthVisualization": "Depth visualization"
+      }
+    },
+    "circularField": {
+      "title": "Circular Field",
+      "description": "Craft concentric ring patterns and radial designs for logos and circular packaging.",
+      "features": {
+        "concentricRings": "Concentric ring systems",
+        "radialControl": "Radial pattern control",
+        "circularCompositions": "Circular compositions"
+      }
+    },
+    "waveInterference": {
+      "title": "Wave Interference",
+      "description": "Explore wave interference patterns and harmonic interactions for scientific visualization.",
+      "features": {
+        "waveSources": "Multiple wave sources",
+        "interferencePatterns": "Interference patterns",
+        "harmonicAnalysis": "Harmonic analysis"
+      }
+    },
+    "particleSwarm": {
+      "title": "Particle Swarm",
+      "description": "Simulate flocking behavior and collective intelligence with interactive particle systems.",
+      "features": {
+        "flockingBehavior": "Flocking behavior",
+        "collectiveIntelligence": "Collective intelligence",
+        "dynamicAttractors": "Dynamic attractors"
+      }
+    },
+    "fractalTree": {
+      "title": "Fractal Tree",
+      "description": "Generate recursive branching patterns and organic growth simulations.",
+      "features": {
+        "recursiveBranching": "Recursive branching",
+        "growthAnimation": "Growth animation",
+        "organicPatterns": "Organic patterns"
+      }
+    },
+    "neuralNetwork": {
+      "title": "Neural Network",
+      "description": "Visualize artificial neural networks with dynamic activation patterns and learning.",
+      "features": {
+        "networkVisualization": "Network visualization",
+        "activationPatterns": "Activation patterns",
+        "learningSimulation": "Learning simulation"
+      }
+    },
+    "cellularAutomata": {
+      "title": "Cellular Automata",
+      "description": "Explore emergent behavior and complex patterns from simple rule-based systems.",
+      "features": {
+        "emergentBehavior": "Emergent behavior",
+        "ruleBased": "Rule-based systems",
+        "complexPatterns": "Complex patterns"
+      }
+    },
+    "soundWave": {
+      "title": "Sound Wave",
+      "description": "Analyze sound waves, harmonics, and frequency spectrums with interactive visualization.",
+      "features": {
+        "waveformAnalysis": "Waveform analysis",
+        "harmonicVisualization": "Harmonic visualization",
+        "frequencySpectrum": "Frequency spectrum"
+      }
+    }
+  },
+  "suggestions": {
+    "title": "Community Suggestions",
+    "description": "Help shape the future of Visualization Studio by suggesting new visualization tools and features. Vote on existing ideas and contribute your own creative concepts.",
+    "viewSuggestions": "View Suggestions",
+    "submitIdea": "Submit New Idea"
+  },
+  "about": {
+    "title": "About Visualization Studio",
+    "professionalGeneration": {
+      "title": "Professional Pattern Generation",
+      "description": "Visualization Studio provides a comprehensive toolkit for creating sophisticated patterns and textures. Whether you're designing packaging, branding materials, or digital assets, our tools offer the precision and flexibility needed for professional results."
+    },
+    "additionalInfo": "Each visualization tool is designed with both creative freedom and technical precision in mind, allowing you to explore endless possibilities while maintaining control over every aspect of your design.",
+    "poweredBy": {
+      "title": "Powered by H23",
+      "description": "Developed by H23, a creative technology agency that specializes in building digital tools and experiences for ambitious brands.",
+      "expertise": "Our expertise in creative technology, branding, and interactive experiences informs every aspect of Visualization Studio, ensuring it meets the needs of professional designers and creative teams."
+    }
+  },
+  "metadata": {
+    "title": "Visualization Studio",
+    "description": "Professional pattern generation toolkit for creative branding and packaging design. Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.",
+    "shortTitle": "Visualization Studio"
+  }
+}
