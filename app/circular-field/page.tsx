@@ -11,10 +11,13 @@ import { CircularPoleControls } from '@/components/circular-field/PoleControls'
 import { DisplaySettings } from '@/components/circular-field/DisplaySettings'
 import { AnimationControls } from '@/components/circular-field/AnimationControls'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
+import { useTouchEvents } from '@/lib/hooks/useTouchEvents'
+import { useMobileDetection } from '@/lib/hooks/useMobileDetection'
 
 export default function CircularFieldPage() {
   const rendererRef = useRef<CircularFieldRenderer | null>(null)
   const [zoomLevel, setZoomLevel] = useState(1)
+  const { isMobile } = useMobileDetection()
 
   const {
     canvasRef,
@@ -39,6 +42,66 @@ export default function CircularFieldPage() {
     handleDoubleClick
   } = useCircularField()
 
+  // Touch event handlers for mobile
+  const handleTouchStart = (x: number, y: number) => {
+    if (!rendererRef.current) return
+    const coords = { x, y }
+    const findPoleAt = (x: number, y: number) => {
+      for (const pole of poles) {
+        const dx = x - pole.x
+        const dy = y - pole.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+        if (distance <= 20) { // Larger touch target for mobile
+          return pole
+        }
+      }
+      return null
+    }
+    
+    const existingPole = findPoleAt(coords.x, coords.y)
+    if (!existingPole) {
+      // Add new pole with touch
+      handleDoubleClick(coords.x, coords.y)
+    } else {
+      // Handle dragging existing pole
+      handleMouseDown(coords.x, coords.y, findPoleAt)
+    }
+  }
+
+  const handleTouchMove = (x: number, y: number) => {
+    if (!rendererRef.current) return
+    const coords = { x, y }
+    handleMouseMove(coords.x, coords.y)
+  }
+
+  const handleTouchEnd = (x: number, y: number) => {
+    handleMouseUp()
+  }
+
+  const handlePinchZoom = (scale: number, centerX: number, centerY: number) => {
+    const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel * scale))
+    setZoomLevel(newZoom)
+  }
+
+  const handleLongPress = (x: number, y: number) => {
+    if (!rendererRef.current) return
+    // Long press to add pole on mobile
+    handleDoubleClick(x, y)
+  }
+
+  // Initialize touch events for mobile
+  useTouchEvents(canvasRef, {
+    onTouchStart: handleTouchStart,
+    onTouchMove: handleTouchMove,
+    onTouchEnd: handleTouchEnd,
+    onPinchZoom: handlePinchZoom,
+    onLongPress: handleLongPress
+  }, {
+    enablePinchZoom: true,
+    enableLongPress: true,
+    longPressDelay: 500
+  })
+
   // Initialize canvas and renderer
   useEffect(() => {
     const canvas = canvasRef.current
@@ -51,6 +114,20 @@ export default function CircularFieldPage() {
       const rect = canvas.getBoundingClientRect()
       const width = rect.width
       const height = rect.height
+      
+      // Use lower DPI on mobile for better performance
+      const dpr = isMobile ? Math.min(window.devicePixelRatio, 1.5) : window.devicePixelRatio
+      
+      canvas.width = width * dpr
+      canvas.height = height * dpr
+      canvas.style.width = `${width}px`
+      canvas.style.height = `${height}px`
+      
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.scale(dpr, dpr)
+      }
+      
       renderer.setupCanvas()
       setCanvasSize({ width, height })
     }
@@ -58,7 +135,7 @@ export default function CircularFieldPage() {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
     return () => window.removeEventListener('resize', resizeCanvas)
-  }, [setCanvasSize])
+  }, [setCanvasSize, isMobile])
 
   // Render the visualization
   useEffect(() => {
@@ -204,12 +281,17 @@ export default function CircularFieldPage() {
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair dark:invert dark:hue-rotate-180"
-        style={{ cursor: draggedPole ? 'grabbing' : 'crosshair' }}
-        onMouseDown={handleCanvasMouseDown}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        className={`w-full h-full dark:invert dark:hue-rotate-180 ${
+          isMobile ? 'touch-none' : 'cursor-crosshair'
+        }`}
+        style={{ 
+          cursor: isMobile ? 'default' : (draggedPole ? 'grabbing' : 'crosshair'),
+          touchAction: 'none' // Prevent default touch behaviors
+        }}
+        onMouseDown={!isMobile ? handleCanvasMouseDown : undefined}
+        onMouseMove={!isMobile ? handleCanvasMouseMove : undefined}
+        onMouseUp={!isMobile ? handleMouseUp : undefined}
+        onMouseLeave={!isMobile ? handleMouseUp : undefined}
       />
     </VisualizationLayout>
   )
