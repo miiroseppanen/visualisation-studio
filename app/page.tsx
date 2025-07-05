@@ -24,9 +24,10 @@ const MathematicalBackground = () => {
     // Set canvas size
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect()
-      canvas.width = rect.width * window.devicePixelRatio
-      canvas.height = rect.height * window.devicePixelRatio
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+      const dpr = Math.min(window.devicePixelRatio, 2) // Limit DPR for mobile performance
+      canvas.width = rect.width * dpr
+      canvas.height = rect.height * dpr
+      ctx.scale(dpr, dpr)
     }
 
     resizeCanvas()
