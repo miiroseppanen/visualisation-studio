@@ -10,10 +10,12 @@ import { useTheme } from '@/components/ui/ThemeProvider'
 import { useTranslation } from 'react-i18next'
 
 // Interactive Mathematical Background Animation
-const MathematicalBackground = () => {
+const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const { theme } = useTheme()
+  const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 })
+  const [scrollY, setScrollY] = React.useState(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -60,6 +62,24 @@ const MathematicalBackground = () => {
       setTimeout(resizeCanvas, 100)
     })
 
+    // Mouse move handler
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect()
+      setMousePos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      })
+    }
+
+    // Scroll handler
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+    }
+
+    // Add event listeners
+    canvas.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
     // Animation variables
     let time = 0
     const particles: Array<{
@@ -72,17 +92,28 @@ const MathematicalBackground = () => {
       type: 'flow' | 'field' | 'wave'
     }> = []
 
-    // Mathematical functions
+    // Mathematical functions with interaction
     const complexFunction = (x: number, y: number, t: number) => {
       const scale = 0.005
       const xScaled = (x - canvas.width / 2) * scale
       const yScaled = (y - canvas.height / 2) * scale
       
-      // Complex function: f(z) = z^2 + c where z = x + yi
+      // Base complex function
       const real = xScaled * xScaled - yScaled * yScaled + Math.sin(t * 0.5) * 0.3
       const imag = 2 * xScaled * yScaled + Math.cos(t * 0.3) * 0.2
       
-      return { real, imag, magnitude: Math.sqrt(real * real + imag * imag) }
+      // Add mouse interaction - ripple effect
+      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
+      const rippleEffect = Math.sin(mouseDistance * 0.02 - t * 2) * Math.exp(-mouseDistance * 0.001) * 0.5
+      
+      // Add scroll interaction - amplitude scaling
+      const scrollAmplitude = 1 + (scrollY / 1000) * 0.5 // Increase amplitude with scroll
+      
+      return { 
+        real: (real + rippleEffect) * scrollAmplitude, 
+        imag: imag * scrollAmplitude, 
+        magnitude: Math.sqrt((real + rippleEffect) ** 2 + imag ** 2) * scrollAmplitude 
+      }
     }
 
     const waveFunction = (x: number, y: number, t: number) => {
@@ -90,8 +121,18 @@ const MathematicalBackground = () => {
       const xScaled = (x - canvas.width / 2) * scale
       const yScaled = (y - canvas.height / 2) * scale
       
-      return Math.sin(xScaled + t * 0.5) * Math.cos(yScaled + t * 0.3) * 
-             Math.sin(Math.sqrt(xScaled * xScaled + yScaled * yScaled) + t * 0.2)
+      // Base wave function
+      let wave = Math.sin(xScaled + t * 0.5) * Math.cos(yScaled + t * 0.3) * 
+                 Math.sin(Math.sqrt(xScaled * xScaled + yScaled * yScaled) + t * 0.2)
+      
+      // Add mouse interaction - attract particles to mouse
+      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
+      const mouseAttraction = Math.sin(mouseDistance * 0.01 - t * 3) * Math.exp(-mouseDistance * 0.002) * 0.3
+      
+      // Add scroll interaction - frequency modulation
+      const scrollFrequency = 1 + (scrollY / 2000) * 0.3
+      
+      return (wave + mouseAttraction) * scrollFrequency
     }
 
     // Get current theme - simplified and more reliable
@@ -102,15 +143,20 @@ const MathematicalBackground = () => {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
 
-    // Create particles
+    // Create particles with interaction
     const createParticle = (x: number, y: number, type: 'flow' | 'field' | 'wave') => {
       const angle = Math.random() * Math.PI * 2
       const speed = 0.3 + Math.random() * 0.7
+      
+      // Add mouse attraction to particle creation
+      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
+      const mouseInfluence = Math.exp(-mouseDistance * 0.001) * 0.5
+      
       particles.push({
         x,
         y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
+        vx: Math.cos(angle) * speed * (1 + mouseInfluence),
+        vy: Math.sin(angle) * speed * (1 + mouseInfluence),
         life: 1,
         maxLife: 0.8 + Math.random() * 0.4,
         type
@@ -141,8 +187,9 @@ const MathematicalBackground = () => {
         : `rgba(255, 255, 255, ${fadeOpacity})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Create new particles
-      if (Math.random() < 0.4) {
+      // Create new particles with scroll-based density
+      const particleDensity = 0.4 + (scrollY / 1000) * 0.2 // More particles when scrolled
+      if (Math.random() < particleDensity) {
         const type = ['flow', 'field', 'wave'][Math.floor(Math.random() * 3)] as any
         createParticle(
           Math.random() * canvas.width,
@@ -174,6 +221,19 @@ const MathematicalBackground = () => {
           const gradientY = Math.sin(wave * Math.PI) * 0.4
           particle.x += particle.vx + gradientX
           particle.y += particle.vy + gradientY
+        }
+        
+        // Add mouse attraction to particles
+        const mouseDistance = Math.sqrt((particle.x - mousePos.x) ** 2 + (particle.y - mousePos.y) ** 2)
+        if (mouseDistance < 200) {
+          const attraction = (200 - mouseDistance) / 200 * 0.1
+          const dx = mousePos.x - particle.x
+          const dy = mousePos.y - particle.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+          if (distance > 0) {
+            particle.x += (dx / distance) * attraction
+            particle.y += (dy / distance) * attraction
+          }
         }
         
         particle.life -= 0.008
@@ -211,8 +271,8 @@ const MathematicalBackground = () => {
         ctx.restore()
       }
 
-      // Draw mathematical field lines - theme-aware
-      const fieldLineOpacity = 0.08
+      // Draw mathematical field lines - theme-aware with interaction
+      const fieldLineOpacity = 0.08 + (scrollY / 2000) * 0.04 // More visible when scrolled
       ctx.strokeStyle = currentTheme === 'dark' 
         ? `rgba(255, 255, 255, ${fieldLineOpacity})` 
         : `rgba(0, 0, 0, ${fieldLineOpacity})`
@@ -233,8 +293,8 @@ const MathematicalBackground = () => {
         ctx.stroke()
       }
 
-      // Draw wave patterns - theme-aware
-      const waveLineOpacity = 0.06
+      // Draw wave patterns - theme-aware with interaction
+      const waveLineOpacity = 0.06 + (scrollY / 2000) * 0.03
       ctx.strokeStyle = currentTheme === 'dark' 
         ? `rgba(255, 255, 255, ${waveLineOpacity})` 
         : `rgba(0, 0, 0, ${waveLineOpacity})`
@@ -263,17 +323,19 @@ const MathematicalBackground = () => {
     return () => {
       window.removeEventListener('resize', resizeCanvas)
       window.removeEventListener('orientationchange', resizeCanvas)
+      canvas.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('scroll', handleScroll)
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [theme])
+  }, [theme, mousePos.x, mousePos.y, scrollY])
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none transition-colors duration-500 touch-none"
-      style={{ zIndex: -1, position: 'absolute' }}
+      className="fixed top-0 left-0 w-full h-full z-0 pointer-events-none transition-colors duration-500 touch-none"
+      style={{ inset: 0, opacity }}
     />
   )
 }
@@ -1190,13 +1252,35 @@ const getVisualizations = (t: any) => [
 export default function HomePage() {
   const { t } = useTranslation()
   const visualizations = getVisualizations(t)
+  const [heroOpacity, setHeroOpacity] = React.useState(1)
+  const heroRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const hero = heroRef.current
+      if (!hero) return
+      const heroHeight = hero.offsetHeight
+      const scrollY = window.scrollY
+      // Fade out between 0 and 80% of hero height
+      const fadeStart = 0
+      const fadeEnd = heroHeight * 0.8
+      let opacity = 1
+      if (scrollY > fadeStart) {
+        opacity = 1 - Math.min((scrollY - fadeStart) / (fadeEnd - fadeStart), 1)
+      }
+      setHeroOpacity(opacity)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
     <AppLayout showNavigation={true} navigationVariant="header">
       {/* Hero Section - Golden ratio proportions */}
-      <section className="relative min-h-screen transition-colors duration-500">
+      <section ref={heroRef} className="relative min-h-screen transition-colors duration-500">
         {/* Animated Background */}
-        <MathematicalBackground />
+        <MathematicalBackground opacity={heroOpacity} />
         
         <div className="container mx-auto px-8 py-24 relative z-10">
         
@@ -1233,7 +1317,7 @@ export default function HomePage() {
       </section>
 
       {/* Tools Section - Structured grid */}
-      <section id="tools" className="container mx-auto px-8 py-24">
+      <section id="tools" className="container mx-auto px-2 sm:px-8 py-24 overflow-x-hidden">
         <div className="mb-12">
           <h3 className="text-3xl font-normal mb-4 text-foreground">{t('tools.title')}</h3>
           <p className="text-muted-foreground max-w-2xl">
@@ -1241,10 +1325,10 @@ export default function HomePage() {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-full overflow-x-hidden">
           {visualizations.map((viz: any) => (
-            <Link key={viz.path} href={viz.path} className="block group">
-              <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02]">
+            <Link key={viz.path} href={viz.path} className="block group max-w-full">
+              <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02] max-w-full">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center transition-colors duration-200 group-hover:bg-accent">

@@ -400,16 +400,25 @@ export default function GridFieldPage() {
     setGridLines(newLines)
   }, [poles, animationSettings.time, animationSettings.windStrength, directionSettings, polaritySettings, gridSettings, zoomSettings])
 
-  // Canvas drawing
+  // Canvas drawing (continuous render loop)
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || !rendererRef.current) return
-
-    rendererRef.current.render(
-      { gridLines, poles, zoomLevel: zoomSettings.level },
-      gridSettings
-    )
-  }, [gridLines, poles, gridSettings, zoomSettings.level])
+    if (!animationSettings.isAnimating) return;
+    let frameId: number;
+    const renderLoop = () => {
+      const canvas = canvasRef.current;
+      if (canvas && rendererRef.current) {
+        rendererRef.current.render(
+          { gridLines, poles, zoomLevel: zoomSettings.level },
+          gridSettings
+        );
+      }
+      frameId = requestAnimationFrame(renderLoop);
+    };
+    renderLoop();
+    return () => {
+      if (frameId) cancelAnimationFrame(frameId);
+    };
+  }, [animationSettings.isAnimating, gridLines, poles, gridSettings, zoomSettings.level]);
 
   // Wheel event handler (direct DOM listener to avoid passive event issues)
   useEffect(() => {

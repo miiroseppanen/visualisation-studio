@@ -765,6 +765,10 @@ html {
   z-index: 60;
 }
 
+.z-0 {
+  z-index: 0;
+}
+
 .m-4 {
   margin: 1rem;
 }
@@ -1095,6 +1099,10 @@ html {
   max-width: 28rem;
 }
 
+.max-w-full {
+  max-width: 100%;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -1336,6 +1344,10 @@ html {
 
 .overflow-y-auto {
   overflow-y: auto;
+}
+
+.overflow-x-hidden {
+  overflow-x: hidden;
 }
 
 .truncate {
@@ -3438,6 +3450,11 @@ body {
   .sm\:py-2 {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
+  }
+
+  .sm\:px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 
   .sm\:text-base {
