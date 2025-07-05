@@ -156,16 +156,16 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
 
-    // Create mathematical lines
+    // Create mathematical lines - more varied positioning
     const createLine = (x: number, y: number, type: 'harmonic' | 'fractal' | 'spiral') => {
       const angle = Math.random() * Math.PI * 2
-      const length = 50 + Math.random() * 100
+      const length = 40 + Math.random() * 80
       
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
       const touchDistance = Math.sqrt((x - touchPos.x) ** 2 + (y - touchPos.y) ** 2)
       const minDistance = Math.min(mouseDistance, touchDistance)
       
-      const influence = Math.exp(-minDistance * 0.002) * 0.5
+      const influence = Math.exp(-minDistance * 0.001) * 0.3
       
       lines.push({
         x1: x,
@@ -173,7 +173,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         x2: x + Math.cos(angle) * length * (1 + influence),
         y2: y + Math.sin(angle) * length * (1 + influence),
         life: 1,
-        maxLife: 0.6 + Math.random() * 0.4,
+        maxLife: 0.5 + Math.random() * 0.5,
         type
       })
     }
@@ -205,20 +205,30 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         : `rgba(255, 255, 255, ${fadeOpacity})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Create new lines - more near mouse/touch
+      // Create new lines - more spread out across the viewport
       const mouseDistance = Math.sqrt((canvas.width / 2 - mousePos.x) ** 2 + (canvas.height / 2 - mousePos.y) ** 2)
       const touchDistance = Math.sqrt((canvas.width / 2 - touchPos.x) ** 2 + (canvas.height / 2 - touchPos.y) ** 2)
       const minDistance = Math.min(mouseDistance, touchDistance)
       
-      const baseDensity = 0.3
-      const interactionDensity = Math.exp(-minDistance * 0.001) * 0.6
+      const baseDensity = 0.25
+      const interactionDensity = Math.exp(-minDistance * 0.0005) * 0.4
       const totalDensity = baseDensity + interactionDensity
       
       if (Math.random() < totalDensity) {
         const type = ['harmonic', 'fractal', 'spiral'][Math.floor(Math.random() * 3)] as any
-        // Create lines more likely near interaction position
-        const x = (mousePos.x + touchPos.x) / 2 + (Math.random() - 0.5) * 300
-        const y = (mousePos.y + touchPos.y) / 2 + (Math.random() - 0.5) * 300
+        
+        // Create lines more spread out - not just near interaction
+        let x, y
+        if (Math.random() < 0.3) {
+          // 30% chance to create near interaction
+          x = (mousePos.x + touchPos.x) / 2 + (Math.random() - 0.5) * 200
+          y = (mousePos.y + touchPos.y) / 2 + (Math.random() - 0.5) * 200
+        } else {
+          // 70% chance to create randomly across viewport
+          x = Math.random() * canvas.width
+          y = Math.random() * canvas.height
+        }
+        
         createLine(
           Math.max(0, Math.min(canvas.width, x)),
           Math.max(0, Math.min(canvas.height, y)),
@@ -230,50 +240,50 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       for (let i = lines.length - 1; i >= 0; i--) {
         const line = lines[i]
         
-        // Update line positions based on mathematical functions
+        // Update line positions based on mathematical functions - more spread out
         if (line.type === 'harmonic') {
           const func1 = harmonicFunction(line.x1, line.y1, time)
           const func2 = harmonicFunction(line.x2, line.y2, time)
-          line.x1 += Math.cos(func1 * Math.PI) * 0.5
-          line.y1 += Math.sin(func1 * Math.PI) * 0.5
-          line.x2 += Math.cos(func2 * Math.PI) * 0.5
-          line.y2 += Math.sin(func2 * Math.PI) * 0.5
+          line.x1 += Math.cos(func1 * Math.PI) * 0.2
+          line.y1 += Math.sin(func1 * Math.PI) * 0.2
+          line.x2 += Math.cos(func2 * Math.PI) * 0.2
+          line.y2 += Math.sin(func2 * Math.PI) * 0.2
         } else if (line.type === 'fractal') {
           const func1 = fractalFunction(line.x1, line.y1, time)
           const func2 = fractalFunction(line.x2, line.y2, time)
-          line.x1 += Math.sin(func1 * Math.PI * 2) * 0.4
-          line.y1 += Math.cos(func1 * Math.PI * 2) * 0.4
-          line.x2 += Math.sin(func2 * Math.PI * 2) * 0.4
-          line.y2 += Math.cos(func2 * Math.PI * 2) * 0.4
+          line.x1 += Math.sin(func1 * Math.PI * 2) * 0.15
+          line.y1 += Math.cos(func1 * Math.PI * 2) * 0.15
+          line.x2 += Math.sin(func2 * Math.PI * 2) * 0.15
+          line.y2 += Math.cos(func2 * Math.PI * 2) * 0.15
         } else { // spiral
           const func1 = spiralFunction(line.x1, line.y1, time)
           const func2 = spiralFunction(line.x2, line.y2, time)
-          line.x1 += Math.cos(func1 * Math.PI) * 0.6
-          line.y1 += Math.sin(func1 * Math.PI) * 0.6
-          line.x2 += Math.cos(func2 * Math.PI) * 0.6
-          line.y2 += Math.sin(func2 * Math.PI) * 0.6
+          line.x1 += Math.cos(func1 * Math.PI) * 0.25
+          line.y1 += Math.sin(func1 * Math.PI) * 0.25
+          line.x2 += Math.cos(func2 * Math.PI) * 0.25
+          line.y2 += Math.sin(func2 * Math.PI) * 0.25
         }
         
-        // Add interaction attraction to lines
+        // Add interaction attraction to lines - more subtle
         const mouseDistance = Math.sqrt((line.x1 - mousePos.x) ** 2 + (line.y1 - mousePos.y) ** 2)
         const touchDistance = Math.sqrt((line.x1 - touchPos.x) ** 2 + (line.y1 - touchPos.y) ** 2)
         const minDistance = Math.min(mouseDistance, touchDistance)
         
-        if (minDistance < 400) {
-          const attraction = (400 - minDistance) / 400 * 0.1
+        if (minDistance < 300) {
+          const attraction = (300 - minDistance) / 300 * 0.05
           const dx = (mousePos.x + touchPos.x) / 2 - line.x1
           const dy = (mousePos.y + touchPos.y) / 2 - line.y1
           const distance = Math.sqrt(dx * dx + dy * dy)
           if (distance > 0) {
             line.x1 += (dx / distance) * attraction
             line.y1 += (dy / distance) * attraction
-            line.x2 += (dx / distance) * attraction * 0.5
-            line.y2 += (dy / distance) * attraction * 0.5
+            line.x2 += (dx / distance) * attraction * 0.3
+            line.y2 += (dy / distance) * attraction * 0.3
           }
           
           // Add line life extension near interaction
-          if (minDistance < 150) {
-            line.life += 0.003
+          if (minDistance < 100) {
+            line.life += 0.002
           }
         }
         
