@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import AppLayout from '@/components/layout/AppLayout'
 import { useTheme } from '@/components/ui/ThemeProvider'
+import { useTranslation } from 'react-i18next'
 
 // Interactive Mathematical Background Animation
 const MathematicalBackground = () => {
@@ -1068,98 +1069,101 @@ const SoundWavePreview = () => {
   )
 }
 
-const visualizations = [
+const getVisualizations = (t: any) => [
   {
-    title: 'Grid Field',
+    title: t('tools.gridField.title'),
     path: '/grid-field',
     icon: Grid3X3,
-    description: 'Generate structured geometric patterns perfect for packaging backgrounds and brand textures.',
-    features: ['Precise grid control', 'Dynamic line patterns', 'Scalable geometry'],
+    description: t('tools.gridField.description'),
+    features: [t('tools.gridField.features.gridControl'), t('tools.gridField.features.linePatterns'), t('tools.gridField.features.scalableGeometry')],
     preview: GridFieldPreview
   },
   {
-    title: 'Flow Field',
+    title: t('tools.flowField.title'),
     path: '/flow-field',
     icon: Magnet,
-    description: 'Create flowing, organic patterns ideal for modern brand identities and packaging wraps.',
-    features: ['Fluid motion patterns', 'Particle trail effects', 'Organic flow lines'],
+    description: t('tools.flowField.description'),
+    features: [t('tools.flowField.features.motionPatterns'), t('tools.flowField.features.trailEffects'), t('tools.flowField.features.flowLines')],
     preview: FlowFieldPreview
   },
   {
-    title: 'Turbulence',
+    title: t('tools.turbulence.title'),
     path: '/turbulence',
     icon: Wind,
-    description: 'Design complex swirling patterns and textures for premium packaging and brand elements.',
-    features: ['Vortex pattern generation', 'Turbulent textures', 'Noise-based variation'],
+    description: t('tools.turbulence.description'),
+    features: [t('tools.turbulence.features.vortexGeneration'), t('tools.turbulence.features.turbulentTextures'), t('tools.turbulence.features.noiseVariation')],
     preview: TurbulencePreview
   },
   {
-    title: 'Topography',
+    title: t('tools.topography.title'),
     path: '/topography',
     icon: Mountain,
-    description: 'Build layered contour patterns for sophisticated packaging design and brand depth.',
-    features: ['Layered contour lines', 'Elevation-based patterns', 'Depth visualization'],
+    description: t('tools.topography.description'),
+    features: [t('tools.topography.features.contourLines'), t('tools.topography.features.elevationPatterns'), t('tools.topography.features.depthVisualization')],
     preview: TopographyPreview
   },
   {
-    title: 'Circular Field',
+    title: t('tools.circularField.title'),
     path: '/circular-field',
     icon: Radio,
-    description: 'Craft concentric ring patterns and radial designs for logos and circular packaging.',
-    features: ['Concentric ring systems', 'Radial pattern control', 'Circular compositions'],
+    description: t('tools.circularField.description'),
+    features: [t('tools.circularField.features.concentricRings'), t('tools.circularField.features.radialControl'), t('tools.circularField.features.circularCompositions')],
     preview: CircularFieldPreview
   },
   {
-    title: 'Wave Interference',
+    title: t('tools.waveInterference.title'),
     path: '/wave-interference',
     icon: Waves,
-    description: 'Explore wave interference patterns and harmonic interactions for scientific visualization.',
-    features: ['Multiple wave sources', 'Interference patterns', 'Harmonic analysis'],
+    description: t('tools.waveInterference.description'),
+    features: [t('tools.waveInterference.features.waveSources'), t('tools.waveInterference.features.interferencePatterns'), t('tools.waveInterference.features.harmonicAnalysis')],
     preview: WaveInterferencePreview
   },
   {
-    title: 'Particle Swarm',
+    title: t('tools.particleSwarm.title'),
     path: '/particle-swarm',
     icon: Users,
-    description: 'Simulate flocking behavior and collective intelligence with interactive particle systems.',
-    features: ['Flocking behavior', 'Collective intelligence', 'Dynamic attractors'],
+    description: t('tools.particleSwarm.description'),
+    features: [t('tools.particleSwarm.features.flockingBehavior'), t('tools.particleSwarm.features.collectiveIntelligence'), t('tools.particleSwarm.features.dynamicAttractors')],
     preview: ParticleSwarmPreview
   },
   {
-    title: 'Fractal Tree',
+    title: t('tools.fractalTree.title'),
     path: '/fractal-tree',
     icon: TreePine,
-    description: 'Generate recursive branching patterns and organic growth simulations.',
-    features: ['Recursive branching', 'Growth animation', 'Organic patterns'],
+    description: t('tools.fractalTree.description'),
+    features: [t('tools.fractalTree.features.recursiveBranching'), t('tools.fractalTree.features.growthAnimation'), t('tools.fractalTree.features.organicPatterns')],
     preview: FractalTreePreview
   },
   {
-    title: 'Neural Network',
+    title: t('tools.neuralNetwork.title'),
     path: '/neural-network',
     icon: Brain,
-    description: 'Visualize artificial neural networks with dynamic activation patterns and learning.',
-    features: ['Network visualization', 'Activation patterns', 'Learning simulation'],
+    description: t('tools.neuralNetwork.description'),
+    features: [t('tools.neuralNetwork.features.networkVisualization'), t('tools.neuralNetwork.features.activationPatterns'), t('tools.neuralNetwork.features.learningSimulation')],
     preview: NeuralNetworkPreview
   },
   {
-    title: 'Cellular Automata',
+    title: t('tools.cellularAutomata.title'),
     path: '/cellular-automata',
     icon: Grid,
-    description: 'Explore emergent behavior and complex patterns from simple rule-based systems.',
-    features: ['Emergent behavior', 'Rule-based systems', 'Complex patterns'],
+    description: t('tools.cellularAutomata.description'),
+    features: [t('tools.cellularAutomata.features.emergentBehavior'), t('tools.cellularAutomata.features.ruleBased'), t('tools.cellularAutomata.features.complexPatterns')],
     preview: CellularAutomataPreview
   },
   {
-    title: 'Sound Wave',
+    title: t('tools.soundWave.title'),
     path: '/sound-wave',
     icon: Volume2,
-    description: 'Analyze sound waves, harmonics, and frequency spectrums with interactive visualization.',
-    features: ['Waveform analysis', 'Harmonic visualization', 'Frequency spectrum'],
+    description: t('tools.soundWave.description'),
+    features: [t('tools.soundWave.features.waveformAnalysis'), t('tools.soundWave.features.harmonicVisualization'), t('tools.soundWave.features.frequencySpectrum')],
     preview: SoundWavePreview
   }
 ]
 
 export default function HomePage() {
+  const { t } = useTranslation()
+  const visualizations = getVisualizations(t)
+
   return (
     <AppLayout showNavigation={true} navigationVariant="header">
       {/* Hero Section - Golden ratio proportions */}
@@ -1171,23 +1175,22 @@ export default function HomePage() {
           {/* Main content - 3/5 of width (golden ratio) */}
           <div className="lg:col-span-3">
             <h2 className="text-6xl md:text-7xl font-normal tracking-tight mb-8 text-foreground leading-none">
-              Visualization
-              <span className="block text-muted-foreground font-light mt-2">Studio</span>
+              {t('hero.title')}
+              <span className="block text-muted-foreground font-light mt-2">{t('hero.subtitle')}</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Professional pattern generation toolkit for creative branding and packaging design. 
-              Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.
+              {t('hero.description')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild size="lg" className="group w-fit text-base px-8 py-3">
                 <Link href="/grid-field">
-                  Start Creating
+                  {t('hero.startCreating')}
                   <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild className="w-fit text-base px-8 py-3">
                 <Link href="#tools">
-                  Explore Tools
+                  {t('hero.exploreTools')}
                 </Link>
               </Button>
             </div>
@@ -1202,14 +1205,14 @@ export default function HomePage() {
       {/* Tools Section - Structured grid */}
       <section id="tools" className="container mx-auto px-8 py-24">
         <div className="mb-12">
-          <h3 className="text-3xl font-normal mb-4 text-foreground">Visualization Tools</h3>
+          <h3 className="text-3xl font-normal mb-4 text-foreground">{t('tools.title')}</h3>
           <p className="text-muted-foreground max-w-2xl">
-            Comprehensive toolkit for creating sophisticated patterns and textures for professional design applications.
+            {t('tools.description')}
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {visualizations.map((viz) => (
+          {visualizations.map((viz: any) => (
             <Link key={viz.path} href={viz.path} className="block group">
               <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02]">
                 <CardHeader className="pb-4">
@@ -1228,7 +1231,7 @@ export default function HomePage() {
                     <viz.preview />
                   </div>
                   <ul className="space-y-2 mb-4">
-                    {viz.features.map((feature, index) => (
+                    {viz.features.map((feature: string, index: number) => (
                       <li key={index} className="flex items-center text-sm text-muted-foreground">
                         <Sparkles className="w-3 h-3 mr-2 text-accent flex-shrink-0" />
                         {feature}
@@ -1241,7 +1244,7 @@ export default function HomePage() {
                     className="opacity-60 group-hover:opacity-100 group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent transition-all duration-200"
                   >
                     <Play className="w-3 h-3 mr-2" />
-                    Try Now
+                    {t('tools.tryNow')}
                   </Button>
                 </CardContent>
               </Card>
@@ -1258,13 +1261,12 @@ export default function HomePage() {
               <Lightbulb className="w-8 h-8 text-primary mt-1" />
               <div>
                 <h3 className="text-3xl font-normal text-foreground">
-                  Community Suggestions
+                  {t('suggestions.title')}
                 </h3>
               </div>
             </div>
             <p className="text-lg text-muted-foreground mb-6">
-              Help shape the future of Visualization Studio by suggesting new visualization tools and features. 
-              Vote on existing ideas and contribute your own creative concepts.
+              {t('suggestions.description')}
             </p>
           </div>
           
@@ -1272,12 +1274,12 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild size="lg" className="px-8 py-3">
                 <Link href="/suggestions">
-                  View Suggestions
+                  {t('suggestions.viewSuggestions')}
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild className="px-8 py-3">
                 <Link href="/suggestions/new">
-                  Submit New Idea
+                  {t('suggestions.submitIdea')}
                 </Link>
               </Button>
             </div>
@@ -1290,33 +1292,28 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2">
             <h3 className="text-3xl font-normal mb-6 text-foreground">
-              About Visualization Studio
+              {t('about.title')}
             </h3>
             <div className="space-y-6">
               <div>
-                <h4 className="text-xl font-medium mb-3 text-foreground">Professional Pattern Generation</h4>
+                <h4 className="text-xl font-medium mb-3 text-foreground">{t('about.professionalGeneration.title')}</h4>
                 <p className="text-muted-foreground leading-relaxed">
-                  Visualization Studio provides a comprehensive toolkit for creating sophisticated patterns and textures. 
-                  Whether you're designing packaging, branding materials, or digital assets, our tools offer the precision 
-                  and flexibility needed for professional results.
+                  {t('about.professionalGeneration.description')}
                 </p>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Each visualization tool is designed with both creative freedom and technical precision in mind, 
-                allowing you to explore endless possibilities while maintaining control over every aspect of your design.
+                {t('about.additionalInfo')}
               </p>
             </div>
           </div>
           
           <div>
-            <h4 className="text-xl font-medium mb-4 text-foreground">Powered by H23</h4>
+            <h4 className="text-xl font-medium mb-4 text-foreground">{t('about.poweredBy.title')}</h4>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Developed by <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>, 
-              a creative technology agency that specializes in building digital tools and experiences for ambitious brands.
+              {t('about.poweredBy.description')} <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Our expertise in creative technology, branding, and interactive experiences informs every aspect 
-              of Visualization Studio, ensuring it meets the needs of professional designers and creative teams.
+              {t('about.poweredBy.expertise')}
             </p>
           </div>
         </div>

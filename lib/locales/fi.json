@@ -1,0 +1,156 @@
+{
+  "common": {
+    "loading": "Ladataan...",
+    "error": "Virhe",
+    "tryAgain": "Yritä uudelleen",
+    "close": "Sulje",
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "delete": "Poista",
+    "edit": "Muokkaa",
+    "download": "Lataa",
+    "language": "Kieli"
+  },
+  "navigation": {
+    "home": "Koti",
+    "about": "Tietoja",
+    "contact": "Yhteystiedot",
+    "tools": "Työkalut",
+    "suggestions": "Ehdotukset"
+  },
+  "hero": {
+    "title": "Visualisointi",
+    "subtitle": "Studio",
+    "description": "Ammattimainen kuviogenerointi-työkalupakki luovaan brändäykseen ja pakkaussuunnitteluun. Luo ainutlaatuisia geometrisia kuvioita, virtaavia tekstuureja ja dynaamisia visuaalisia järjestelmiä tarkalla hallinnalla.",
+    "startCreating": "Aloita luominen",
+    "exploreTools": "Tutki työkaluja"
+  },
+  "tools": {
+    "title": "Visualisointityökalut",
+    "description": "Kattava työkalupakki kehittyneiden kuvioiden ja tekstuurien luomiseen ammattimaisiin suunnittelusovelluksiin.",
+    "tryNow": "Kokeile nyt",
+    "gridField": {
+      "title": "Ruudukkokenttä",
+      "description": "Luo rakenteellisia geometrisia kuvioita täydellisiksi pakkausten taustoiksi ja brändin tekstuureiksi.",
+      "features": {
+        "gridControl": "Tarkka ruudukkohallinta",
+        "linePatterns": "Dynaamiset viivakuviot",
+        "scalableGeometry": "Skaalautuva geometria"
+      }
+    },
+    "flowField": {
+      "title": "Virtauskenttä",
+      "description": "Luo virtaavia, orgaanisia kuvioita ihanteellisiksi moderneihin brändi-identiteetteihin ja pakkausmateriaaleihin.",
+      "features": {
+        "motionPatterns": "Nestemäiset liikemallit",
+        "trailEffects": "Hiukkasjälkiefektit",
+        "flowLines": "Orgaaniset virtausviivat"
+      }
+    },
+    "turbulence": {
+      "title": "Turbulenssi",
+      "description": "Suunnittele monimutkaisia pyörteitä ja tekstuureja premium-pakkauksiin ja brändin elementteihin.",
+      "features": {
+        "vortexGeneration": "Pyörteiden generointi",
+        "turbulentTextures": "Turbulenttiteksturit",
+        "noiseVariation": "Kohinapohjainen vaihtelu"
+      }
+    },
+    "topography": {
+      "title": "Topografia",
+      "description": "Rakenna kerrostettuja korkeuskäyräkuvioita hienostuneeseen pakkaussuunnitteluun ja brändin syvyyteen.",
+      "features": {
+        "contourLines": "Kerrostetut korkeuskäyrät",
+        "elevationPatterns": "Korkeuspohjaiset kuviot",
+        "depthVisualization": "Syvyyden visualisointi"
+      }
+    },
+    "circularField": {
+      "title": "Pyöreä kenttä",
+      "description": "Käsittele samankeskisiä rengaskuvioita ja säteittäisiä suunnitelmia logoihin ja pyöreisiin pakkauksiin.",
+      "features": {
+        "concentricRings": "Samankeskiset rengasjärjestelmät",
+        "radialControl": "Säteittäinen kuvionhallinta",
+        "circularCompositions": "Pyöreät kompositiot"
+      }
+    },
+    "waveInterference": {
+      "title": "Aaltojen interferenssi",
+      "description": "Tutki aaltojen interferenssikuvioita ja harmonisia vuorovaikutuksia tieteelliseen visualisointiin.",
+      "features": {
+        "waveSources": "Useita aaltolähteitä",
+        "interferencePatterns": "Interferenssikuviot",
+        "harmonicAnalysis": "Harmoninen analyysi"
+      }
+    },
+    "particleSwarm": {
+      "title": "Hiukkasparvi",
+      "description": "Simuloi parvikäyttäytymistä ja kollektiivista älykkyyttä interaktiivisilla hiukkasjärjestelmillä.",
+      "features": {
+        "flockingBehavior": "Parvikäyttäytyminen",
+        "collectiveIntelligence": "Kollektiivinen älykkyys",
+        "dynamicAttractors": "Dynaamiset attraktiivit"
+      }
+    },
+    "fractalTree": {
+      "title": "Fraktaalipuu",
+      "description": "Generoi rekursiivisia haarautumiskuvioita ja orgaanisia kasvusimulointeja.",
+      "features": {
+        "recursiveBranching": "Rekursiivinen haarautuminen",
+        "growthAnimation": "Kasvuanimaatio",
+        "organicPatterns": "Orgaaniset kuviot"
+      }
+    },
+    "neuralNetwork": {
+      "title": "Hermoverkko",
+      "description": "Visualisoi keinotekoisia hermoverkkoja dynaamisilla aktivaatiokuvioilla ja oppimisella.",
+      "features": {
+        "networkVisualization": "Verkkovisualisointi",
+        "activationPatterns": "Aktivaatiokuviot",
+        "learningSimulation": "Oppimissimulaatio"
+      }
+    },
+    "cellularAutomata": {
+      "title": "Soluautomaatit",
+      "description": "Tutki emergenttiä käyttäytymistä ja monimutkaisia kuvioita yksinkertaisista sääntöpohjaisista järjestelmistä.",
+      "features": {
+        "emergentBehavior": "Emergentti käyttäytyminen",
+        "ruleBased": "Sääntöpohjaiset järjestelmät",
+        "complexPatterns": "Monimutkaiset kuviot"
+      }
+    },
+    "soundWave": {
+      "title": "Äänialto",
+      "description": "Analysoi ääniaaltoja, harmoniikkaa ja taajuusspektrejä interaktiivisella visualisoinnilla.",
+      "features": {
+        "waveformAnalysis": "Aaltomuotoanalyysi",
+        "harmonicVisualization": "Harmoninen visualisointi",
+        "frequencySpectrum": "Taajuusspektri"
+      }
+    }
+  },
+  "suggestions": {
+    "title": "Yhteisön ehdotukset",
+    "description": "Auta muokkaamaan Visualisointi Studion tulevaisuutta ehdottamalla uusia visualisointityökaluja ja ominaisuuksia. Äänestä olemassa olevia ideoita ja osallistu omilla luovilla konsepteillasi.",
+    "viewSuggestions": "Katso ehdotukset",
+    "submitIdea": "Lähetä uusi idea"
+  },
+  "about": {
+    "title": "Tietoja Visualisointi Studiosta",
+    "professionalGeneration": {
+      "title": "Ammattimainen kuviogenerointi",
+      "description": "Visualisointi Studio tarjoaa kattavan työkalupaketin kehittyneiden kuvioiden ja tekstuurien luomiseen. Suunniteletpa pakkauksia, brändäysmateriaaleja tai digitaalisia resursseja, työkalumme tarjoavat ammattimaisiin tuloksiin tarvittavan tarkkuuden ja joustavuuden."
+    },
+    "additionalInfo": "Jokainen visualisointityökalu on suunniteltu sekä luovan vapauden että teknisen tarkkuuden mielessä, mahdollistaen rajattomien mahdollisuuksien tutkimisen samalla kun säilytät hallinnan suunnittelusi jokaisesta osa-alueesta.",
+    "poweredBy": {
+      "title": "Powered by H23",
+      "description": "Kehittänyt H23, luovan teknologian toimisto, joka erikoistuu digitaalisten työkalujen ja kokemusten rakentamiseen kunnianhimoisille brändeille.",
+      "expertise": "Osaamisemme luovassa teknologiassa, brändäyksessä ja interaktiivisissa kokemuksissa vaikuttaa Visualisointi Studion jokaiseen näkökohtaan, varmistaen että se vastaa ammattimaisten suunnittelijoiden ja luovien tiimien tarpeisiin."
+    }
+  },
+  "metadata": {
+    "title": "Visualisointi Studio",
+    "description": "Ammattimainen kuviogenerointi-työkalupakki luovaan brändäykseen ja pakkaussuunnitteluun. Luo ainutlaatuisia geometrisia kuvioita, virtaavia tekstuureja ja dynaamisia visuaalisia järjestelmiä tarkalla hallinnalla.",
+    "shortTitle": "Visualisointi Studio"
+  }
+}

@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/ui/ThemeProvider'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
+import { I18nProvider } from '@/components/I18nProvider'
 
 export const metadata: Metadata = {
   title: 'Visualization Studio',
@@ -48,10 +49,12 @@ export default function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
-        <ThemeProvider>
-          {children}
-          <ServiceWorkerRegistration />
-        </ThemeProvider>
+        <I18nProvider>
+          <ThemeProvider>
+            {children}
+            <ServiceWorkerRegistration />
+          </ThemeProvider>
+        </I18nProvider>
       </body>
     </html>
   )
