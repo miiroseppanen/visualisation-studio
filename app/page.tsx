@@ -97,12 +97,16 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       
       // Add mouse interaction - ripple effect
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const rippleEffect = Math.sin(mouseDistance * 0.02 - t * 2) * Math.exp(-mouseDistance * 0.001) * 0.2
+      const rippleEffect = Math.sin(mouseDistance * 0.02 - t * 2) * Math.exp(-mouseDistance * 0.001) * 0.4
+      
+      // Add mouse velocity effect - more dynamic ripples
+      const mouseVelocity = Math.sqrt(mousePos.x ** 2 + mousePos.y ** 2) * 0.0001
+      const velocityEffect = Math.sin(mouseDistance * 0.01 - t * 3) * Math.exp(-mouseDistance * 0.002) * mouseVelocity
       
       return { 
-        real: real + rippleEffect, 
+        real: real + rippleEffect + velocityEffect, 
         imag: imag, 
-        magnitude: Math.sqrt((real + rippleEffect) ** 2 + imag ** 2) 
+        magnitude: Math.sqrt((real + rippleEffect + velocityEffect) ** 2 + imag ** 2) 
       }
     }
 
@@ -117,9 +121,12 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       
       // Add mouse interaction - attract particles to mouse
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const mouseAttraction = Math.sin(mouseDistance * 0.01 - t * 3) * Math.exp(-mouseDistance * 0.002) * 0.15
+      const mouseAttraction = Math.sin(mouseDistance * 0.01 - t * 3) * Math.exp(-mouseDistance * 0.002) * 0.25
       
-      return wave + mouseAttraction
+      // Add mouse proximity effect - stronger attraction near mouse
+      const proximityEffect = Math.exp(-mouseDistance * 0.003) * 0.2
+      
+      return wave + mouseAttraction + proximityEffect
     }
 
     // Get current theme - cached to prevent flickering
@@ -178,12 +185,20 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         : `rgba(255, 255, 255, ${fadeOpacity})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Create new particles
-      if (Math.random() < 0.4) {
+      // Create new particles - more near mouse
+      const mouseDistance = Math.sqrt((canvas.width / 2 - mousePos.x) ** 2 + (canvas.height / 2 - mousePos.y) ** 2)
+      const baseDensity = 0.4
+      const mouseDensity = Math.exp(-mouseDistance * 0.001) * 0.3
+      const totalDensity = baseDensity + mouseDensity
+      
+      if (Math.random() < totalDensity) {
         const type = ['flow', 'field', 'wave'][Math.floor(Math.random() * 3)] as any
+        // Create particles more likely near mouse position
+        const x = mousePos.x + (Math.random() - 0.5) * 200
+        const y = mousePos.y + (Math.random() - 0.5) * 200
         createParticle(
-          Math.random() * canvas.width,
-          Math.random() * canvas.height,
+          Math.max(0, Math.min(canvas.width, x)),
+          Math.max(0, Math.min(canvas.height, y)),
           type
         )
       }
@@ -213,10 +228,10 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
           particle.y += particle.vy + gradientY
         }
         
-              // Add mouse attraction to particles
+                    // Add mouse attraction to particles
       const mouseDistance = Math.sqrt((particle.x - mousePos.x) ** 2 + (particle.y - mousePos.y) ** 2)
-      if (mouseDistance < 200) {
-        const attraction = (200 - mouseDistance) / 200 * 0.05
+      if (mouseDistance < 300) {
+        const attraction = (300 - mouseDistance) / 300 * 0.08
         const dx = mousePos.x - particle.x
         const dy = mousePos.y - particle.y
         const distance = Math.sqrt(dx * dx + dy * dy)
@@ -224,7 +239,12 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
           particle.x += (dx / distance) * attraction
           particle.y += (dy / distance) * attraction
         }
+        
+        // Add particle size effect near mouse
+        if (mouseDistance < 100) {
+          particle.life += 0.002 // Particles live longer near mouse
         }
+      }
         
         particle.life -= 0.008
 
@@ -249,11 +269,11 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         if (size < 1 || alpha < 0.1) continue
         
         ctx.save()
-        ctx.globalAlpha = alpha * 0.4
+        ctx.globalAlpha = alpha * 0.5
         
         // Black and white theme-aware colors only
         const isDark = currentTheme === 'dark'
-        ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
+        ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
         
         ctx.beginPath()
         ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2)
@@ -1243,8 +1263,6 @@ export default function HomePage() {
   const visualizations = getVisualizations(t)
   const [heroOpacity, setHeroOpacity] = React.useState(1)
   const heroRef = React.useRef<HTMLDivElement>(null)
-  const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 })
-  const [isHovering, setIsHovering] = React.useState(false)
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -1266,45 +1284,8 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  React.useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY })
-    }
-
-    const handleMouseEnter = () => setIsHovering(true)
-    const handleMouseLeave = () => setIsHovering(false)
-
-    document.addEventListener('mousemove', handleMouseMove, { passive: true })
-    document.addEventListener('mouseenter', handleMouseEnter)
-    document.addEventListener('mouseleave', handleMouseLeave)
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseenter', handleMouseEnter)
-      document.removeEventListener('mouseleave', handleMouseLeave)
-    }
-  }, [])
-
-  // Floating cursor follower
-  const CursorFollower = () => (
-    <div 
-      className="fixed pointer-events-none z-50 transition-transform duration-150 ease-out"
-      style={{
-        left: mousePos.x - 4,
-        top: mousePos.y - 4,
-        opacity: isHovering ? 0.3 : 0,
-        transform: `scale(${isHovering ? 1 : 0.8})`
-      }}
-    >
-      <div className="w-2 h-2 bg-accent rounded-full shadow-lg" />
-    </div>
-  )
-
   return (
     <AppLayout showNavigation={true} navigationVariant="header">
-      {/* Floating cursor follower */}
-      <CursorFollower />
-      
       {/* Hero Section - Golden ratio proportions */}
       <section ref={heroRef} className="relative min-h-screen transition-colors duration-500">
         {/* Animated Background */}
@@ -1315,12 +1296,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start relative z-10">
           {/* Main content - 3/5 of width (golden ratio) */}
           <div className="lg:col-span-3">
-            <h2 
-              className="text-6xl md:text-7xl font-normal tracking-tight mb-8 text-foreground leading-none transition-transform duration-300 ease-out"
-              style={{
-                transform: `translate(${(mousePos.x - window.innerWidth / 2) * 0.01}px, ${(mousePos.y - window.innerHeight / 2) * 0.01}px)`
-              }}
-            >
+            <h2 className="text-6xl md:text-7xl font-normal tracking-tight mb-8 text-foreground leading-none">
               {t('hero.title')}
               <span className="block text-muted-foreground font-light mt-2">{t('hero.subtitle')}</span>
             </h2>
@@ -1328,13 +1304,13 @@ export default function HomePage() {
               {t('hero.description')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="group w-fit text-base px-8 py-3 hover:shadow-lg hover:shadow-accent/20 transition-all duration-300">
+              <Button asChild size="lg" className="group w-fit text-base px-8 py-3">
                 <Link href="/grid-field">
                   {t('hero.startCreating')}
-                  <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                  <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" asChild className="w-fit text-base px-8 py-3 hover:bg-accent/10 hover:border-accent transition-all duration-300">
+              <Button variant="outline" size="lg" asChild className="w-fit text-base px-8 py-3">
                 <Link href="#tools">
                   {t('hero.exploreTools')}
                 </Link>
@@ -1359,37 +1335,28 @@ export default function HomePage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-full overflow-x-hidden">
-          {visualizations.map((viz: any, index: number) => (
+          {visualizations.map((viz: any) => (
             <Link key={viz.path} href={viz.path} className="block group max-w-full">
-              <Card 
-                className="h-full hover:shadow-xl hover:shadow-black/10 transition-all duration-300 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.03] max-w-full relative overflow-hidden"
-                style={{
-                  transform: `translate(${(mousePos.x - window.innerWidth / 2) * 0.005}px, ${(mousePos.y - window.innerHeight / 2) * 0.005}px)`,
-                  transitionDelay: `${index * 50}ms`
-                }}
-              >
-                {/* Subtle glow effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                
-                <CardHeader className="pb-4 relative z-10">
+              <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02] max-w-full">
+                <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:shadow-lg group-hover:shadow-accent/30">
-                      <viz.icon className="w-4 h-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                    <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center transition-colors duration-200 group-hover:bg-accent">
+                      <viz.icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
                     </div>
-                    <CardTitle className="text-lg group-hover:text-accent-foreground transition-colors duration-300">{viz.title}</CardTitle>
+                    <CardTitle className="text-lg group-hover:text-accent-foreground transition-colors duration-200">{viz.title}</CardTitle>
                   </div>
                   <CardDescription className="text-sm text-muted-foreground leading-relaxed">
                     {viz.description}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-0 relative z-10">
-                  <div className="mb-4 h-32 rounded-lg border border-border/50 overflow-hidden group-hover:border-accent/30 transition-colors duration-300">
+                <CardContent className="pt-0">
+                  <div className="mb-4 h-32 rounded-lg border border-border/50 overflow-hidden">
                     <viz.preview />
                   </div>
                   <ul className="space-y-2 mb-4">
                     {viz.features.map((feature: string, index: number) => (
-                      <li key={index} className="flex items-center text-sm text-muted-foreground group-hover:text-foreground/80 transition-colors duration-300">
-                        <Sparkles className="w-3 h-3 mr-2 text-accent flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                      <li key={index} className="flex items-center text-sm text-muted-foreground">
+                        <Sparkles className="w-3 h-3 mr-2 text-accent flex-shrink-0" />
                         {feature}
                       </li>
                     ))}
@@ -1397,7 +1364,7 @@ export default function HomePage() {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="opacity-60 group-hover:opacity-100 group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent group-hover:shadow-lg group-hover:shadow-accent/30 transition-all duration-300"
+                    className="opacity-60 group-hover:opacity-100 group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent transition-all duration-200"
                   >
                     <Play className="w-3 h-3 mr-2" />
                     {t('tools.tryNow')}
@@ -1414,7 +1381,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           <div className="lg:col-span-2">
             <div className="flex items-start space-x-3 mb-4">
-              <Lightbulb className="w-8 h-8 text-primary mt-1 hover:scale-110 transition-transform duration-300" />
+              <Lightbulb className="w-8 h-8 text-primary mt-1" />
               <div>
                 <h3 className="text-3xl font-normal text-foreground">
                   {t('suggestions.title')}
@@ -1428,12 +1395,12 @@ export default function HomePage() {
           
           <div className="lg:col-span-2">
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="px-8 py-3 hover:shadow-lg hover:shadow-accent/20 transition-all duration-300">
+              <Button asChild size="lg" className="px-8 py-3">
                 <Link href="/suggestions">
                   {t('suggestions.viewSuggestions')}
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" asChild className="px-8 py-3 hover:bg-accent/10 hover:border-accent transition-all duration-300">
+              <Button variant="outline" size="lg" asChild className="px-8 py-3">
                 <Link href="/suggestions/new">
                   {t('suggestions.submitIdea')}
                 </Link>
@@ -1466,7 +1433,7 @@ export default function HomePage() {
           <div>
             <h4 className="text-xl font-medium mb-4 text-foreground">{t('about.poweredBy.title')}</h4>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              {t('about.poweredBy.description')} <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium hover:shadow-lg hover:shadow-accent/20">H23</a>.
+              {t('about.poweredBy.description')} <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               {t('about.poweredBy.expertise')}
