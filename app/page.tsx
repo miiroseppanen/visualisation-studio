@@ -74,6 +74,9 @@ const SuperSaddleBackground = () => {
       time += 0.016
       const dark = isDarkMode()
 
+      // Safety check for canvas context
+      if (!ctx || !canvas) return
+
       // Clear canvas with fade effect
       ctx.fillStyle = dark ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.02)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -99,17 +102,26 @@ const SuperSaddleBackground = () => {
         particle.y += particle.vy + gradientY
         particle.life -= 0.01
 
-        // Remove dead particles
+        // Remove dead particles or particles outside bounds
         if (particle.life <= 0 || 
-            particle.x < 0 || particle.x > canvas.width ||
-            particle.y < 0 || particle.y > canvas.height) {
+            particle.x < -50 || particle.x > canvas.width + 50 ||
+            particle.y < -50 || particle.y > canvas.height + 50) {
           particles.splice(i, 1)
           continue
         }
 
+        // Skip rendering if particle is outside visible area
+        if (particle.x < -10 || particle.x > canvas.width + 10 ||
+            particle.y < -10 || particle.y > canvas.height + 10) {
+          continue
+        }
+
         // Draw particle
-        const alpha = particle.life / particle.maxLife
-        const size = (1 - alpha) * 3 + 1
+        const alpha = Math.max(0, Math.min(1, particle.life / particle.maxLife))
+        const size = Math.max(0.5, (1 - alpha) * 3 + 1) // Ensure minimum size of 0.5
+        
+        // Skip rendering if particle is too small or alpha is too low
+        if (size < 0.1 || alpha < 0.01) continue
         
         ctx.save()
         ctx.globalAlpha = alpha * 0.6
