@@ -294,6 +294,44 @@ export interface SuggestionFilters {
   sortOrder?: 'asc' | 'desc'
 }
 
+// Wave interference types
+export interface WaveInterferenceAnimationSettings extends BaseAnimationSettings {
+  speed: number
+  waveSpeed: number
+}
+
+export interface WaveInterferencePanelState {
+  isOpen: boolean
+  waveSourcesExpanded: boolean
+  waveSettingsExpanded: boolean
+  animationExpanded: boolean
+}
+
+// Particle swarm types
+export interface ParticleSwarmAnimationSettings extends BaseAnimationSettings {
+  speed: number
+}
+
+export interface ParticleSwarmPanelState {
+  isOpen: boolean
+  swarmSettingsExpanded: boolean
+  behaviorSettingsExpanded: boolean
+  animationExpanded: boolean
+}
+
+// Fractal tree types
+export interface FractalTreeAnimationSettings extends BaseAnimationSettings {
+  speed: number
+  growthSpeed: number
+}
+
+export interface FractalTreePanelState {
+  isOpen: boolean
+  treeSettingsExpanded: boolean
+  branchSettingsExpanded: boolean
+  animationExpanded: boolean
+}
+
 export interface SuggestionStats {
   total: number
   byStatus: Record<string, number>

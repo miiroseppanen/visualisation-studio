@@ -1,4 +1,4 @@
-import { Grid3X3, Magnet, Wind, Mountain, Radio } from 'lucide-react'
+import { Grid3X3, Magnet, Wind, Mountain, Radio, Waves, Users, TreePine } from 'lucide-react'
 
 export interface VisualizationOption {
   id: string
@@ -33,6 +33,30 @@ export const visualizationOptions: VisualizationOption[] = [
     icon: Radio,
     description: 'Visualize circular field lines around magnetic poles',
     category: 'field'
+  },
+  {
+    id: 'wave-interference',
+    name: 'Wave Interference',
+    path: '/wave-interference',
+    icon: Waves,
+    description: 'Explore wave interference patterns with multiple sources',
+    category: 'field'
+  },
+  {
+    id: 'particle-swarm',
+    name: 'Particle Swarm',
+    path: '/particle-swarm',
+    icon: Users,
+    description: 'Watch particles flock and swarm with emergent behavior',
+    category: 'flow'
+  },
+  {
+    id: 'fractal-tree',
+    name: 'Fractal Tree',
+    path: '/fractal-tree',
+    icon: TreePine,
+    description: 'Generate beautiful fractal trees with recursive branching',
+    category: 'terrain'
   },
   {
     id: 'turbulence',
