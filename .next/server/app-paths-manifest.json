@@ -1,1 +1,6 @@
-{}
+{
+  "/suggestions/page": "app/suggestions/page.js",
+  "/flow-field/page": "app/flow-field/page.js",
+  "/page": "app/page.js",
+  "/circular-field/page": "app/circular-field/page.js"
+}

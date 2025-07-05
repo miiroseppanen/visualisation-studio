@@ -115,7 +115,9 @@ export default function VisualizationLayout({
               isOpen={panelOpen} 
               onToggle={onPanelToggle}
             >
-              {settingsContent}
+              <div className="pb-8 md:pb-12">
+                {settingsContent}
+              </div>
             </ControlsPanel>
           )}
         </div>

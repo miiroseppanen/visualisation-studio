@@ -12,6 +12,7 @@ import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constant
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { useTheme } from '@/components/ui/ThemeProvider'
 
 interface MagneticPole {
   id: string
@@ -26,6 +27,7 @@ export default function FlowFieldPage() {
   const animationRef = useRef<number>()
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
+  const { theme } = useTheme()
 
   // Poles state
   const [poles, setPoles] = useState<MagneticPole[]>([
@@ -33,7 +35,7 @@ export default function FlowFieldPage() {
     { id: '2', x: 600, y: 300, strength: 100, type: 'south' }
   ])
 
-  // Particle system state
+  // Particles state
   const [particles, setParticles] = useState<Array<{
     x: number
     y: number
@@ -41,6 +43,20 @@ export default function FlowFieldPage() {
     vy: number
     life: number
     maxLife: number
+    trail: Array<{ x: number; y: number; life: number }>
+    maxTrailLength: number
+    age: number
+  }>>([])
+
+  // Background noise particles state
+  const [noiseParticles, setNoiseParticles] = useState<Array<{
+    x: number
+    y: number
+    vx: number
+    vy: number
+    life: number
+    maxLife: number
+    size: number
   }>>([])
 
   // Settings state
@@ -48,6 +64,8 @@ export default function FlowFieldPage() {
   const [showPoles, setShowPoles] = useState(true)
   const [showFieldLines, setShowFieldLines] = useState(true)
   const [selectedPoleType, setSelectedPoleType] = useState<'north' | 'south'>('north')
+  const [showParticleTrails, setShowParticleTrails] = useState(true)
+  const [fieldLineDensity, setFieldLineDensity] = useState(15)
 
   // Animation settings
   const [animationSettings, setAnimationSettings] = useState<FlowFieldAnimationSettings>({
@@ -140,10 +158,29 @@ export default function FlowFieldPage() {
         vx: 0,
         vy: 0,
         life: Math.random() * animationSettings.particleLife,
-        maxLife: animationSettings.particleLife
+        maxLife: animationSettings.particleLife,
+        trail: [],
+        maxTrailLength: 20,
+        age: 0
       })
     }
     setParticles(newParticles)
+
+    // Generate background noise particles
+    const newNoiseParticles = []
+    const noiseCount = Math.floor(particleCount * 0.3) // 30% of main particles
+    for (let i = 0; i < noiseCount; i++) {
+      newNoiseParticles.push({
+        x: Math.random() * (canvasRef.current?.width || 800),
+        y: Math.random() * (canvasRef.current?.height || 600),
+        vx: (Math.random() - 0.5) * 2, // Random initial velocity
+        vy: (Math.random() - 0.5) * 2,
+        life: Math.random() * animationSettings.particleLife * 0.5, // Shorter life
+        maxLife: animationSettings.particleLife * 0.5,
+        size: Math.random() * 2 + 0.5 // Random size
+      })
+    }
+    setNoiseParticles(newNoiseParticles)
   }, [particleCount, animationSettings.particleLife, isClient])
 
   // Animation loop
@@ -156,13 +193,64 @@ export default function FlowFieldPage() {
           // Calculate field at particle position
           const field = calculateField(particle.x, particle.y)
           
-          // Update velocity based on field
-          particle.vx += field.x * animationSettings.particleSpeed * 0.01
-          particle.vy += field.y * animationSettings.particleSpeed * 0.01
+          // Update velocity based on field with improved physics
+          const fieldStrength = Math.min(field.magnitude, 5)
+          particle.vx += field.x * animationSettings.particleSpeed * 0.02 * fieldStrength
+          particle.vy += field.y * animationSettings.particleSpeed * 0.02 * fieldStrength
+          
+          // Apply damping with velocity-dependent factor
+          const velocity = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
+          const damping = Math.max(0.95, 1 - velocity * 0.01)
+          particle.vx *= damping
+          particle.vy *= damping
+          
+          // Update position
+          particle.x += particle.vx
+          particle.y += particle.vy
+          
+          // Update trail
+          if (showParticleTrails) {
+            particle.trail.push({ x: particle.x, y: particle.y, life: particle.life })
+            if (particle.trail.length > particle.maxTrailLength) {
+              particle.trail.shift()
+            }
+          }
+          
+          // Update life and age
+          particle.life -= 1
+          particle.age += 1
+          
+          // Reset particle if it's dead or out of bounds
+          if (particle.life <= 0 || 
+              particle.x < -50 || particle.x > (canvasRef.current?.width || 800) + 50 ||
+              particle.y < -50 || particle.y > (canvasRef.current?.height || 600) + 50) {
+            return {
+              x: Math.random() * (canvasRef.current?.width || 800),
+              y: Math.random() * (canvasRef.current?.height || 600),
+              vx: 0,
+              vy: 0,
+              life: animationSettings.particleLife,
+              maxLife: animationSettings.particleLife,
+              trail: [],
+              maxTrailLength: 20,
+              age: 0
+            }
+          }
+          
+          return particle
+        })
+      )
+
+      // Animate noise particles
+      setNoiseParticles(prevNoiseParticles => 
+        prevNoiseParticles.map(particle => {
+          // Add some random movement
+          particle.vx += (Math.random() - 0.5) * 0.5
+          particle.vy += (Math.random() - 0.5) * 0.5
           
           // Apply damping
-          particle.vx *= 0.99
-          particle.vy *= 0.99
+          particle.vx *= 0.98
+          particle.vy *= 0.98
           
           // Update position
           particle.x += particle.vx
@@ -173,15 +261,16 @@ export default function FlowFieldPage() {
           
           // Reset particle if it's dead or out of bounds
           if (particle.life <= 0 || 
-              particle.x < 0 || particle.x > (canvasRef.current?.width || 800) ||
-              particle.y < 0 || particle.y > (canvasRef.current?.height || 600)) {
+              particle.x < -50 || particle.x > (canvasRef.current?.width || 800) + 50 ||
+              particle.y < -50 || particle.y > (canvasRef.current?.height || 600) + 50) {
             return {
               x: Math.random() * (canvasRef.current?.width || 800),
               y: Math.random() * (canvasRef.current?.height || 600),
-              vx: 0,
-              vy: 0,
-              life: animationSettings.particleLife,
-              maxLife: animationSettings.particleLife
+              vx: (Math.random() - 0.5) * 2,
+              vy: (Math.random() - 0.5) * 2,
+              life: animationSettings.particleLife * 0.5,
+              maxLife: animationSettings.particleLife * 0.5,
+              size: Math.random() * 2 + 0.5
             }
           }
           
@@ -198,17 +287,16 @@ export default function FlowFieldPage() {
     const frameId = requestAnimationFrame(animate)
     animationRef.current = frameId
     registerAnimationFrame(frameId)
-    
+
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         unregisterAnimationFrame(animationRef.current)
-        animationRef.current = undefined
       }
     }
-  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, isClient])
+  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, showParticleTrails, isClient])
 
-  // Listen for global pause event
+  // Handle pause all animations
   useEffect(() => {
     const handlePauseAllAnimations = () => {
       if (animationRef.current) {
@@ -216,54 +304,113 @@ export default function FlowFieldPage() {
         unregisterAnimationFrame(animationRef.current)
         animationRef.current = undefined
       }
-      setAnimationSettings(prev => ({ ...prev, isAnimating: false }))
     }
 
-    window.addEventListener('pauseAllAnimations', handlePauseAllAnimations)
-    
-    return () => {
-      window.removeEventListener('pauseAllAnimations', handlePauseAllAnimations)
-    }
-  }, [])
-
-  // Cleanup on unmount to prevent navigation issues
-  useEffect(() => {
-    return () => {
-      // Stop animation when component unmounts
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-        unregisterAnimationFrame(animationRef.current)
-        animationRef.current = undefined
-      }
-    }
-  }, [])
-
-  // Stop animation when navigating away
-  useEffect(() => {
     const handleBeforeUnload = () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-        unregisterAnimationFrame(animationRef.current)
-        animationRef.current = undefined
-      }
+      handlePauseAllAnimations()
     }
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // Page is hidden (navigation, tab switch, etc.) - pause animation
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current)
-          unregisterAnimationFrame(animationRef.current)
-          animationRef.current = undefined
-        }
-      } else if (animationSettings.isAnimating && !animationRef.current) {
-        // Page is visible again and should be animating - restart
+        handlePauseAllAnimations()
+      } else if (animationSettings.isAnimating) {
         const animate = () => {
-          // ... animation logic would go here
+          setParticles(prevParticles => 
+            prevParticles.map(particle => {
+              // Calculate field at particle position
+              const field = calculateField(particle.x, particle.y)
+              
+              // Update velocity based on field with improved physics
+              const fieldStrength = Math.min(field.magnitude, 5)
+              particle.vx += field.x * animationSettings.particleSpeed * 0.02 * fieldStrength
+              particle.vy += field.y * animationSettings.particleSpeed * 0.02 * fieldStrength
+              
+              // Apply damping with velocity-dependent factor
+              const velocity = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
+              const damping = Math.max(0.95, 1 - velocity * 0.01)
+              particle.vx *= damping
+              particle.vy *= damping
+              
+              // Update position
+              particle.x += particle.vx
+              particle.y += particle.vy
+              
+              // Update trail
+              if (showParticleTrails) {
+                particle.trail.push({ x: particle.x, y: particle.y, life: particle.life })
+                if (particle.trail.length > particle.maxTrailLength) {
+                  particle.trail.shift()
+                }
+              }
+              
+              // Update life and age
+              particle.life -= 1
+              particle.age += 1
+              
+              // Reset particle if it's dead or out of bounds
+              if (particle.life <= 0 || 
+                  particle.x < -50 || particle.x > (canvasRef.current?.width || 800) + 50 ||
+                  particle.y < -50 || particle.y > (canvasRef.current?.height || 600) + 50) {
+                return {
+                  x: Math.random() * (canvasRef.current?.width || 800),
+                  y: Math.random() * (canvasRef.current?.height || 600),
+                  vx: 0,
+                  vy: 0,
+                  life: animationSettings.particleLife,
+                  maxLife: animationSettings.particleLife,
+                  trail: [],
+                  maxTrailLength: 20,
+                  age: 0
+                }
+              }
+              
+              return particle
+            })
+          )
+
+          // Animate noise particles
+          setNoiseParticles(prevNoiseParticles => 
+            prevNoiseParticles.map(particle => {
+              // Add some random movement
+              particle.vx += (Math.random() - 0.5) * 0.5
+              particle.vy += (Math.random() - 0.5) * 0.5
+              
+              // Apply damping
+              particle.vx *= 0.98
+              particle.vy *= 0.98
+              
+              // Update position
+              particle.x += particle.vx
+              particle.y += particle.vy
+              
+              // Update life
+              particle.life -= 1
+              
+              // Reset particle if it's dead or out of bounds
+              if (particle.life <= 0 || 
+                  particle.x < -50 || particle.x > (canvasRef.current?.width || 800) + 50 ||
+                  particle.y < -50 || particle.y > (canvasRef.current?.height || 600) + 50) {
+                return {
+                  x: Math.random() * (canvasRef.current?.width || 800),
+                  y: Math.random() * (canvasRef.current?.height || 600),
+                  vx: (Math.random() - 0.5) * 2,
+                  vy: (Math.random() - 0.5) * 2,
+                  life: animationSettings.particleLife * 0.5,
+                  maxLife: animationSettings.particleLife * 0.5,
+                  size: Math.random() * 2 + 0.5
+                }
+              }
+              
+              return particle
+            })
+          )
+
+          setAnimationSettings(prev => ({ ...prev, time: prev.time + 1 }))
           const frameId = requestAnimationFrame(animate)
           animationRef.current = frameId
           registerAnimationFrame(frameId)
         }
+
         const frameId = requestAnimationFrame(animate)
         animationRef.current = frameId
         registerAnimationFrame(frameId)
@@ -272,12 +419,13 @@ export default function FlowFieldPage() {
 
     window.addEventListener('beforeunload', handleBeforeUnload)
     document.addEventListener('visibilitychange', handleVisibilityChange)
-    
+
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      handlePauseAllAnimations()
     }
-  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity])
+  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, showParticleTrails])
 
   // Render loop
   useEffect(() => {
@@ -287,61 +435,145 @@ export default function FlowFieldPage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
+    // Clear canvas with subtle fade effect
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+    ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
 
     // Draw field lines
     if (showFieldLines) {
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'
-      ctx.lineWidth = 1
+      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      const fieldLineColor = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
       
-      const gridSize = 20
-      for (let x = 0; x < canvas.width / window.devicePixelRatio; x += gridSize) {
-        for (let y = 0; y < canvas.height / window.devicePixelRatio; y += gridSize) {
+      ctx.strokeStyle = fieldLineColor
+      ctx.lineWidth = 1
+
+      // Draw field lines from poles
+      poles.forEach(pole => {
+        const startAngle = 0
+        const endAngle = 2 * Math.PI
+        const angleStep = (endAngle - startAngle) / fieldLineDensity
+
+        for (let angle = startAngle; angle < endAngle; angle += angleStep) {
+          let x = pole.x + Math.cos(angle) * 20
+          let y = pole.y + Math.sin(angle) * 20
+          const length = 100
+
+          // Draw field line
           const field = calculateField(x, y)
           if (field.magnitude > 0.1) {
-            const length = Math.min(20, field.magnitude * 10)
             const endX = x + (field.x / field.magnitude) * length
             const endY = y + (field.y / field.magnitude) * length
+            
+            // Draw arrowhead
+            const arrowAngle = Math.atan2(field.y, field.x)
+            const arrowLength = 8
+            const arrowAngleOffset = Math.PI / 6
             
             ctx.beginPath()
             ctx.moveTo(x, y)
             ctx.lineTo(endX, endY)
             ctx.stroke()
+            
+            // Draw arrowhead
+            ctx.beginPath()
+            ctx.moveTo(endX, endY)
+            ctx.lineTo(
+              endX - arrowLength * Math.cos(arrowAngle - arrowAngleOffset),
+              endY - arrowLength * Math.sin(arrowAngle - arrowAngleOffset)
+            )
+            ctx.moveTo(endX, endY)
+            ctx.lineTo(
+              endX - arrowLength * Math.cos(arrowAngle + arrowAngleOffset),
+              endY - arrowLength * Math.sin(arrowAngle + arrowAngleOffset)
+            )
+            ctx.stroke()
           }
         }
-      }
+      })
     }
 
-    // Draw particles
-    ctx.fillStyle = 'rgba(59, 130, 246, 0.6)'
+    // Draw particle trails
+    if (showParticleTrails) {
+      particles.forEach(particle => {
+        if (particle.trail.length < 2) return
+        
+        // Draw trail with fade effect
+        for (let i = 0; i < particle.trail.length - 1; i++) {
+          const current = particle.trail[i]
+          const next = particle.trail[i + 1]
+          const progress = i / particle.trail.length
+          const alpha = 0.1 + progress * 0.4
+          
+          // Black and white theme-aware colors
+          const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          const trailColor = isDark ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 0, 0, ${alpha})`
+          
+          ctx.strokeStyle = trailColor
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.moveTo(current.x, current.y)
+          ctx.lineTo(next.x, next.y)
+          ctx.stroke()
+        }
+      })
+    }
+
+    // Draw enhanced particles
     particles.forEach(particle => {
+      const velocity = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
+      const field = calculateField(particle.x, particle.y)
       const alpha = particle.life / particle.maxLife
-      ctx.globalAlpha = alpha
+      const size = Math.max(1, Math.min(4, velocity * 2 + 1))
+      
+      // Black and white theme-aware colors only
+      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      const baseColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'
+      
+      ctx.fillStyle = baseColor.replace('0.8', (alpha * 0.8).toString())
       ctx.beginPath()
-      ctx.arc(particle.x, particle.y, 2, 0, 2 * Math.PI)
+      ctx.arc(particle.x, particle.y, size, 0, 2 * Math.PI)
       ctx.fill()
     })
-    ctx.globalAlpha = 1
 
-    // Draw poles
+    // Draw noise particles
+    noiseParticles.forEach(particle => {
+      const alpha = particle.life / particle.maxLife
+      
+      // Black and white theme-aware colors with lower opacity
+      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      const baseColor = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+      
+      ctx.fillStyle = baseColor.replace('0.3', (alpha * 0.3).toString())
+      ctx.beginPath()
+      ctx.arc(particle.x, particle.y, particle.size, 0, 2 * Math.PI)
+      ctx.fill()
+    })
+
+    // Draw enhanced poles
     if (showPoles) {
       poles.forEach(pole => {
         const color = pole.type === 'north' ? '#ef4444' : '#3b82f6'
+        
+        // Draw pole circle
         ctx.fillStyle = color
         ctx.beginPath()
-        ctx.arc(pole.x, pole.y, 8, 0, 2 * Math.PI)
+        ctx.arc(pole.x, pole.y, 10, 0, 2 * Math.PI)
         ctx.fill()
+        
+        // Draw pole border
+        ctx.strokeStyle = '#000000'
+        ctx.lineWidth = 2
+        ctx.stroke()
         
         // Draw pole symbol
         ctx.fillStyle = 'white'
-        ctx.font = '12px sans-serif'
+        ctx.font = 'bold 14px sans-serif'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.fillText(pole.type === 'north' ? 'N' : 'S', pole.x, pole.y)
       })
     }
-  }, [particles, poles, showPoles, showFieldLines, animationSettings.flowIntensity, isClient])
+  }, [particles, noiseParticles, poles, showPoles, showFieldLines, showParticleTrails, fieldLineDensity, animationSettings.flowIntensity, theme, isClient])
 
   // Handle canvas mouse down for adding/dragging poles
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -472,6 +704,8 @@ export default function FlowFieldPage() {
     })
     setShowPoles(true)
     setShowFieldLines(true)
+    setShowParticleTrails(true)
+    setFieldLineDensity(15)
     setIsAddingPole(false)
   }
 
@@ -492,6 +726,7 @@ export default function FlowFieldPage() {
           Mode: Flow Simulation | 
           Poles: {poles.length} | 
           Particles: {particleCount} | 
+          Trails: {showParticleTrails ? 'On' : 'Off'} | 
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
       }
@@ -515,12 +750,15 @@ export default function FlowFieldPage() {
             onRemovePole={removePole}
             onSetShowPoles={setShowPoles}
             onSetShowFieldLines={setShowFieldLines}
+            onUpdatePole={updatePole}
           />
 
           <ParticleSettings
             particleCount={particleCount}
             particleSpeed={animationSettings.particleSpeed}
             particleLife={animationSettings.particleLife}
+            showParticleTrails={showParticleTrails}
+            fieldLineDensity={fieldLineDensity}
             expanded={panelState.particleSettingsExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ 
               ...prev, particleSettingsExpanded: !prev.particleSettingsExpanded 
@@ -528,6 +766,8 @@ export default function FlowFieldPage() {
             onSetParticleCount={setParticleCount}
             onSetParticleSpeed={(speed) => setAnimationSettings(prev => ({ ...prev, particleSpeed: speed }))}
             onSetParticleLife={(life) => setAnimationSettings(prev => ({ ...prev, particleLife: life }))}
+            onSetShowParticleTrails={setShowParticleTrails}
+            onSetFieldLineDensity={setFieldLineDensity}
           />
 
           <AnimationControls
@@ -552,4 +792,4 @@ export default function FlowFieldPage() {
       />
     </VisualizationLayout>
   )
-} 
+}
