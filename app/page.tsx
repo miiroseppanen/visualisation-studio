@@ -273,7 +273,7 @@ const MathematicalBackground = () => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none transition-colors duration-500 touch-none"
-      style={{ zIndex: -1 }}
+      style={{ zIndex: -1, position: 'absolute' }}
     />
   )
 }
@@ -1194,9 +1194,11 @@ export default function HomePage() {
   return (
     <AppLayout showNavigation={true} navigationVariant="header">
       {/* Hero Section - Golden ratio proportions */}
-      <section className="container mx-auto px-8 py-24 relative overflow-hidden min-h-screen transition-colors duration-500">
+      <section className="relative min-h-screen transition-colors duration-500">
         {/* Animated Background */}
         <MathematicalBackground />
+        
+        <div className="container mx-auto px-8 py-24 relative z-10">
         
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start relative z-10">
           {/* Main content - 3/5 of width (golden ratio) */}
@@ -1226,6 +1228,7 @@ export default function HomePage() {
           {/* Side content - 2/5 of width */}
           <div className="lg:col-span-2">
           </div>
+        </div>
         </div>
       </section>
 
