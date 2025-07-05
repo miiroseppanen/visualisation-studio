@@ -97,11 +97,11 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       
       // Add mouse interaction - ripple effect
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const rippleEffect = Math.sin(mouseDistance * 0.02 - t * 2) * Math.exp(-mouseDistance * 0.001) * 0.4
+      const rippleEffect = Math.sin(mouseDistance * 0.01 - t * 2) * Math.exp(-mouseDistance * 0.0005) * 1.2
       
       // Add mouse velocity effect - more dynamic ripples
-      const mouseVelocity = Math.sqrt(mousePos.x ** 2 + mousePos.y ** 2) * 0.0001
-      const velocityEffect = Math.sin(mouseDistance * 0.01 - t * 3) * Math.exp(-mouseDistance * 0.002) * mouseVelocity
+      const mouseVelocity = Math.sqrt(mousePos.x ** 2 + mousePos.y ** 2) * 0.0002
+      const velocityEffect = Math.sin(mouseDistance * 0.005 - t * 3) * Math.exp(-mouseDistance * 0.001) * mouseVelocity
       
       return { 
         real: real + rippleEffect + velocityEffect, 
@@ -121,10 +121,10 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       
       // Add mouse interaction - attract particles to mouse
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const mouseAttraction = Math.sin(mouseDistance * 0.01 - t * 3) * Math.exp(-mouseDistance * 0.002) * 0.25
+      const mouseAttraction = Math.sin(mouseDistance * 0.005 - t * 3) * Math.exp(-mouseDistance * 0.001) * 0.6
       
       // Add mouse proximity effect - stronger attraction near mouse
-      const proximityEffect = Math.exp(-mouseDistance * 0.003) * 0.2
+      const proximityEffect = Math.exp(-mouseDistance * 0.001) * 0.5
       
       return wave + mouseAttraction + proximityEffect
     }
@@ -188,14 +188,14 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       // Create new particles - more near mouse
       const mouseDistance = Math.sqrt((canvas.width / 2 - mousePos.x) ** 2 + (canvas.height / 2 - mousePos.y) ** 2)
       const baseDensity = 0.4
-      const mouseDensity = Math.exp(-mouseDistance * 0.001) * 0.3
+      const mouseDensity = Math.exp(-mouseDistance * 0.0005) * 0.8
       const totalDensity = baseDensity + mouseDensity
       
       if (Math.random() < totalDensity) {
         const type = ['flow', 'field', 'wave'][Math.floor(Math.random() * 3)] as any
         // Create particles more likely near mouse position
-        const x = mousePos.x + (Math.random() - 0.5) * 200
-        const y = mousePos.y + (Math.random() - 0.5) * 200
+        const x = mousePos.x + (Math.random() - 0.5) * 400
+        const y = mousePos.y + (Math.random() - 0.5) * 400
         createParticle(
           Math.max(0, Math.min(canvas.width, x)),
           Math.max(0, Math.min(canvas.height, y)),
@@ -230,8 +230,8 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         
                     // Add mouse attraction to particles
       const mouseDistance = Math.sqrt((particle.x - mousePos.x) ** 2 + (particle.y - mousePos.y) ** 2)
-      if (mouseDistance < 300) {
-        const attraction = (300 - mouseDistance) / 300 * 0.08
+      if (mouseDistance < 500) {
+        const attraction = (500 - mouseDistance) / 500 * 0.15
         const dx = mousePos.x - particle.x
         const dy = mousePos.y - particle.y
         const distance = Math.sqrt(dx * dx + dy * dy)
@@ -241,8 +241,8 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         }
         
         // Add particle size effect near mouse
-        if (mouseDistance < 100) {
-          particle.life += 0.002 // Particles live longer near mouse
+        if (mouseDistance < 200) {
+          particle.life += 0.005 // Particles live longer near mouse
         }
       }
         
@@ -264,16 +264,16 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
 
         // Draw particle
         const alpha = Math.max(0, Math.min(1, particle.life / particle.maxLife))
-        const size = Math.max(1.5, (1 - alpha) * 3 + 1.5)
+        const size = Math.max(2, (1 - alpha) * 5 + 2)
         
         if (size < 1 || alpha < 0.1) continue
         
         ctx.save()
-        ctx.globalAlpha = alpha * 0.5
+        ctx.globalAlpha = alpha * 0.7
         
         // Black and white theme-aware colors only
         const isDark = currentTheme === 'dark'
-        ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+        ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
         
         ctx.beginPath()
         ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2)
