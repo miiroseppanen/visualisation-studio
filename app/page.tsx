@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Grid3X3, Magnet, Wind, Mountain, Radio, Sparkles, Download, Play, Lightbulb } from 'lucide-react'
+import { ArrowRight, Grid3X3, Magnet, Wind, Mountain, Radio, Sparkles, Download, Play, Lightbulb, Waves, Users, TreePine, Brain, Grid, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import AppLayout from '@/components/layout/AppLayout'
@@ -398,6 +398,673 @@ const CircularFieldPreview = () => {
   )
 }
 
+// Wave Interference Preview
+const WaveInterferencePreview = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationRef = useRef<number>()
+  const { theme } = useTheme()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * window.devicePixelRatio
+      canvas.height = rect.height * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    let time = 0
+    const sources = [
+      { x: 80, y: 60, frequency: 2 },
+      { x: 240, y: 60, frequency: 2 },
+      { x: 160, y: 40, frequency: 1.5 }
+    ]
+
+    const animate = () => {
+      time += 0.03
+      const currentTheme = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+      // Clear with fade
+      ctx.fillStyle = currentTheme ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Draw interference pattern
+      for (let x = 0; x < canvas.width; x += 4) {
+        for (let y = 0; y < canvas.height; y += 4) {
+          let amplitude = 0
+          
+          sources.forEach(source => {
+            const distance = Math.sqrt((x - source.x) ** 2 + (y - source.y) ** 2)
+            const wave = Math.sin((distance / 20) - time * source.frequency)
+            amplitude += wave * (50 / (1 + distance / 50))
+          })
+
+          const intensity = Math.abs(amplitude) / 100
+          const alpha = Math.min(1, intensity * 0.8)
+          
+          if (alpha > 0.1) {
+            ctx.fillStyle = currentTheme 
+              ? `rgba(255, 255, 255, ${alpha})` 
+              : `rgba(0, 0, 0, ${alpha})`
+            ctx.fillRect(x, y, 4, 4)
+          }
+        }
+      }
+
+      // Draw sources
+      sources.forEach(source => {
+        ctx.fillStyle = '#3b82f6'
+        ctx.beginPath()
+        ctx.arc(source.x, source.y, 4, 0, Math.PI * 2)
+        ctx.fill()
+      })
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [theme])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full h-32 rounded-lg border border-border/50"
+    />
+  )
+}
+
+// Particle Swarm Preview
+const ParticleSwarmPreview = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationRef = useRef<number>()
+  const { theme } = useTheme()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * window.devicePixelRatio
+      canvas.height = rect.height * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    let time = 0
+    const particles = Array.from({ length: 30 }, (_, i) => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 2,
+      vy: (Math.random() - 0.5) * 2,
+      life: 1
+    }))
+
+    const attractors = [
+      { x: 100, y: 60, strength: 0.5 },
+      { x: 220, y: 60, strength: -0.3 }
+    ]
+
+    const animate = () => {
+      time += 0.02
+      const currentTheme = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+      // Clear with fade
+      ctx.fillStyle = currentTheme ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Update and draw particles
+      particles.forEach(particle => {
+        // Apply attractor forces
+        attractors.forEach(attractor => {
+          const dx = attractor.x - particle.x
+          const dy = attractor.y - particle.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+          if (distance > 0) {
+            particle.vx += (dx / distance) * attractor.strength * 0.1
+            particle.vy += (dy / distance) * attractor.strength * 0.1
+          }
+        })
+
+        // Update position
+        particle.x += particle.vx
+        particle.y += particle.vy
+
+        // Bounce off edges
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -0.8
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -0.8
+
+        // Draw particle
+        ctx.fillStyle = currentTheme ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'
+        ctx.beginPath()
+        ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2)
+        ctx.fill()
+      })
+
+      // Draw attractors
+      attractors.forEach(attractor => {
+        ctx.fillStyle = attractor.strength > 0 ? '#ef4444' : '#3b82f6'
+        ctx.beginPath()
+        ctx.arc(attractor.x, attractor.y, 6, 0, Math.PI * 2)
+        ctx.fill()
+      })
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [theme])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full h-32 rounded-lg border border-border/50"
+    />
+  )
+}
+
+// Fractal Tree Preview
+const FractalTreePreview = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationRef = useRef<number>()
+  const { theme } = useTheme()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * window.devicePixelRatio
+      canvas.height = rect.height * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    let time = 0
+    let growthProgress = 0
+
+    const drawBranch = (x: number, y: number, length: number, angle: number, depth: number, maxDepth: number) => {
+      if (depth >= maxDepth || length < 2) return
+
+      const currentLength = length * Math.min(1, growthProgress * 2 - depth * 0.2)
+      if (currentLength <= 0) return
+
+      const endX = x + Math.cos(angle) * currentLength
+      const endY = y + Math.sin(angle) * currentLength
+
+      const currentTheme = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      ctx.strokeStyle = currentTheme ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'
+      ctx.lineWidth = Math.max(1, 8 - depth * 2)
+      
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(endX, endY)
+      ctx.stroke()
+
+      if (depth < maxDepth - 1) {
+        drawBranch(endX, endY, length * 0.7, angle + 0.3, depth + 1, maxDepth)
+        drawBranch(endX, endY, length * 0.7, angle - 0.3, depth + 1, maxDepth)
+      }
+    }
+
+    const animate = () => {
+      time += 0.02
+      growthProgress = Math.min(1, growthProgress + 0.01)
+
+      const currentTheme = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+      // Clear with fade
+      ctx.fillStyle = currentTheme ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Draw tree
+      drawBranch(canvas.width / 2, canvas.height - 10, 60, -Math.PI / 2, 0, 6)
+
+      // Reset growth periodically
+      if (growthProgress >= 1) {
+        setTimeout(() => {
+          growthProgress = 0
+        }, 1000)
+      }
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [theme])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full h-32 rounded-lg border border-border/50"
+    />
+  )
+}
+
+// Neural Network Preview
+const NeuralNetworkPreview = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationRef = useRef<number>()
+  const { theme } = useTheme()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * window.devicePixelRatio
+      canvas.height = rect.height * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    let time = 0
+    const layers = [3, 4, 3, 2]
+    const nodes: Array<{ x: number; y: number; layer: number; activation: number; pulse: number }> = []
+    const connections: Array<{ from: number; to: number; weight: number; active: boolean }> = []
+
+    // Initialize nodes
+    let nodeId = 0
+    layers.forEach((layerSize, layerIndex) => {
+      const layerX = (canvas.width / (layers.length + 1)) * (layerIndex + 1)
+      const nodeSpacing = canvas.height / (layerSize + 1)
+      
+      for (let i = 0; i < layerSize; i++) {
+        const nodeY = nodeSpacing * (i + 1)
+        nodes.push({
+          x: layerX,
+          y: nodeY,
+          layer: layerIndex,
+          activation: Math.random() * 0.5 + 0.25,
+          pulse: 0
+        })
+        nodeId++
+      }
+    })
+
+    // Initialize connections
+    nodes.forEach((node, nodeIndex) => {
+      if (node.layer < layers.length - 1) {
+        const nextLayerNodes = nodes.filter(n => n.layer === node.layer + 1)
+        nextLayerNodes.forEach(targetNode => {
+          connections.push({
+            from: nodeIndex,
+            to: nodes.indexOf(targetNode),
+            weight: (Math.random() - 0.5) * 2,
+            active: false
+          })
+        })
+      }
+    })
+
+    const animate = () => {
+      time += 0.02
+      const currentTheme = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+      // Clear with fade
+      ctx.fillStyle = currentTheme ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Update activations
+      nodes.forEach((node, index) => {
+        if (node.layer > 0) {
+          let sum = 0
+          connections.forEach(conn => {
+            if (conn.to === index) {
+              sum += nodes[conn.from].activation * conn.weight
+              conn.active = Math.random() > 0.95
+            }
+          })
+          node.activation = 1 / (1 + Math.exp(-sum))
+          node.pulse = Math.max(0, node.pulse - 0.02)
+        }
+      })
+
+      // Draw connections
+      connections.forEach(conn => {
+        const fromNode = nodes[conn.from]
+        const toNode = nodes[conn.to]
+        const weight = conn.weight
+        
+        ctx.strokeStyle = weight > 0 
+          ? (currentTheme ? 'rgba(34, 197, 94, 0.4)' : 'rgba(22, 163, 74, 0.4)')
+          : (currentTheme ? 'rgba(239, 68, 68, 0.4)' : 'rgba(220, 38, 38, 0.4)')
+        ctx.lineWidth = Math.abs(weight) * 2 + 1
+        ctx.beginPath()
+        ctx.moveTo(fromNode.x, fromNode.y)
+        ctx.lineTo(toNode.x, toNode.y)
+        ctx.stroke()
+      })
+
+      // Draw nodes
+      nodes.forEach(node => {
+        const activation = node.activation
+        const pulse = node.pulse
+        
+        let color: string
+        if (node.layer === 0) {
+          color = currentTheme ? '#3b82f6' : '#1d4ed8'
+        } else if (node.layer === layers.length - 1) {
+          color = currentTheme ? '#10b981' : '#059669'
+        } else {
+          const intensity = Math.floor(activation * 255)
+          color = currentTheme ? `rgb(${intensity}, ${intensity}, 255)` : `rgb(0, 0, ${intensity})`
+        }
+
+        ctx.fillStyle = color
+        ctx.beginPath()
+        ctx.arc(node.x, node.y, 6 + pulse * 3, 0, 2 * Math.PI)
+        ctx.fill()
+
+        // Draw pulse effect
+        if (pulse > 0) {
+          ctx.strokeStyle = currentTheme ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.arc(node.x, node.y, 6 + pulse * 10, 0, 2 * Math.PI)
+          ctx.stroke()
+        }
+      })
+
+      // Trigger pulses randomly
+      if (Math.random() < 0.1) {
+        const randomNode = nodes[Math.floor(Math.random() * nodes.length)]
+        randomNode.pulse = 1
+      }
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [theme])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full h-32 rounded-lg border border-border/50"
+    />
+  )
+}
+
+// Cellular Automata Preview
+const CellularAutomataPreview = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationRef = useRef<number>()
+  const { theme } = useTheme()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * window.devicePixelRatio
+      canvas.height = rect.height * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    let time = 0
+    const gridSize = 20
+    const cellSize = canvas.width / gridSize
+    let grid: boolean[][] = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false))
+    let nextGrid: boolean[][] = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false))
+
+    // Initialize with glider pattern
+    const glider = [
+      [false, true, false],
+      [false, false, true],
+      [true, true, true]
+    ]
+    
+    for (let y = 0; y < glider.length; y++) {
+      for (let x = 0; x < glider[0].length; x++) {
+        grid[y + 8][x + 8] = glider[y][x]
+      }
+    }
+
+    const countNeighbors = (x: number, y: number): number => {
+      let count = 0
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (dx === 0 && dy === 0) continue
+          
+          const nx = (x + dx + gridSize) % gridSize
+          const ny = (y + dy + gridSize) % gridSize
+          
+          if (grid[ny] && grid[ny][nx]) {
+            count++
+          }
+        }
+      }
+      return count
+    }
+
+    const animate = () => {
+      time += 0.05
+      const currentTheme = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+      // Clear with fade
+      ctx.fillStyle = currentTheme ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Apply Conway's Game of Life rules
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          const neighbors = countNeighbors(x, y)
+          const alive = grid[y][x]
+          
+          if (alive) {
+            nextGrid[y][x] = neighbors === 2 || neighbors === 3
+          } else {
+            nextGrid[y][x] = neighbors === 3
+          }
+        }
+      }
+
+      // Draw cells
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          if (nextGrid[y][x]) {
+            const age = Math.floor(time * 2) % 8
+            const hue = (age * 45) % 360
+            ctx.fillStyle = `hsl(${hue}, 70%, 50%)`
+            ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1)
+          }
+        }
+      }
+
+      // Update grid
+      [grid, nextGrid] = [nextGrid, grid]
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [theme])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full h-32 rounded-lg border border-border/50"
+    />
+  )
+}
+
+// Sound Wave Preview
+const SoundWavePreview = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationRef = useRef<number>()
+  const { theme } = useTheme()
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * window.devicePixelRatio
+      canvas.height = rect.height * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    let time = 0
+
+    const animate = () => {
+      time += 0.03
+      const currentTheme = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+      // Clear with fade
+      ctx.fillStyle = currentTheme ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Draw waveform
+      ctx.strokeStyle = currentTheme ? '#3b82f6' : '#1d4ed8'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+
+      for (let x = 0; x < canvas.width; x += 2) {
+        let y = canvas.height / 2
+        
+        // Add multiple harmonics
+        for (let h = 1; h <= 3; h++) {
+          const harmonicFreq = 2 * h
+          const harmonicAmp = 1 / h
+          const phase = (x / canvas.width) * 2 * Math.PI * h + time * harmonicFreq
+          y += Math.sin(phase) * (canvas.height / 8) * harmonicAmp
+        }
+        
+        if (x === 0) {
+          ctx.moveTo(x, y)
+        } else {
+          ctx.lineTo(x, y)
+        }
+      }
+      ctx.stroke()
+
+      // Draw frequency spectrum
+      const spectrumHeight = canvas.height * 0.3
+      const spectrumY = canvas.height * 0.7
+      const binWidth = canvas.width / 16
+
+      for (let i = 0; i < 16; i++) {
+        const magnitude = (1 / (i + 1)) * Math.sin(time + i * 0.5) * 0.5 + 0.5
+        const barHeight = magnitude * spectrumHeight
+        const barX = i * binWidth
+        const barY = spectrumY + spectrumHeight - barHeight
+        
+        const hue = (i * 25) % 360
+        ctx.fillStyle = `hsl(${hue}, 70%, 60%)`
+        ctx.fillRect(barX, barY, binWidth - 1, barHeight)
+      }
+
+      // Draw harmonics visualization
+      for (let h = 1; h <= 3; h++) {
+        const harmonicFreq = 2 * h
+        const harmonicAmp = 1 / h
+        const x = (h / 3) * canvas.width * 0.8 + canvas.width * 0.1
+        const y = canvas.height * 0.2
+        
+        const radius = harmonicAmp * 15
+        const hue = (harmonicFreq * 50) % 360
+        ctx.fillStyle = `hsl(${hue}, 70%, 60%)`
+        ctx.beginPath()
+        ctx.arc(x, y, radius, 0, 2 * Math.PI)
+        ctx.fill()
+      }
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [theme])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full h-32 rounded-lg border border-border/50"
+    />
+  )
+}
+
 const visualizations = [
   {
     title: 'Grid Field',
@@ -438,6 +1105,54 @@ const visualizations = [
     description: 'Craft concentric ring patterns and radial designs for logos and circular packaging.',
     features: ['Concentric ring systems', 'Radial pattern control', 'Circular compositions'],
     preview: CircularFieldPreview
+  },
+  {
+    title: 'Wave Interference',
+    path: '/wave-interference',
+    icon: Waves,
+    description: 'Explore wave interference patterns and harmonic interactions for scientific visualization.',
+    features: ['Multiple wave sources', 'Interference patterns', 'Harmonic analysis'],
+    preview: WaveInterferencePreview
+  },
+  {
+    title: 'Particle Swarm',
+    path: '/particle-swarm',
+    icon: Users,
+    description: 'Simulate flocking behavior and collective intelligence with interactive particle systems.',
+    features: ['Flocking behavior', 'Collective intelligence', 'Dynamic attractors'],
+    preview: ParticleSwarmPreview
+  },
+  {
+    title: 'Fractal Tree',
+    path: '/fractal-tree',
+    icon: TreePine,
+    description: 'Generate recursive branching patterns and organic growth simulations.',
+    features: ['Recursive branching', 'Growth animation', 'Organic patterns'],
+    preview: FractalTreePreview
+  },
+  {
+    title: 'Neural Network',
+    path: '/neural-network',
+    icon: Brain,
+    description: 'Visualize artificial neural networks with dynamic activation patterns and learning.',
+    features: ['Network visualization', 'Activation patterns', 'Learning simulation'],
+    preview: NeuralNetworkPreview
+  },
+  {
+    title: 'Cellular Automata',
+    path: '/cellular-automata',
+    icon: Grid,
+    description: 'Explore emergent behavior and complex patterns from simple rule-based systems.',
+    features: ['Emergent behavior', 'Rule-based systems', 'Complex patterns'],
+    preview: CellularAutomataPreview
+  },
+  {
+    title: 'Sound Wave',
+    path: '/sound-wave',
+    icon: Volume2,
+    description: 'Analyze sound waves, harmonics, and frequency spectrums with interactive visualization.',
+    features: ['Waveform analysis', 'Harmonic visualization', 'Frequency spectrum'],
+    preview: SoundWavePreview
   }
 ]
 
@@ -506,6 +1221,9 @@ export default function HomePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
+                  <div className="mb-4 h-32 rounded-lg border border-border/50 overflow-hidden">
+                    <viz.preview />
+                  </div>
                   <ul className="space-y-2 mb-4">
                     {viz.features.map((feature, index) => (
                       <li key={index} className="flex items-center text-sm text-muted-foreground">
