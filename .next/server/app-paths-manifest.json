@@ -1,5 +1,5 @@
 {
-  "/turbulence/page": "app/turbulence/page.js",
-  "/circular-field/page": "app/circular-field/page.js",
-  "/page": "app/page.js"
+  "/flow-field/page": "app/flow-field/page.js",
+  "/grid-field/page": "app/grid-field/page.js",
+  "/_not-found/page": "app/_not-found/page.js"
 }

@@ -104,14 +104,7 @@ export default function VisualizationLayout({
             </div>
           </div>
 
-          {/* Mobile UI Indicator */}
-          {isMobile && !isUIVisible && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-              <div className="bg-black/20 backdrop-blur-sm rounded-full p-3 dark:bg-white/20">
-                <div className="w-2 h-2 bg-white rounded-full dark:bg-black"></div>
-              </div>
-            </div>
-          )}
+
         </main>
 
         {/* Settings Panel - Mobile responsive */}
