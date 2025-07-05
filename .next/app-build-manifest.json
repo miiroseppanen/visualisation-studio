@@ -40,6 +40,21 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/turbulence/page.js"
+    ],
+    "/circular-field/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/circular-field/page.js"
+    ],
+    "/wave-interference/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/wave-interference/page.js"
+    ],
+    "/particle-swarm/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/particle-swarm/page.js"
     ]
   }
 }

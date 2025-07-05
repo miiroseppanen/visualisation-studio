@@ -77,7 +77,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
     }
 
     // Add event listeners
-    canvas.addEventListener('mousemove', handleMouseMove)
+    canvas.addEventListener('mousemove', handleMouseMove, { passive: true })
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     // Animation variables
@@ -106,13 +106,10 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
       const rippleEffect = Math.sin(mouseDistance * 0.02 - t * 2) * Math.exp(-mouseDistance * 0.001) * 0.2
       
-      // Add scroll interaction - amplitude scaling
-      const scrollAmplitude = 1 + (scrollY / 1000) * 0.5 // Increase amplitude with scroll
-      
       return { 
-        real: (real + rippleEffect) * scrollAmplitude, 
-        imag: imag * scrollAmplitude, 
-        magnitude: Math.sqrt((real + rippleEffect) ** 2 + imag ** 2) * scrollAmplitude 
+        real: real + rippleEffect, 
+        imag: imag, 
+        magnitude: Math.sqrt((real + rippleEffect) ** 2 + imag ** 2) 
       }
     }
 
@@ -123,23 +120,21 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       
       // Base wave function
       let wave = Math.sin(xScaled + t * 0.5) * Math.cos(yScaled + t * 0.3) * 
-                 Math.sin(Math.sqrt(xScaled * xScaled + yScaled * yScaled) + t * 0.2)
+             Math.sin(Math.sqrt(xScaled * xScaled + yScaled * yScaled) + t * 0.2)
       
       // Add mouse interaction - attract particles to mouse
       const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
       const mouseAttraction = Math.sin(mouseDistance * 0.01 - t * 3) * Math.exp(-mouseDistance * 0.002) * 0.15
       
-      // Add scroll interaction - frequency modulation
-      const scrollFrequency = 1 + (scrollY / 2000) * 0.3
-      
-      return (wave + mouseAttraction) * scrollFrequency
+      return wave + mouseAttraction
     }
 
-    // Get current theme - simplified and more reliable
+    // Get current theme - cached to prevent flickering
     const getCurrentTheme = () => {
       if (theme === 'dark') return 'dark'
       if (theme === 'light') return 'light'
-      // system theme
+      // system theme - cache the result
+      if (!window.matchMedia) return 'light'
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
 
@@ -178,7 +173,10 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       const currentTheme = getCurrentTheme()
 
       // Safety check for canvas context
-      if (!ctx || !canvas) return
+      if (!ctx || !canvas) {
+        animationRef.current = requestAnimationFrame(animate)
+        return
+      }
 
       // Clear canvas with fade effect - use consistent theme
       const fadeOpacity = 0.08
@@ -187,9 +185,8 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         : `rgba(255, 255, 255, ${fadeOpacity})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Create new particles with scroll-based density
-      const particleDensity = 0.4 + (scrollY / 1000) * 0.2 // More particles when scrolled
-      if (Math.random() < particleDensity) {
+      // Create new particles
+      if (Math.random() < 0.4) {
         const type = ['flow', 'field', 'wave'][Math.floor(Math.random() * 3)] as any
         createParticle(
           Math.random() * canvas.width,
@@ -234,7 +231,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
           particle.x += (dx / distance) * attraction
           particle.y += (dy / distance) * attraction
         }
-      }
+        }
         
         particle.life -= 0.008
 
@@ -271,8 +268,8 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         ctx.restore()
       }
 
-      // Draw mathematical field lines - theme-aware with interaction
-      const fieldLineOpacity = 0.04 + (scrollY / 2000) * 0.02 // More visible when scrolled
+      // Draw mathematical field lines - theme-aware
+      const fieldLineOpacity = 0.04
       ctx.strokeStyle = currentTheme === 'dark' 
         ? `rgba(255, 255, 255, ${fieldLineOpacity})` 
         : `rgba(0, 0, 0, ${fieldLineOpacity})`
@@ -293,8 +290,8 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         ctx.stroke()
       }
 
-      // Draw wave patterns - theme-aware with interaction
-      const waveLineOpacity = 0.03 + (scrollY / 2000) * 0.015
+      // Draw wave patterns - theme-aware
+      const waveLineOpacity = 0.03
       ctx.strokeStyle = currentTheme === 'dark' 
         ? `rgba(255, 255, 255, ${waveLineOpacity})` 
         : `rgba(0, 0, 0, ${waveLineOpacity})`
@@ -351,27 +348,27 @@ const GridFieldPreview = () => {
   }, [theme])
   
   return (
-    <svg viewBox="0 0 300 200" className="w-full h-full">
-      <defs>
-        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+  <svg viewBox="0 0 300 200" className="w-full h-full">
+    <defs>
+      <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
           <path d="M 20 0 L 0 0 0 20" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="0.5" opacity="0.3"/>
-        </pattern>
-      </defs>
-      <rect width="300" height="200" fill="url(#grid)"/>
-      {/* Grid field lines */}
+      </pattern>
+    </defs>
+    <rect width="300" height="200" fill="url(#grid)"/>
+    {/* Grid field lines */}
       <path d="M50,50 Q80,70 110,60" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" fill="none" opacity="0.8"/>
       <path d="M50,70 Q85,85 120,75" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" fill="none" opacity="0.8"/>
       <path d="M50,90 Q90,100 130,90" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" fill="none" opacity="0.8"/>
       <path d="M190,50 Q160,70 130,60" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" fill="none" opacity="0.8"/>
       <path d="M190,70 Q155,85 120,75" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" fill="none" opacity="0.8"/>
       <path d="M190,90 Q150,100 110,90" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" fill="none" opacity="0.8"/>
-      {/* Magnetic poles */}
+    {/* Magnetic poles */}
       <circle cx="80" cy="70" r="8" fill={isDark ? "#ffffff" : "#000000"}/>
       <circle cx="160" cy="70" r="8" fill={isDark ? "#ffffff" : "#000000"}/>
       <text x="80" y="75" textAnchor="middle" fill={isDark ? "#000000" : "#ffffff"} fontSize="10" fontWeight="bold">+</text>
       <text x="160" y="75" textAnchor="middle" fill={isDark ? "#000000" : "#ffffff"} fontSize="10" fontWeight="bold">-</text>
-    </svg>
-  )
+  </svg>
+)
 }
 
 const FlowFieldPreview = () => {
@@ -384,22 +381,22 @@ const FlowFieldPreview = () => {
   }, [theme])
   
   return (
-    <svg viewBox="0 0 300 200" className="w-full h-full">
-      {/* Flow field particles */}
+  <svg viewBox="0 0 300 200" className="w-full h-full">
+    {/* Flow field particles */}
       <path d="M30,100 Q80,80 130,70 Q180,60 230,80" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1.5" fill="none" opacity="0.7"/>
       <path d="M40,120 Q90,100 140,90 Q190,80 240,100" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1.5" fill="none" opacity="0.7"/>
       <path d="M35,140 Q85,120 135,110 Q185,100 235,120" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1.5" fill="none" opacity="0.7"/>
       <path d="M45,160 Q95,140 145,130 Q195,120 245,140" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1.5" fill="none" opacity="0.7"/>
-      {/* Particles */}
+    {/* Particles */}
       <circle cx="130" cy="70" r="2" fill={isDark ? "#ffffff" : "#000000"}/>
       <circle cx="140" cy="90" r="2" fill={isDark ? "#ffffff" : "#000000"}/>
       <circle cx="135" cy="110" r="2" fill={isDark ? "#ffffff" : "#000000"}/>
       <circle cx="145" cy="130" r="2" fill={isDark ? "#ffffff" : "#000000"}/>
-      {/* Magnetic poles */}
+    {/* Magnetic poles */}
       <circle cx="70" cy="100" r="10" fill={isDark ? "#ffffff" : "#000000"} stroke={isDark ? "#000000" : "#ffffff"} strokeWidth="2"/>
       <circle cx="200" cy="100" r="10" fill={isDark ? "#ffffff" : "#000000"} stroke={isDark ? "#000000" : "#ffffff"} strokeWidth="2"/>
-    </svg>
-  )
+  </svg>
+)
 }
 
 const TurbulencePreview = () => {
@@ -412,19 +409,19 @@ const TurbulencePreview = () => {
   }, [theme])
   
   return (
-    <svg viewBox="0 0 300 200" className="w-full h-full">
-      {/* Turbulent streamlines */}
+  <svg viewBox="0 0 300 200" className="w-full h-full">
+    {/* Turbulent streamlines */}
       <path d="M20,100 Q60,80 100,90 Q140,100 180,85 Q220,70 260,90" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1.5" fill="none" opacity="0.8"/>
       <path d="M25,120 Q65,110 105,115 Q145,120 185,110 Q225,100 265,115" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1.5" fill="none" opacity="0.8"/>
       <path d="M30,80 Q70,60 110,70 Q150,80 190,65 Q230,50 270,70" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1.5" fill="none" opacity="0.8"/>
-      {/* Vortex spirals */}
+    {/* Vortex spirals */}
       <path d="M80,60 Q90,50 100,60 Q110,70 100,80 Q90,90 80,80 Q70,70 80,60" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="2" fill="none"/>
       <path d="M200,120 Q210,110 220,120 Q230,130 220,140 Q210,150 200,140 Q190,130 200,120" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="2" fill="none"/>
-      {/* Turbulence sources */}
+    {/* Turbulence sources */}
       <circle cx="90" cy="70" r="6" fill={isDark ? "#ffffff" : "#000000"} opacity="0.8"/>
       <circle cx="210" cy="130" r="6" fill={isDark ? "#ffffff" : "#000000"} opacity="0.8"/>
-    </svg>
-  )
+  </svg>
+)
 }
 
 const TopographyPreview = () => {
@@ -437,25 +434,25 @@ const TopographyPreview = () => {
   }, [theme])
   
   return (
-    <svg viewBox="0 0 300 200" className="w-full h-full">
-      {/* Contour lines */}
+  <svg viewBox="0 0 300 200" className="w-full h-full">
+    {/* Contour lines */}
       <ellipse cx="100" cy="80" rx="50" ry="30" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" opacity="0.8"/>
       <ellipse cx="100" cy="80" rx="35" ry="20" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1.5" opacity="0.8"/>
       <ellipse cx="100" cy="80" rx="20" ry="12" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="2" opacity="0.8"/>
       <ellipse cx="220" cy="130" rx="40" ry="25" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" opacity="0.8"/>
       <ellipse cx="220" cy="130" rx="25" ry="15" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1.5" opacity="0.8"/>
-      {/* Elevation points */}
+    {/* Elevation points */}
       <circle cx="100" cy="80" r="8" fill={isDark ? "#ffffff" : "#000000"} stroke={isDark ? "#000000" : "#ffffff"} strokeWidth="1"/>
       <circle cx="100" cy="80" r="5" fill={isDark ? "#000000" : "#ffffff"}/>
       <polygon points="100,76 97,82 103,82" fill={isDark ? "#ffffff" : "#000000"}/>
       <circle cx="220" cy="130" r="8" fill={isDark ? "#ffffff" : "#000000"} stroke={isDark ? "#000000" : "#ffffff"} strokeWidth="1"/>
       <circle cx="220" cy="130" r="5" fill={isDark ? "#000000" : "#ffffff"}/>
       <polygon points="220,134 217,128 223,128" fill={isDark ? "#ffffff" : "#000000"}/>
-      {/* Labels */}
+    {/* Labels */}
       <text x="100" y="100" textAnchor="middle" fontSize="8" fill={isDark ? "#ffffff" : "#000000"} opacity="0.7">Peak</text>
       <text x="220" y="150" textAnchor="middle" fontSize="8" fill={isDark ? "#ffffff" : "#000000"} opacity="0.7">Valley</text>
-    </svg>
-  )
+  </svg>
+)
 }
 
 const CircularFieldPreview = () => {
@@ -468,25 +465,25 @@ const CircularFieldPreview = () => {
   }, [theme])
   
   return (
-    <svg viewBox="0 0 300 200" className="w-full h-full">
-      {/* Circular field lines around left pole */}
+  <svg viewBox="0 0 300 200" className="w-full h-full">
+    {/* Circular field lines around left pole */}
       <circle cx="90" cy="100" r="25" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" opacity="0.8"/>
       <circle cx="90" cy="100" r="40" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" opacity="0.8"/>
       <circle cx="90" cy="100" r="55" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" opacity="0.8"/>
-      {/* Circular field lines around right pole */}
+    {/* Circular field lines around right pole */}
       <circle cx="210" cy="100" r="25" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" opacity="0.8"/>
       <circle cx="210" cy="100" r="40" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" opacity="0.8"/>
       <circle cx="210" cy="100" r="55" fill="none" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth="1" opacity="0.8"/>
-      {/* Magnetic poles */}
+    {/* Magnetic poles */}
       <circle cx="90" cy="100" r="12" fill={isDark ? "#ffffff" : "#000000"} stroke={isDark ? "#000000" : "#ffffff"} strokeWidth="2"/>
       <circle cx="210" cy="100" r="12" fill={isDark ? "#ffffff" : "#000000"} stroke={isDark ? "#000000" : "#ffffff"} strokeWidth="2"/>
       <text x="90" y="105" textAnchor="middle" fill={isDark ? "#000000" : "#ffffff"} fontSize="12" fontWeight="bold">+</text>
       <text x="210" y="105" textAnchor="middle" fill={isDark ? "#000000" : "#ffffff"} fontSize="12" fontWeight="bold">−</text>
-      {/* Labels */}
+    {/* Labels */}
       <text x="90" y="130" textAnchor="middle" fontSize="8" fill={isDark ? "#ffffff" : "#000000"} opacity="0.7">North</text>
       <text x="210" y="130" textAnchor="middle" fontSize="8" fill={isDark ? "#ffffff" : "#000000"} opacity="0.7">South</text>
-    </svg>
-  )
+  </svg>
+)
 }
 
 // Wave Interference Preview
@@ -1312,7 +1309,7 @@ export default function HomePage() {
           {/* Side content - 2/5 of width */}
           <div className="lg:col-span-2">
           </div>
-        </div>
+          </div>
         </div>
       </section>
 
