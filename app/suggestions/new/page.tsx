@@ -1,64 +1,39 @@
 'use client'
 
-import React, { useState } from 'react'
-import { ArrowLeft, Lightbulb, Sparkles, Palette, Zap, Target, Layers, Globe } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Plus, Lightbulb, ThumbsUp, ThumbsDown, MessageSquare, Calendar, X, Filter, SortAsc, User, FileText, Tag, Zap, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
+import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import VisualizationLayout from '@/components/layout/VisualizationLayout'
+import AppLayout from '@/components/layout/AppLayout'
+import { NewSuggestionNavigation } from '@/components/navigation/PageNavigation'
 import Link from 'next/link'
+
+interface Suggestion {
+  id: string
+  title: string
+  description: string
+  author: string
+  timestamp: Date
+  upvotes: number
+  downvotes: number
+  status: 'pending' | 'approved' | 'implemented' | 'rejected'
+  category: string
+  complexity: 'low' | 'medium' | 'high'
+}
 
 const categories = [
   'Organic', 'Geometric', 'Physics', 'Algorithm', 'Abstract', 'Mathematical', 'Artistic', 'Scientific'
 ]
 
 const complexityLevels = [
-  { value: 'low', label: 'Low', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
-  { value: 'high', label: 'High', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }
-]
-
-const visualizationTypes = [
-  {
-    icon: Palette,
-    title: 'Pattern Generation',
-    description: 'Repeating motifs, tessellations, and geometric designs',
-    examples: ['Fractal patterns', 'Islamic geometric art', 'Cellular automata', 'Tiling systems']
-  },
-  {
-    icon: Zap,
-    title: 'Dynamic Systems',
-    description: 'Animated and interactive visualizations',
-    examples: ['Particle systems', 'Wave simulations', 'Fluid dynamics', 'Reaction-diffusion']
-  },
-  {
-    icon: Target,
-    title: 'Data Visualization',
-    description: 'Representing data through visual means',
-    examples: ['Network graphs', 'Tree structures', 'Heat maps', 'Scatter plots']
-  },
-  {
-    icon: Layers,
-    title: '3D & Depth',
-    description: 'Multi-dimensional and spatial visualizations',
-    examples: ['Topographic maps', '3D surfaces', 'Depth fields', 'Volumetric data']
-  },
-  {
-    icon: Globe,
-    title: 'Natural Phenomena',
-    description: 'Simulations of natural processes and systems',
-    examples: ['Weather patterns', 'Ecosystem dynamics', 'Geological formations', 'Astronomical objects']
-  },
-  {
-    icon: Sparkles,
-    title: 'Abstract Art',
-    description: 'Non-representational and artistic visualizations',
-    examples: ['Generative art', 'Color field theory', 'Composition studies', 'Texture generation']
-  }
+  { value: 'low', label: 'Low', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
+  { value: 'medium', label: 'Medium', color: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-300' },
+  { value: 'high', label: 'High', color: 'bg-red-500/10 text-red-700 dark:text-red-300' }
 ]
 
 export default function NewSuggestionPage() {
@@ -69,217 +44,144 @@ export default function NewSuggestionPage() {
     category: '',
     complexity: 'medium' as const
   })
+  
+  const titleInputRef = useRef<HTMLInputElement>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Focus on the title field when the component mounts
+    if (titleInputRef.current) {
+      titleInputRef.current.focus()
+    }
+  }, [])
+
+  const handleSubmitSuggestion = (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically send the data to your backend
-    console.log('New suggestion submitted:', formData)
+    // Here you would typically submit to your backend
+    console.log('Submitting suggestion:', formData)
     
     // For now, just redirect back to suggestions page
     window.location.href = '/suggestions'
   }
 
-  const settingsContent = (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium mb-4">Submit New Suggestion</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Share your visualization idea with the community.
-        </p>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="title">Title *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Enter visualization title"
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="description">Description *</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe your visualization idea in detail..."
-              rows={6}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="author">Your Name *</Label>
-            <Input
-              id="author"
-              value={formData.author}
-              onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
-              placeholder="Enter your name"
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="category">Category *</Label>
-            <select
-              id="category"
-              value={formData.category}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-              className="w-full p-2 border border-border rounded-md bg-background"
-              required
-            >
-              <option value="">Select category</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div>
-            <Label htmlFor="complexity">Complexity *</Label>
-            <select
-              id="complexity"
-              value={formData.complexity}
-              onChange={(e) => setFormData(prev => ({ ...prev, complexity: e.target.value as any }))}
-              className="w-full p-2 border border-border rounded-md bg-background"
-              required
-            >
-              {complexityLevels.map(level => (
-                <option key={level.value} value={level.value}>{level.label}</option>
-              ))}
-            </select>
-          </div>
-          
-          <Button type="submit" className="w-full">
-            Submit Suggestion
-          </Button>
-        </form>
-      </div>
-    </div>
-  )
-
   return (
-    <VisualizationLayout
-      settingsContent={settingsContent}
-      showVisualizationNav={true}
-      visualizationNavProps={{
-        showBackButton: true,
-        backButtonText: 'Back to Suggestions',
-        backButtonFallbackPath: '/suggestions'
-      }}
-    >
-      <div className="h-full flex flex-col bg-background">
-        {/* Header */}
-        <div className="flex-shrink-0 p-4 border-b border-border">
-          <div className="flex items-center space-x-3">
-            <Lightbulb className="w-6 h-6 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold">Suggest New Visualization</h1>
-              <p className="text-muted-foreground">
-                Share your creative ideas for new visualization tools
-              </p>
-            </div>
-          </div>
-        </div>
-
+    <AppLayout showNavigation={false}>
+      <div className="min-h-screen bg-background">
+        {/* Page Navigation */}
+        <NewSuggestionNavigation />
+        
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="container mx-auto px-8 py-8">
           <div className="max-w-4xl mx-auto">
-            {/* Inspiration Section */}
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">What Kinds of Visualizations Can We Create?</h2>
-              <p className="text-muted-foreground mb-6">
-                Visualization Studio is designed to generate sophisticated patterns and textures for creative applications. 
-                Here are some categories of visualizations that could be implemented:
-              </p>
+            <form onSubmit={handleSubmitSuggestion} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <Label htmlFor="title" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
+                    <FileText className="w-4 h-4" />
+                    <span>Title</span>
+                  </Label>
+                  <Input
+                    ref={titleInputRef}
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Enter visualization title"
+                    className="h-14 text-base font-light focus:ring-2 focus:ring-ring/20"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-3">
+                  <Label htmlFor="author" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
+                    <User className="w-4 h-4" />
+                    <span>Your Name</span>
+                  </Label>
+                  <Input
+                    id="author"
+                    value={formData.author}
+                    onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
+                    placeholder="Enter your name"
+                    className="h-14 text-base font-light focus:ring-2 focus:ring-ring/20"
+                    required
+                  />
+                </div>
+              </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {visualizationTypes.map((type, index) => (
-                  <Card key={index} className="p-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <type.icon className="w-4 h-4 text-accent" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium mb-1">{type.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">{type.description}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {type.examples.map((example, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              {example}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            {/* Guidelines Section */}
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">Suggestion Guidelines</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="p-4">
-                  <h3 className="font-medium mb-2">What Makes a Good Suggestion</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Clear and specific visualization concept</li>
-                    <li>• Practical applications in design or branding</li>
-                    <li>• Feasible to implement with current technology</li>
-                    <li>• Unique or innovative approach</li>
-                    <li>• Detailed description of parameters and controls</li>
-                  </ul>
-                </Card>
-                
-                <Card className="p-4">
-                  <h3 className="font-medium mb-2">Current Capabilities</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Real-time parameter adjustment</li>
-                    <li>• Export to SVG format</li>
-                    <li>• Color and theme customization</li>
-                    <li>• Mobile-responsive design</li>
-                    <li>• Interactive controls and sliders</li>
-                  </ul>
-                </Card>
-              </div>
-            </div>
-
-            {/* Examples Section */}
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">Example Suggestions</h2>
               <div className="space-y-3">
-                <Card className="p-4">
-                  <h3 className="font-medium mb-1">"Fractal Tree Generator"</h3>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Create branching fractal trees with customizable parameters like branch angle, length ratio, and recursion depth. 
-                    Perfect for organic pattern generation and natural texture creation.
-                  </p>
-                  <div className="flex gap-2">
-                    <Badge variant="outline" className="text-xs">Organic</Badge>
-                    <Badge variant="outline" className="text-xs">Medium Complexity</Badge>
-                  </div>
-                </Card>
-                
-                <Card className="p-4">
-                  <h3 className="font-medium mb-1">"Wave Interference Patterns"</h3>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Simulate wave interference with multiple wave sources. Show constructive and destructive interference patterns 
-                    with real-time parameter adjustment for scientific and artistic applications.
-                  </p>
-                  <div className="flex gap-2">
-                    <Badge variant="outline" className="text-xs">Physics</Badge>
-                    <Badge variant="outline" className="text-xs">High Complexity</Badge>
-                  </div>
-                </Card>
+                <Label htmlFor="description" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
+                  <FileText className="w-4 h-4" />
+                  <span>Description</span>
+                </Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Describe your visualization idea in detail..."
+                  rows={5}
+                  className="text-base font-light resize-none focus:ring-2 focus:ring-ring/20"
+                  required
+                />
               </div>
-            </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <Label htmlFor="category" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
+                    <Tag className="w-4 h-4" />
+                    <span>Category</span>
+                  </Label>
+                  <select
+                    id="category"
+                    value={formData.category}
+                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full h-14 text-base font-light px-4 border border-input bg-background focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
+                    required
+                  >
+                    <option value="">Select category</option>
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="space-y-3">
+                  <Label htmlFor="complexity" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
+                    <Zap className="w-4 h-4" />
+                    <span>Complexity</span>
+                  </Label>
+                  <select
+                    id="complexity"
+                    value={formData.complexity}
+                    onChange={(e) => setFormData(prev => ({ ...prev, complexity: e.target.value as any }))}
+                    className="w-full h-14 text-base font-light px-4 border border-input bg-background focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
+                    required
+                  >
+                    {complexityLevels.map(level => (
+                      <option key={level.value} value={level.value}>{level.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex gap-4 pt-8 border-t border-border">
+                <Button 
+                  type="submit" 
+                  className="flex-1 h-16 text-lg font-medium tracking-wide bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Submit Suggestion
+                </Button>
+                <Link href="/suggestions">
+                  <Button 
+                    type="button" 
+                    className="h-16 px-8 text-lg font-medium tracking-wide hover:bg-accent transition-all duration-300"
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </Link>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-    </VisualizationLayout>
+    </AppLayout>
   )
 } 
