@@ -324,11 +324,12 @@ export default function WaveInterferencePage() {
       fields.forEach(field => {
         const intensity = Math.min(1, field.intensity / 50) // Higher threshold for stability
         const adjustedIntensity = intensity * interferenceContrast // Apply contrast control
-        const alpha = 0.2 + adjustedIntensity * 0.4 // More stable alpha range
+        // Lower alpha range for dimmer, less flickering lines
+        const alpha = 0.07 + adjustedIntensity * 0.18 // Max alpha now 0.25, min 0.07
         
         // Black and white only - no colors
         ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines with alpha
-        ctx.lineWidth = 0.8 + adjustedIntensity * 1.2 // More stable line width
+        ctx.lineWidth = 0.6 + adjustedIntensity * 0.7 // Slightly thinner lines for softer look
         
         // Draw lines to represent interference patterns
         const length = 8 + adjustedIntensity * 12 // More stable length calculation
@@ -347,8 +348,8 @@ export default function WaveInterferencePage() {
           const perpEndX = field.x + Math.cos(perpAngle) * perpLength
           const perpEndY = field.y + Math.sin(perpAngle) * perpLength
           
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // White lines with reduced alpha
-          ctx.lineWidth = 0.5 + adjustedIntensity * 0.3 // More stable perpendicular line width
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.5})` // Even dimmer for perpendicular lines
+          ctx.lineWidth = 0.4 + adjustedIntensity * 0.2 // Thinner perpendicular lines
           ctx.beginPath()
           ctx.moveTo(field.x, field.y)
           ctx.lineTo(perpEndX, perpEndY)
@@ -386,11 +387,12 @@ export default function WaveInterferencePage() {
       highAmplitudeFields.slice(0, maxCrosses).forEach(field => {
         const amplitude = Math.abs(field.amplitude)
         const adjustedAmplitude = amplitude * interferenceContrast // Apply contrast control
-        const alpha = Math.min(0.5, adjustedAmplitude / 150) // More stable alpha
+        // Lower alpha for dimmer crosses
+        const alpha = Math.min(0.18, adjustedAmplitude / 300) // Max alpha now 0.18
         
         // Black and white only - no colors
         ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines with alpha
-        ctx.lineWidth = 1.2 * interferenceContrast // Apply contrast to line width
+        ctx.lineWidth = 0.7 * interferenceContrast // Slightly thinner crosses
         
         // Draw interference cross patterns
         const crossLength = 10 + adjustedAmplitude / 25 // More stable length calculation
@@ -409,8 +411,8 @@ export default function WaveInterferencePage() {
         
         // Diagonal lines for more detail
         if (adjustedAmplitude > 50) { // Higher threshold for diagonal lines
-          ctx.lineWidth = 0.8 * interferenceContrast
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // White lines with reduced alpha
+          ctx.lineWidth = 0.4 * interferenceContrast
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.5})` // Even dimmer for diagonals
           
           // Diagonal line 1
           ctx.beginPath()
