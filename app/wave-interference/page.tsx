@@ -328,7 +328,7 @@ export default function WaveInterferencePage() {
     ctx.fillStyle = bgGradient
     ctx.fillRect(0, 0, width, height)
     
-    // Draw interference circles instead of zigzag lines
+    // Draw interference lines instead of circles
     fields.forEach(field => {
       const intensity = Math.min(1, field.intensity / 30)
       const alpha = 0.2 + intensity * 0.6
@@ -341,19 +341,28 @@ export default function WaveInterferencePage() {
       ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`
       ctx.lineWidth = 1 + intensity * 2
       
-      // Draw circles to represent interference patterns
-      const radius = 5 + intensity * 15
+      // Draw lines to represent interference patterns
+      const length = 8 + intensity * 20
+      const endX = field.x + Math.cos(field.angle) * length
+      const endY = field.y + Math.sin(field.angle) * length
       
       ctx.beginPath()
-      ctx.arc(field.x, field.y, radius, 0, 2 * Math.PI)
+      ctx.moveTo(field.x, field.y)
+      ctx.lineTo(endX, endY)
       ctx.stroke()
       
-      // Draw additional smaller circles for more detail
-      if (intensity > 0.3) {
-        ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.5})`
+      // Draw perpendicular lines for more detail
+      if (intensity > 0.4) {
+        const perpAngle = field.angle + Math.PI / 2
+        const perpLength = 4 + intensity * 10
+        const perpEndX = field.x + Math.cos(perpAngle) * perpLength
+        const perpEndY = field.y + Math.sin(perpAngle) * perpLength
+        
+        ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.6})`
         ctx.lineWidth = 0.5 + intensity
         ctx.beginPath()
-        ctx.arc(field.x, field.y, radius * 0.6, 0, 2 * Math.PI)
+        ctx.moveTo(field.x, field.y)
+        ctx.lineTo(perpEndX, perpEndY)
         ctx.stroke()
       }
     })
@@ -380,10 +389,10 @@ export default function WaveInterferencePage() {
       })
     }
     
-    // Draw interference rings at high amplitude points (performance optimized)
+    // Draw interference cross patterns at high amplitude points (performance optimized)
     const highAmplitudeFields = fields.filter(f => Math.abs(f.amplitude) > 25) // Higher threshold
-    const maxRings = Math.min(20, highAmplitudeFields.length) // Limit number of rings
-    highAmplitudeFields.slice(0, maxRings).forEach(field => {
+    const maxCrosses = Math.min(15, highAmplitudeFields.length) // Limit number of crosses
+    highAmplitudeFields.slice(0, maxCrosses).forEach(field => {
       const amplitude = Math.abs(field.amplitude)
       const alpha = Math.min(0.6, amplitude / 120) // Reduced alpha
       
@@ -392,14 +401,38 @@ export default function WaveInterferencePage() {
       const lightness = isDark ? 70 : 50
       
       ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`
-      ctx.lineWidth = 1
+      ctx.lineWidth = 1.5
       
-      // Draw interference rings
-      const ringCount = Math.min(2, Math.floor(amplitude / 40)) // Reduced ring count
-      for (let i = 0; i < ringCount; i++) {
-        const ringRadius = 6 + i * 5 // Smaller rings
+      // Draw interference cross patterns
+      const crossLength = 8 + amplitude / 20
+      
+      // Horizontal line
+      ctx.beginPath()
+      ctx.moveTo(field.x - crossLength, field.y)
+      ctx.lineTo(field.x + crossLength, field.y)
+      ctx.stroke()
+      
+      // Vertical line
+      ctx.beginPath()
+      ctx.moveTo(field.x, field.y - crossLength)
+      ctx.lineTo(field.x, field.y + crossLength)
+      ctx.stroke()
+      
+      // Diagonal lines for more detail
+      if (amplitude > 40) {
+        ctx.lineWidth = 1
+        ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.7})`
+        
+        // Diagonal line 1
         ctx.beginPath()
-        ctx.arc(field.x, field.y, ringRadius, 0, 2 * Math.PI)
+        ctx.moveTo(field.x - crossLength * 0.7, field.y - crossLength * 0.7)
+        ctx.lineTo(field.x + crossLength * 0.7, field.y + crossLength * 0.7)
+        ctx.stroke()
+        
+        // Diagonal line 2
+        ctx.beginPath()
+        ctx.moveTo(field.x - crossLength * 0.7, field.y + crossLength * 0.7)
+        ctx.lineTo(field.x + crossLength * 0.7, field.y - crossLength * 0.7)
         ctx.stroke()
       }
     })
@@ -834,14 +867,14 @@ export default function WaveInterferencePage() {
             onSetShowWavefronts={setShowWavefronts}
             onUpdateSource={updateSource}
           />
-          
+
           <WaveSettings
             resolution={smoothness}
             expanded={panelState.waveSettingsExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ ...prev, waveSettingsExpanded: !prev.waveSettingsExpanded }))}
             onSetResolution={setSmoothness}
           />
-          
+
           <AnimationControls
             settings={animationSettings}
             onSettingsChange={(updates) => setAnimationSettings(prev => ({ ...prev, ...updates }))}
