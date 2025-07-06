@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslation } from 'react-i18next'
 import type { TopographyAnimationSettings } from '@/lib/types'
 
 interface AnimationControlsProps {
@@ -21,6 +22,8 @@ export function AnimationControls({
   expanded,
   onToggleExpanded
 }: AnimationControlsProps) {
+  const { t } = useTranslation()
+  
   const toggleAnimation = () => {
     onSettingsChange({ isAnimating: !settings.isAnimating })
   }
@@ -28,7 +31,7 @@ export function AnimationControls({
   return (
     <div className="space-y-4">
       <CollapsibleHeader
-        title="Animation"
+        title={t('visualizationSettings.animation')}
         isExpanded={expanded}
         onToggle={onToggleExpanded}
       />
@@ -46,12 +49,12 @@ export function AnimationControls({
               {settings.isAnimating ? (
                 <>
                   <Pause className="h-3 w-3" />
-                  <span>Pause</span>
+                  <span>{t('visualizationSettings.pause')}</span>
                 </>
               ) : (
                 <>
                   <Play className="h-3 w-3" />
-                  <span>Play</span>
+                  <span>{t('visualizationSettings.play')}</span>
                 </>
               )}
             </Button>
@@ -59,7 +62,7 @@ export function AnimationControls({
 
           {/* Wind Speed */}
           <div className="space-y-2">
-            <Label className="text-sm">Wind Speed: {settings.windSpeed.toFixed(1)}</Label>
+            <Label className="text-sm">{t('visualizationSettings.windSpeed')}: {settings.windSpeed.toFixed(1)}</Label>
             <Slider
               value={[settings.windSpeed]}
               onValueChange={([value]) => onSettingsChange({ windSpeed: value })}
@@ -72,7 +75,7 @@ export function AnimationControls({
 
           {/* Wind Direction */}
           <div className="space-y-2">
-            <Label className="text-sm">Wind Direction: {Math.round(settings.windDirection)}°</Label>
+            <Label className="text-sm">{t('visualizationSettings.windDirection')}: {Math.round(settings.windDirection)}°</Label>
             <Slider
               value={[settings.windDirection]}
               onValueChange={([value]) => onSettingsChange({ windDirection: value })}
@@ -92,7 +95,7 @@ export function AnimationControls({
               className="flex items-center gap-2"
             >
               <RotateCcw className="h-3 w-3" />
-              <span>Reset</span>
+              <span>{t('visualizationSettings.reset')}</span>
             </Button>
           </div>
         </div>

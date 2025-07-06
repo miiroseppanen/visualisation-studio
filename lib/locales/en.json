@@ -382,7 +382,11 @@
     "vectorLength": "Vector Length",
     "streamlineLength": "Streamline Length",
     "steps": "steps",
-    "stepSize": "Step Size"
+    "stepSize": "Step Size",
+    "resetToDefaults": "Reset to Defaults",
+    "animationSpeed": "Animation Speed",
+    "growthSpeed": "Growth Speed",
+    "windDirection": "Wind Direction"
   },
   "about": {
     "title": "About Visualization Studio",

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Play, Pause, RotateCcw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { WaveInterferenceAnimationSettings } from '@/lib/types'
 
 interface AnimationControlsProps {
@@ -23,6 +24,7 @@ export default function AnimationControls({
   expanded,
   onToggleExpanded
 }: AnimationControlsProps) {
+  const { t } = useTranslation()
   return (
     <CollapsibleSection
       title="Animation Controls"
@@ -89,7 +91,7 @@ export default function AnimationControls({
           className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <RotateCcw className="w-4 h-4 mr-2" />
-          Reset to Defaults
+          {t('visualizationSettings.resetToDefaults')}
         </Button>
       </div>
     </CollapsibleSection>

@@ -370,7 +370,11 @@
     "vectorLength": "Vektorin pituus",
     "streamlineLength": "Virtausviivan pituus",
     "steps": "askelta",
-    "stepSize": "Askelkoko"
+    "stepSize": "Askelkoko",
+    "resetToDefaults": "Nollaa oletusasetukset",
+    "animationSpeed": "Animaationopeus",
+    "growthSpeed": "Kasvunopeus",
+    "windDirection": "Tuulen suunta"
   },
   "about": {
     "title": "Tietoja Visualisointi Studiosta",

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Play, Pause, RotateCcw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { FractalTreeAnimationSettings } from '@/lib/types'
 
 interface AnimationControlsProps {
@@ -23,9 +24,10 @@ export default function AnimationControls({
   expanded,
   onToggleExpanded
 }: AnimationControlsProps) {
+  const { t } = useTranslation()
   return (
     <CollapsibleSection
-      title="Animation Controls"
+      title={t('visualizationSettings.animation')}
       defaultOpen={expanded}
     >
       <div className="space-y-4 mt-4">
@@ -39,12 +41,12 @@ export default function AnimationControls({
           {settings.isAnimating ? (
             <>
               <Pause className="w-4 h-4 mr-2" />
-              Pause Animation
+              {t('visualizationSettings.pause')}
             </>
           ) : (
             <>
               <Play className="w-4 h-4 mr-2" />
-              Play Animation
+              {t('visualizationSettings.play')}
             </>
           )}
         </Button>
@@ -52,7 +54,7 @@ export default function AnimationControls({
         {/* Animation Speed */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-900 dark:text-white">Animation Speed</Label>
+            <Label className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.animationSpeed')}</Label>
             <span className="text-xs text-gray-600 dark:text-gray-300">{settings.speed.toFixed(1)}x</span>
           </div>
           <Slider
@@ -68,7 +70,7 @@ export default function AnimationControls({
         {/* Growth Speed */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-900 dark:text-white">Growth Speed</Label>
+            <Label className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.growthSpeed')}</Label>
             <span className="text-xs text-gray-600 dark:text-gray-300">{settings.growthSpeed.toFixed(3)}</span>
           </div>
           <Slider
@@ -92,7 +94,7 @@ export default function AnimationControls({
           className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <RotateCcw className="w-4 h-4 mr-2" />
-          Reset to Defaults
+          {t('visualizationSettings.resetToDefaults')}
         </Button>
       </div>
     </CollapsibleSection>
