@@ -416,6 +416,36 @@ export class SuggestionsService {
   async clearAllSuggestions(): Promise<void> {
     await this.provider.clearAll()
   }
+
+  // Clear sample data while keeping user-created suggestions
+  async clearSampleData(): Promise<void> {
+    const allSuggestions = await this.provider.getAll()
+    
+    // Filter out sample data based on characteristics
+    const userSuggestions = allSuggestions.filter(suggestion => {
+      // Keep suggestions that are likely user-created
+      // Sample data typically has high upvotes, specific authors, or implementation details
+      const isSampleData = 
+        suggestion.upvotes > 10 || // High upvotes suggest sample data
+        suggestion.author.includes('Designer') || // Sample author patterns
+        suggestion.author.includes('Researcher') ||
+        suggestion.author.includes('Specialist') ||
+        suggestion.author.includes('Manager') ||
+        suggestion.author.includes('Professor') ||
+        suggestion.implementation?.type || // Has implementation details
+        suggestion.tags.length > 3 || // Many tags suggest sample data
+        suggestion.estimatedDevTime > 10 // High estimated time suggests sample data
+      
+      return !isSampleData
+    })
+    
+    // Clear all and re-save only user suggestions
+    await this.provider.clearAll()
+    
+    for (const suggestion of userSuggestions) {
+      await this.provider.save(suggestion)
+    }
+  }
 }
 
 // Default service instance

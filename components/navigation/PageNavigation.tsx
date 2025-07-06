@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Home, Lightbulb, Plus } from 'lucide-react'
+import { ArrowLeft, Home, Lightbulb, Plus, Unlock, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/components/ui/ThemeProvider'
 import { Sun, Moon, Laptop } from 'lucide-react'
@@ -107,7 +107,15 @@ function ThemeSwitcher() {
 }
 
 // Specialized navigation for suggestions page
-export function SuggestionsNavigation() {
+export function SuggestionsNavigation({
+  isAuthenticated,
+  onAdminClick,
+  onLogout
+}: {
+  isAuthenticated?: boolean
+  onAdminClick?: () => void
+  onLogout?: () => void
+} = {}) {
   return (
     <PageNavigation
       showBackButton={true}
@@ -116,12 +124,35 @@ export function SuggestionsNavigation() {
       title="Visualization Suggestions"
       subtitle="Share ideas and vote on new visualizations"
       rightContent={
-        <Link href="/suggestions/new">
-          <Button size="sm" className="flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>New Suggestion</span>
-          </Button>
-        </Link>
+        <div className="flex items-center space-x-2">
+          <Link href="/suggestions/new">
+            <Button size="sm" className="flex items-center space-x-2">
+              <Plus className="w-4 h-4" />
+              <span>New Suggestion</span>
+            </Button>
+          </Link>
+          {onAdminClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={isAuthenticated ? onLogout : onAdminClick}
+              className="flex items-center space-x-2"
+              title={isAuthenticated ? "Logout Admin" : "Admin Access"}
+            >
+              {isAuthenticated ? (
+                <>
+                  <Unlock className="w-4 h-4 text-green-600" />
+                  <span className="text-green-600">Admin</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4" />
+                  <span>Admin</span>
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       }
     />
   )
@@ -141,7 +172,15 @@ export function NewSuggestionNavigation() {
 }
 
 // Unified mobile navigation for suggestions
-export function SuggestionsMobileNavigation() {
+export function SuggestionsMobileNavigation({
+  isAuthenticated,
+  onAdminClick,
+  onLogout
+}: {
+  isAuthenticated?: boolean
+  onAdminClick?: () => void
+  onLogout?: () => void
+} = {}) {
   return (
     <div className="md:hidden rounded-lg border border-border/30 bg-background/60 backdrop-blur-md hover:bg-background/80 hover:backdrop-blur-lg transition-all duration-300 dark:bg-background/40 dark:hover:bg-background/60">
       <div className="w-full px-4 lg:px-8 py-3">
@@ -157,12 +196,27 @@ export function SuggestionsMobileNavigation() {
               <p className="text-sm text-foreground/60 leading-tight">Share ideas and vote on new visualizations</p>
             </div>
           </div>
-          <Link href="/suggestions/new">
-            <button className="flex items-center justify-center space-x-2 p-2 rounded-lg font-semibold shadow-sm border border-border/30 bg-background/80 text-foreground hover:bg-accent/40 transition-colors min-w-[44px]">
-              <Plus className="w-4 h-4" />
-              <span className="hidden xs:inline">New</span>
-            </button>
-          </Link>
+          <div className="flex items-center space-x-2">
+            {onAdminClick && (
+              <button
+                onClick={isAuthenticated ? onLogout : onAdminClick}
+                className="p-2 rounded-lg hover:bg-accent/40 transition-colors focus:outline-none"
+                title={isAuthenticated ? "Logout Admin" : "Admin Access"}
+              >
+                {isAuthenticated ? (
+                  <Unlock className="w-4 h-4 text-green-600" />
+                ) : (
+                  <Lock className="w-4 h-4" />
+                )}
+              </button>
+            )}
+            <Link href="/suggestions/new">
+              <button className="flex items-center justify-center space-x-2 p-2 rounded-lg font-semibold shadow-sm border border-border/30 bg-background/80 text-foreground hover:bg-accent/40 transition-colors min-w-[44px]">
+                <Plus className="w-4 h-4" />
+                <span className="hidden xs:inline">New</span>
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

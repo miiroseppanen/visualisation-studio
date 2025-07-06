@@ -50,6 +50,7 @@ interface UseSuggestionsReturn {
   
   // Database management
   clearAllSuggestions: () => Promise<void>
+  clearSampleData: () => Promise<void>
   
   // Utility
   refresh: () => Promise<void>
@@ -258,6 +259,21 @@ export function useSuggestions(options: UseSuggestionsOptions = {}): UseSuggesti
     }
   }, [service, loadSuggestions])
 
+  const clearSampleData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      await service.clearSampleData()
+      await loadSuggestions() // Refresh the list
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to clear sample data')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [service, loadSuggestions])
+
   // Utility
   const refresh = useCallback(async () => {
     await loadSuggestions()
@@ -300,6 +316,7 @@ export function useSuggestions(options: UseSuggestionsOptions = {}): UseSuggesti
     
     // Database management
     clearAllSuggestions,
+    clearSampleData,
     
     // Utility
     refresh,

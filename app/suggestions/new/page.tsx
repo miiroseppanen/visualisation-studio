@@ -11,23 +11,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import AppLayout from '@/components/layout/AppLayout'
 import { NewSuggestionNavigation, NewSuggestionMobileNavigation } from '@/components/navigation/PageNavigation'
+import { useSuggestions } from '@/lib/hooks/useSuggestions'
 import Link from 'next/link'
-
-interface Suggestion {
-  id: string
-  title: string
-  description: string
-  author: string
-  timestamp: Date
-  upvotes: number
-  downvotes: number
-  status: 'pending' | 'approved' | 'implemented' | 'rejected'
-  category: string
-  complexity: 'low' | 'medium' | 'high'
-}
+import { useRouter } from 'next/navigation'
 
 const categories = [
-  'Organic', 'Geometric', 'Physics', 'Algorithm', 'Abstract', 'Mathematical', 'Artistic', 'Scientific'
+  'Packaging', 'Branding', 'Customer Experience', 'Events', 'Social Media', 'Audio Branding', 'Retail', 'Market Analysis', 'Supply Chain', 'Web Design'
 ]
 
 const complexityLevels = [
@@ -37,6 +26,9 @@ const complexityLevels = [
 ]
 
 export default function NewSuggestionPage() {
+  const router = useRouter()
+  const { createSuggestion, loading, error } = useSuggestions()
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -45,6 +37,7 @@ export default function NewSuggestionPage() {
     complexity: 'medium' as const
   })
   
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const titleInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -54,13 +47,35 @@ export default function NewSuggestionPage() {
     }
   }, [])
 
-  const handleSubmitSuggestion = (e: React.FormEvent) => {
+  const handleSubmitSuggestion = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically submit to your backend
-    console.log('Submitting suggestion:', formData)
+    setIsSubmitting(true)
     
-    // For now, just redirect back to suggestions page
-    window.location.href = '/suggestions'
+    try {
+      await createSuggestion({
+        title: formData.title,
+        description: formData.description,
+        author: formData.author,
+        category: formData.category,
+        complexity: formData.complexity,
+        status: 'pending',
+        upvotes: 0,
+        downvotes: 0,
+        tags: [],
+        difficulty: 'intermediate',
+        estimatedDevTime: 8,
+        views: 0,
+        favorites: 0,
+        comments: [],
+        createdBy: formData.author
+      })
+      
+      // Redirect back to suggestions page
+      router.push('/suggestions')
+    } catch (error) {
+      console.error('Failed to submit suggestion:', error)
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -75,6 +90,15 @@ export default function NewSuggestionPage() {
         {/* Main Content */}
         <div className="container mx-auto px-8 py-8">
           <div className="max-w-4xl mx-auto">
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <X className="w-4 h-4 text-red-600" />
+                  <span className="text-red-800">Error: {error}</span>
+                </div>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmitSuggestion} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
@@ -90,6 +114,7 @@ export default function NewSuggestionPage() {
                     placeholder="Enter visualization title"
                     className="h-14 text-base font-light focus:ring-2 focus:ring-ring/20"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
                 
@@ -105,6 +130,7 @@ export default function NewSuggestionPage() {
                     placeholder="Enter your name"
                     className="h-14 text-base font-light focus:ring-2 focus:ring-ring/20"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -122,6 +148,7 @@ export default function NewSuggestionPage() {
                   rows={5}
                   className="text-base font-light resize-none focus:ring-2 focus:ring-ring/20"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               
@@ -137,6 +164,7 @@ export default function NewSuggestionPage() {
                     onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                     className="w-full h-14 text-base font-light px-4 border border-input bg-background focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
                     required
+                    disabled={isSubmitting}
                   >
                     <option value="">Select category</option>
                     {categories.map(cat => (
@@ -156,6 +184,7 @@ export default function NewSuggestionPage() {
                     onChange={(e) => setFormData(prev => ({ ...prev, complexity: e.target.value as any }))}
                     className="w-full h-14 text-base font-light px-4 border border-input bg-background focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
                     required
+                    disabled={isSubmitting}
                   >
                     {complexityLevels.map(level => (
                       <option key={level.value} value={level.value}>{level.label}</option>
@@ -165,21 +194,23 @@ export default function NewSuggestionPage() {
               </div>
               
               <div className="flex gap-4 pt-8 border-t border-border">
+                <Button 
+                  type="submit" 
+                  className="flex-1 h-16 text-lg font-medium tracking-wide bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  disabled={isSubmitting || loading}
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
+                </Button>
                 <Link href="/suggestions">
                   <Button 
                     type="button" 
                     className="h-16 px-8 text-lg font-medium tracking-wide hover:bg-accent transition-all duration-300"
                     variant="outline"
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </Button>
                 </Link>
-                <Button 
-                  type="submit" 
-                  className="flex-1 h-16 text-lg font-medium tracking-wide bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  Submit Suggestion
-                </Button>
               </div>
             </form>
           </div>

@@ -1,22 +1,5 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/cellular-automata/page": "app/cellular-automata/page.js",
-  "/circular-field/page": "app/circular-field/page.js",
-  "/flow-field/page": "app/flow-field/page.js",
-  "/fractal-tree/page": "app/fractal-tree/page.js",
-  "/grid-field/page": "app/grid-field/page.js",
-  "/issues/landing/page": "app/issues/landing/page.js",
-  "/issues/new/page": "app/issues/new/page.js",
-  "/neural-network/page": "app/neural-network/page.js",
-  "/page": "app/page.js",
-  "/issues/page": "app/issues/page.js",
-  "/particle-swarm/page": "app/particle-swarm/page.js",
-  "/sound-wave/page": "app/sound-wave/page.js",
-  "/suggestions/new/page": "app/suggestions/new/page.js",
-  "/test/page": "app/test/page.js",
-  "/simple-test/page": "app/simple-test/page.js",
   "/suggestions/page": "app/suggestions/page.js",
-  "/topography/page": "app/topography/page.js",
-  "/turbulence/page": "app/turbulence/page.js",
-  "/wave-interference/page": "app/wave-interference/page.js"
+  "/page": "app/page.js",
+  "/suggestions/new/page": "app/suggestions/new/page.js"
 }

@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Grid3X3, Magnet, Wind, Mountain, Radio, Sun, Moon, Laptop, ChevronDown, Bug } from 'lucide-react'
+import { Grid3X3, Magnet, Wind, Mountain, Radio, Sun, Moon, Laptop, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { H23Logo } from '@/components/ui/h23-logo'
 import { useNavigation } from '@/lib/hooks/useNavigation'
@@ -170,13 +170,6 @@ export default function AppNavigation({
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Suggestions
-                </button>
-                <button 
-                  onClick={() => handleNavigationClick('/issues/landing')}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center space-x-1"
-                >
-                  <Bug className="w-3 h-3" />
-                  <span>Issues</span>
                 </button>
               </>
             )}
