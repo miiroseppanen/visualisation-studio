@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Play, Pause, RotateCcw } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 import type { NeuralNetworkAnimationSettings } from '@/lib/types'
 
 interface AnimationControlsProps {
@@ -22,6 +23,7 @@ export default function AnimationControls({
   expanded,
   onToggleExpanded
 }: AnimationControlsProps) {
+  const { t } = useTranslation()
   return (
     <div>
       <button
@@ -106,7 +108,7 @@ export default function AnimationControls({
               className="w-full"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
-              Reset to Defaults
+              {t('visualizationSettings.resetToDefaults')}
             </Button>
           </div>
 
