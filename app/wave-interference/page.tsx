@@ -274,10 +274,10 @@ export default function WaveInterferencePage() {
       // Update existing circles (expand outward)
       newCircles.forEach(circle => {
         circle.size += 2 + Math.random() * 2 // Slower expansion for more dramatic effect
-        circle.life -= 0.008 // Much slower decay for very long-lasting circles
+        // No fade - circles maintain full opacity
         
-        // Remove circles only when they fade out (no size limit)
-        if (circle.life <= 0) {
+        // Remove circles only when they get too large for performance
+        if (circle.size > 1000) { // Very large limit for performance
           circle.life = 0
         }
       })
@@ -428,28 +428,25 @@ export default function WaveInterferencePage() {
     // Draw spreading wave circles (lines only)
     if (showCircles) {
       particles.forEach(circle => {
-        const alpha = Math.max(0, Math.min(1, circle.life))
         const size = Math.max(0.1, circle.size)
         
         // Only draw if size is valid
         if (size <= 0) return
         
-        // Draw main circle with source color
-        ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`
-        ctx.lineWidth = 2 * alpha // Thicker when young, thinner as it expands
+        // Draw main circle with source color (full opacity)
+        ctx.strokeStyle = `${circle.color}ff` // Full opacity
+        ctx.lineWidth = 2 // Consistent line width
         
         ctx.beginPath()
         ctx.arc(circle.x, circle.y, size, 0, 2 * Math.PI)
         ctx.stroke()
         
         // Draw inner circle for more definition
-        if (alpha > 0.4) {
-          ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 150).toString(16).padStart(2, '0')}`
-          ctx.lineWidth = 1
-          ctx.beginPath()
-          ctx.arc(circle.x, circle.y, size * 0.7, 0, 2 * Math.PI)
-          ctx.stroke()
-        }
+        ctx.strokeStyle = `${circle.color}aa` // Slightly transparent inner circle
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.arc(circle.x, circle.y, size * 0.7, 0, 2 * Math.PI)
+        ctx.stroke()
       })
     }
     
