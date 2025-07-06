@@ -308,13 +308,15 @@ export default function WaveInterferencePage() {
     }
   }, [animationSettings.isAnimating, isClient, updateWaveCircles])
 
-  // Draw immersive interference visualization
-  const drawImmersiveInterference = useCallback((ctx: CanvasRenderingContext2D, fields: InterferenceField[], width: number, height: number) => {
-    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    
-    // Create solid black background
-    ctx.fillStyle = '#000000'
-    ctx.fillRect(0, 0, width, height)
+      // Draw immersive interference visualization
+    const drawImmersiveInterference = useCallback((ctx: CanvasRenderingContext2D, fields: InterferenceField[], width: number, height: number) => {
+      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      
+      // Create solid black background
+      ctx.fillStyle = '#000000'
+      ctx.fillRect(0, 0, width, height)
+      
+
     
     // Draw interference lines instead of circles
     if (showInterference) {
@@ -639,11 +641,11 @@ export default function WaveInterferencePage() {
     const width = canvas.width / window.devicePixelRatio
     const height = canvas.height / window.devicePixelRatio
 
-    // Generate and draw interference field
-    if (showInterference) {
-      const fields = generateInterferenceField(width, height)
-      drawImmersiveInterference(ctx, fields, width, height)
-    }
+    // Generate interference field only if enabled
+    const fields = showInterference ? generateInterferenceField(width, height) : []
+    
+    // Always draw the visualization (background, circles, sources, etc.)
+    drawImmersiveInterference(ctx, fields, width, height)
   }, [showInterference, generateInterferenceField, drawImmersiveInterference])
 
   // Render loop with performance optimization
