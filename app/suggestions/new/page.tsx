@@ -165,12 +165,6 @@ export default function NewSuggestionPage() {
               </div>
               
               <div className="flex gap-4 pt-8 border-t border-border">
-                <Button 
-                  type="submit" 
-                  className="flex-1 h-16 text-lg font-medium tracking-wide bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  Submit Suggestion
-                </Button>
                 <Link href="/suggestions">
                   <Button 
                     type="button" 
@@ -180,6 +174,12 @@ export default function NewSuggestionPage() {
                     Cancel
                   </Button>
                 </Link>
+                <Button 
+                  type="submit" 
+                  className="flex-1 h-16 text-lg font-medium tracking-wide bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Submit Suggestion
+                </Button>
               </div>
             </form>
           </div>
