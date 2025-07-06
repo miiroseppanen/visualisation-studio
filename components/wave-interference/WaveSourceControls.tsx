@@ -30,7 +30,6 @@ interface WaveSourceControlsProps {
   showWaveSources: boolean
   showInterference: boolean
   showWavefronts: boolean
-  showCircles: boolean
   expanded: boolean
   onToggleExpanded: () => void
   onSetSelectedSourceType: (type: 'sine' | 'cosine') => void
@@ -39,7 +38,6 @@ interface WaveSourceControlsProps {
   onSetShowWaveSources: (show: boolean) => void
   onSetShowInterference: (show: boolean) => void
   onSetShowWavefronts: (show: boolean) => void
-  onSetShowCircles: (show: boolean) => void
   onUpdateSource?: (id: string, updates: Partial<WaveSource>) => void
 }
 
@@ -50,7 +48,6 @@ export default function WaveSourceControls({
   showWaveSources,
   showInterference,
   showWavefronts,
-  showCircles,
   expanded,
   onToggleExpanded,
   onSetSelectedSourceType,
@@ -59,7 +56,6 @@ export default function WaveSourceControls({
   onSetShowWaveSources,
   onSetShowInterference,
   onSetShowWavefronts,
-  onSetShowCircles,
   onUpdateSource
 }: WaveSourceControlsProps) {
   const { t } = useTranslation()
@@ -290,14 +286,7 @@ export default function WaveSourceControls({
             <Label htmlFor="showWavefronts" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showWavefronts')}</Label>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="showCircles"
-              checked={showCircles}
-              onCheckedChange={(checked) => onSetShowCircles(checked as boolean)}
-            />
-            <Label htmlFor="showCircles" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showCircles')}</Label>
-          </div>
+
         </div>
 
         {waveSources.length === 0 && (

@@ -24,16 +24,7 @@ interface WaveSource {
   color: string
 }
 
-interface WaveParticle {
-  x: number
-  y: number
-  vx: number
-  vy: number
-  life: number
-  maxLife: number
-  size: number
-  color: string
-}
+
 
 interface InterferenceField {
   x: number
@@ -81,15 +72,13 @@ export default function WaveInterferencePage() {
     { id: '3', x: 500, y: 200, frequency: 1.5, amplitude: 60, phase: 0, wavelength: 150, active: true, color: '#45b7d1' }
   ])
 
-  // Particle system for dynamic effects
-  const [particles, setParticles] = useState<WaveParticle[]>([])
+
 
   // Settings state
   const [showWaveSources, setShowWaveSources] = useState(true)
   const [showInterference, setShowInterference] = useState(true)
   const [showWavefronts, setShowWavefronts] = useState(true)
   const [showParticles, setShowParticles] = useState(true)
-  const [showCircles, setShowCircles] = useState(true)
   const [smoothness, setSmoothness] = useState(12) // Higher for better quality
   const [lineDensity, setLineDensity] = useState(8) // Control for amount of lines
   const [interferenceContrast, setInterferenceContrast] = useState(1.0) // Control for interference pattern contrast
@@ -246,68 +235,9 @@ export default function WaveInterferencePage() {
     return fields
   }, [calculateWaveAmplitude, animationSettings.time, smoothness, lineDensity])
 
-  // Update wave circles (replacing particles)
-  const updateWaveCircles = useCallback((width: number, height: number) => {
-    setParticles(prev => {
-      const newCircles = prev.filter(circle => circle.life > 0)
-      
-      // Limit total circles to prevent performance issues
-      if (newCircles.length > 15) { // Much fewer circles for dramatic effect
-        return newCircles.slice(0, 15)
-      }
-      
-      // Add new wave circles from wave sources
-      waveSources.forEach(source => {
-        if (!source.active || Math.random() > 0.8) return // Much rarer circles - only 20% chance
-        
-        newCircles.push({
-          x: source.x,
-          y: source.y,
-          vx: 0, // Circles expand from center
-          vy: 0,
-          life: 1.0,
-          maxLife: 1.0,
-          size: 20, // Start larger for more impact
-          color: source.color
-        })
-      })
-      
-      // Update existing circles (expand outward)
-      newCircles.forEach(circle => {
-        circle.size += 2 + Math.random() * 2 // Slower expansion for more dramatic effect
-        // No fade - circles maintain full opacity
-        
-        // Remove circles only when they get too large for performance
-        if (circle.size > 1000) { // Very large limit for performance
-          circle.life = 0
-        }
-      })
-      
-      return newCircles
-    })
-  }, [waveSources])
 
-  // Separate particle update effect
-  useEffect(() => {
-    if (!animationSettings.isAnimating || !isClient) return
 
-    const canvas = canvasRef.current
-    if (!canvas) return
 
-    const getCanvasSize = () => {
-      const rect = canvas.getBoundingClientRect()
-      return { width: rect.width, height: rect.height }
-    }
-
-    const circleInterval = setInterval(() => {
-      const { width, height } = getCanvasSize()
-      updateWaveCircles(width, height)
-    }, 300) // Update circles every 300ms for rarer spawning
-
-    return () => {
-      clearInterval(circleInterval)
-    }
-  }, [animationSettings.isAnimating, isClient, updateWaveCircles])
 
       // Draw immersive interference visualization
     const drawImmersiveInterference = useCallback((ctx: CanvasRenderingContext2D, fields: InterferenceField[], width: number, height: number) => {
@@ -427,30 +357,7 @@ export default function WaveInterferencePage() {
       })
     }
     
-    // Draw spreading wave circles (lines only)
-    if (showCircles) {
-      particles.forEach(circle => {
-        const size = Math.max(0.1, circle.size)
-        
-        // Only draw if size is valid
-        if (size <= 0) return
-        
-        // Draw main circle with source color (full opacity)
-        ctx.strokeStyle = `${circle.color}ff` // Full opacity
-        ctx.lineWidth = 2 // Consistent line width
-        
-        ctx.beginPath()
-        ctx.arc(circle.x, circle.y, size, 0, 2 * Math.PI)
-        ctx.stroke()
-        
-        // Draw inner circle for more definition
-        ctx.strokeStyle = `${circle.color}aa` // Slightly transparent inner circle
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.arc(circle.x, circle.y, size * 0.7, 0, 2 * Math.PI)
-        ctx.stroke()
-      })
-    }
+
     
     // Draw wave sources with dramatic styling
     if (showWaveSources) {
@@ -489,7 +396,7 @@ export default function WaveInterferencePage() {
         ctx.fillText(source.id, source.x, source.y)
       })
     }
-  }, [calculateWaveAmplitude, animationSettings.time, theme, waveSources, particles, showWavefronts, showParticles, showWaveSources, showInterference, showCircles, interferenceContrast])
+  }, [calculateWaveAmplitude, animationSettings.time, theme, waveSources, showWavefronts, showParticles, showWaveSources, showInterference, interferenceContrast])
 
   // Performance optimization: Adaptive frame rate
   const updateFrameRate = useCallback(() => {
@@ -744,7 +651,6 @@ export default function WaveInterferencePage() {
     setShowInterference(true)
     setShowWavefronts(true)
     setShowParticles(true)
-    setShowCircles(true)
     setShowInterference(true)
     setSmoothness(12)
     setInterferenceContrast(1.0)
@@ -754,7 +660,6 @@ export default function WaveInterferencePage() {
     setIsDragging(false)
     setDraggedSourceId(null)
     setFrameRate(60)
-    setParticles([])
     
     waveCacheRef.current = {
       time: 0,
@@ -831,7 +736,6 @@ export default function WaveInterferencePage() {
         <>
           Mode: Wave Interference | 
           Sources: {waveSources.filter(s => s.active).length} | 
-          Circles: {particles.length} | 
           FPS: {frameRate} | 
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
@@ -848,7 +752,6 @@ export default function WaveInterferencePage() {
             showWaveSources={showWaveSources}
             showInterference={showInterference}
             showWavefronts={showWavefronts}
-            showCircles={showCircles}
             expanded={panelState.waveSourcesExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ ...prev, waveSourcesExpanded: !prev.waveSourcesExpanded }))}
             onSetSelectedSourceType={setSelectedSourceType}
@@ -857,7 +760,6 @@ export default function WaveInterferencePage() {
             onSetShowWaveSources={setShowWaveSources}
             onSetShowInterference={setShowInterference}
             onSetShowWavefronts={setShowWavefronts}
-            onSetShowCircles={setShowCircles}
             onUpdateSource={updateSource}
           />
 
