@@ -10,6 +10,7 @@ import WaveSettings from '@/components/wave-interference/WaveSettings'
 import type { WaveInterferenceAnimationSettings, WaveInterferencePanelState } from '@/lib/types'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
+import { useTheme } from '@/components/ui/ThemeProvider'
 
 interface WaveSource {
   id: string
@@ -36,6 +37,7 @@ export default function WaveInterferencePage() {
   const renderFrameRef = useRef<number>()
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
+  const { theme } = useTheme()
 
   // Wave sources state
   const [waveSources, setWaveSources] = useState<WaveSource[]>([
@@ -86,17 +88,29 @@ export default function WaveInterferencePage() {
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect()
-      canvas.width = rect.width * window.devicePixelRatio
-      canvas.height = rect.height * window.devicePixelRatio
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = rect.width * dpr
+      canvas.height = rect.height * dpr
       canvas.style.width = rect.width + 'px'
       canvas.style.height = rect.height + 'px'
+      
+      // Ensure the canvas context is properly scaled
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.scale(dpr, dpr)
+      }
     }
 
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
     
+    // Use ResizeObserver for more reliable resize detection
+    const resizeObserver = new ResizeObserver(resizeCanvas)
+    resizeObserver.observe(canvas)
+    
     return () => {
       window.removeEventListener('resize', resizeCanvas)
+      resizeObserver.disconnect()
     }
   }, [isClient])
 
@@ -248,15 +262,16 @@ export default function WaveInterferencePage() {
     const width = canvas.width / window.devicePixelRatio
     const height = canvas.height / window.devicePixelRatio
 
-    // Clear canvas with white background
-    ctx.fillStyle = '#ffffff'
+    // Clear canvas with theme-appropriate background
+    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ctx.fillStyle = isDark ? '#000000' : '#ffffff'
     ctx.fillRect(0, 0, width, height)
 
     // Draw interference pattern as lines
     if (showInterference) {
       const lines = generateInterferenceLines(width, height)
       
-      ctx.strokeStyle = '#000000'
+      ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
       ctx.lineCap = 'round'
       
       lines.forEach(line => {
@@ -273,7 +288,7 @@ export default function WaveInterferencePage() {
 
     // Draw wavefronts as circles
     if (showWavefronts) {
-      ctx.strokeStyle = '#000000'
+      ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
       ctx.lineWidth = 1
       ctx.globalAlpha = 0.3
 
@@ -319,7 +334,7 @@ export default function WaveInterferencePage() {
         ctx.fillText(source.id, source.x, source.y)
       })
     }
-  }, [showInterference, showWavefronts, showWaveSources, waveSources, generateInterferenceLines, animationSettings.time])
+  }, [showInterference, showWavefronts, showWaveSources, waveSources, generateInterferenceLines, animationSettings.time, theme])
 
   // Render loop with proper cleanup
   useEffect(() => {
@@ -549,7 +564,8 @@ export default function WaveInterferencePage() {
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
+        className="w-full h-full cursor-crosshair block"
+        style={{ display: 'block' }}
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}

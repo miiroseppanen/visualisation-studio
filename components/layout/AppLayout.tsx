@@ -17,14 +17,14 @@ export default function AppLayout({
   const isMainPage = pathname === '/'
   
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-black dark:via-black dark:to-black transition-colors duration-300">
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-black dark:via-black dark:to-black transition-colors duration-300">
       {showNavigation && (
         <AppNavigation 
           variant={navigationVariant} 
           showPageSections={isMainPage}
         />
       )}
-      <main>
+      <main className="w-full h-full">
         {children}
       </main>
     </div>

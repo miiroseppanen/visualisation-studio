@@ -49,7 +49,7 @@ export default function VisualizationLayout({
 
   return (
     <AppLayout showNavigation={false}>
-      <div className="h-screen flex flex-col bg-background relative">
+      <div className="h-screen w-full flex flex-col bg-background relative">
         {/* Visualization Navigation */}
         {showVisualizationNav && (
           <div className={cn(
@@ -69,7 +69,7 @@ export default function VisualizationLayout({
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col relative h-full">
+        <main className="flex-1 flex flex-col relative w-full h-full">
           <div 
             className="flex-1 w-full h-full relative cursor-pointer"
             onClick={handleCanvasClick}
