@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { type VisualizationOption } from '@/lib/navigation-config'
+import { useTranslation } from 'react-i18next'
 
 interface VisualizationDropdownProps {
   currentVisualization: VisualizationOption | null
@@ -26,6 +27,13 @@ export default function VisualizationDropdown({
   className = '',
   hideNonEssential = false
 }: VisualizationDropdownProps) {
+  const { t } = useTranslation()
+  
+  // Helper to convert kebab-case to camelCase
+  function kebabToCamel(str: string) {
+    return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+  }
+
   const handleVisualizationClick = (id: string) => {
     onVisualizationSelect(id)
   }
@@ -38,7 +46,7 @@ export default function VisualizationDropdown({
           <currentVisualization.icon className="w-4 h-4 flex-shrink-0" />
         )}
         <span className="text-base sm:text-lg font-normal truncate">
-          {currentVisualization?.name || 'Select Visualization'}
+          {currentVisualization?.name || t('visualization.selectVisualization')}
         </span>
       </div>
     )
@@ -56,7 +64,7 @@ export default function VisualizationDropdown({
               <currentVisualization.icon className="w-4 h-4 flex-shrink-0" />
             )}
             <span className="text-base sm:text-lg font-normal truncate">
-              {currentVisualization?.name || 'Select Visualization'}
+              {currentVisualization?.name || t('visualization.selectVisualization')}
             </span>
           </div>
           <ChevronDown className="w-4 h-4 ml-1 flex-shrink-0" />
@@ -82,7 +90,7 @@ export default function VisualizationDropdown({
                   {visualization.name}
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
-                  {visualization.description}
+                  {t(`visualization.descriptions.${kebabToCamel(visualization.id)}`)}
                 </div>
               </div>
             </div>
