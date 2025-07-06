@@ -472,4 +472,55 @@ export function createSuggestionsService(providerType: 'local' | 'api' | 'file' 
   }
   
   return new SuggestionsService(provider)
+}
+
+export interface Suggestion {
+  _id?: string
+  id?: string // for compatibility
+  title: string
+  description: string
+  category: string
+  complexity: string
+  status: string
+  upvotes: number
+  downvotes: number
+  author: string
+  timestamp: string | Date
+}
+
+const API_BASE = '/api/suggestions'
+
+export async function fetchSuggestions(): Promise<Suggestion[]> {
+  const res = await fetch(API_BASE)
+  if (!res.ok) throw new Error('Failed to fetch suggestions')
+  const data = await res.json()
+  // Map _id to id for compatibility
+  return data.map((s: any) => ({ ...s, id: s._id || s.id }))
+}
+
+export async function addSuggestion(suggestion: Omit<Suggestion, '_id' | 'id' | 'upvotes' | 'downvotes' | 'status' | 'timestamp'>): Promise<Suggestion> {
+  const res = await fetch(API_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(suggestion),
+  })
+  if (!res.ok) throw new Error('Failed to add suggestion')
+  const data = await res.json()
+  return { ...data, id: data._id || data.id }
+}
+
+export async function updateSuggestion(id: string, update: Partial<Suggestion>): Promise<Suggestion> {
+  const res = await fetch(`${API_BASE}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(update),
+  })
+  if (!res.ok) throw new Error('Failed to update suggestion')
+  const data = await res.json()
+  return { ...data, id: data._id || data.id }
+}
+
+export async function deleteSuggestion(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error('Failed to delete suggestion')
 } 

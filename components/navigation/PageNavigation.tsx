@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Home, Lightbulb, Plus, Unlock, Lock } from 'lucide-react'
+import { ArrowLeft, Home, Plus, Unlock, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/components/ui/ThemeProvider'
 import { Sun, Moon, Laptop } from 'lucide-react'
@@ -55,16 +55,11 @@ export default function PageNavigation({
             )}
             
             {title && (
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-foreground/5 border border-foreground/10 rounded flex items-center justify-center">
-                  <Lightbulb className="w-4 h-4 text-foreground/60" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-medium text-foreground">{title}</h1>
-                  {subtitle && (
-                    <p className="text-sm text-foreground/60">{subtitle}</p>
-                  )}
-                </div>
+              <div>
+                <h1 className="text-lg font-medium text-foreground">{title}</h1>
+                {subtitle && (
+                  <p className="text-sm text-foreground/60">{subtitle}</p>
+                )}
               </div>
             )}
           </div>

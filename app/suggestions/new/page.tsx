@@ -19,26 +19,34 @@ const categories = [
   'Packaging', 'Branding', 'Customer Experience', 'Events', 'Social Media', 'Audio Branding', 'Retail', 'Market Analysis', 'Supply Chain', 'Web Design'
 ]
 
-const complexityLevels = [
-  { value: 'low', label: 'Low', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
-  { value: 'medium', label: 'Medium', color: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-300' },
-  { value: 'high', label: 'High', color: 'bg-red-500/10 text-red-700 dark:text-red-300' }
+const suggestionTypes = [
+  { value: 'new-visual', label: 'New Visual', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
+  { value: 'bug', label: 'Bug Fix', color: 'bg-red-500/10 text-red-700 dark:text-red-300' },
+  { value: 'improvement', label: 'Improvement', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
+  { value: 'feature', label: 'Feature', color: 'bg-purple-500/10 text-purple-700 dark:text-purple-300' },
+  { value: 'enhancement', label: 'Enhancement', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-300' }
 ]
 
 export default function NewSuggestionPage() {
   const router = useRouter()
-  const { createSuggestion, loading, error } = useSuggestions()
+  const { addSuggestion, loading, error } = useSuggestions()
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     author: '',
     category: '',
-    complexity: 'medium' as const
+    complexity: 'new-visual' as const
   })
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const titleInputRef = useRef<HTMLInputElement>(null)
+
+  // Check if all mandatory fields are filled
+  const isFormValid = formData.title.trim() !== '' && 
+                     formData.author.trim() !== '' && 
+                     formData.description.trim() !== '' && 
+                     formData.category !== ''
 
   useEffect(() => {
     // Focus on the title field when the component mounts
@@ -52,23 +60,7 @@ export default function NewSuggestionPage() {
     setIsSubmitting(true)
     
     try {
-      await createSuggestion({
-        title: formData.title,
-        description: formData.description,
-        author: formData.author,
-        category: formData.category,
-        complexity: formData.complexity,
-        status: 'pending',
-        upvotes: 0,
-        downvotes: 0,
-        tags: [],
-        difficulty: 'intermediate',
-        estimatedDevTime: 8,
-        views: 0,
-        favorites: 0,
-        comments: [],
-        createdBy: formData.author
-      })
+      await addSuggestion(formData)
       
       // Redirect back to suggestions page
       router.push('/suggestions')
@@ -176,7 +168,7 @@ export default function NewSuggestionPage() {
                 <div className="space-y-3">
                   <Label htmlFor="complexity" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
                     <Zap className="w-4 h-4" />
-                    <span>Complexity</span>
+                    <span>Type</span>
                   </Label>
                   <select
                     id="complexity"
@@ -186,8 +178,8 @@ export default function NewSuggestionPage() {
                     required
                     disabled={isSubmitting}
                   >
-                    {complexityLevels.map(level => (
-                      <option key={level.value} value={level.value}>{level.label}</option>
+                    {suggestionTypes.map(type => (
+                      <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
                   </select>
                 </div>
@@ -196,8 +188,13 @@ export default function NewSuggestionPage() {
               <div className="flex gap-4 pt-8 border-t border-border">
                 <Button 
                   type="submit" 
-                  className="flex-1 h-16 text-lg font-medium tracking-wide bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 shadow-lg hover:shadow-xl"
-                  disabled={isSubmitting || loading}
+                  className={cn(
+                    "flex-1 h-16 text-lg font-medium tracking-wide transition-all duration-300 shadow-lg",
+                    isFormValid 
+                      ? "bg-foreground text-background hover:bg-foreground/90 hover:shadow-xl" 
+                      : "bg-muted text-muted-foreground cursor-not-allowed shadow-none"
+                  )}
+                  disabled={isSubmitting || loading || !isFormValid}
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
                 </Button>
