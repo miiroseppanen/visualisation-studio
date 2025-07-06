@@ -243,13 +243,13 @@ export interface VisualizationSuggestion {
   downvotes: number
   status: 'pending' | 'approved' | 'implemented' | 'rejected'
   category: string
-  complexity: 'low' | 'medium' | 'high'
+  complexity: 'low' | 'medium' | 'high' | 'new-visual' | 'bug' | 'improvement' | 'feature' | 'enhancement'
   
   // Implementation details for generating visualizations
   implementation?: {
-    type: 'grid-field' | 'flow-field' | 'turbulence' | 'circular-field' | 'topography' | 'custom'
-    baseSettings?: Partial<GridSettings | TurbulenceSettings | CircularFieldSettings | TopographyDisplaySettings>
-    animationSettings?: Partial<AnimationSettings | FlowFieldAnimationSettings | TurbulenceAnimationSettings | CircularFieldAnimationSettings | TopographyAnimationSettings>
+    type: 'grid-field' | 'flow-field' | 'turbulence' | 'circular-field' | 'topography' | 'particle-swarm' | 'fractal-tree' | 'neural-network' | 'wave-interference' | 'cellular-automata' | 'sound-wave' | 'custom'
+    baseSettings?: Partial<GridSettings | TurbulenceSettings | CircularFieldSettings | TopographyDisplaySettings | ParticleSwarmSettings | FractalTreeSettings | NeuralNetworkSettings | WaveInterferenceSettings | CellularAutomataSettings | SoundWaveSettings>
+    animationSettings?: Partial<AnimationSettings | FlowFieldAnimationSettings | TurbulenceAnimationSettings | CircularFieldAnimationSettings | TopographyAnimationSettings | ParticleSwarmAnimationSettings | FractalTreeAnimationSettings | NeuralNetworkAnimationSettings | WaveInterferenceAnimationSettings | CellularAutomataAnimationSettings | SoundWaveAnimationSettings>
     customParameters?: Record<string, any>
     rendererConfig?: {
       renderer: string
@@ -370,6 +370,53 @@ export interface SoundWavePanelState {
   waveSettingsExpanded: boolean
   frequencyExpanded: boolean
   animationExpanded: boolean
+}
+
+// Particle Swarm types
+export interface ParticleSwarmSettings {
+  particleCount: number
+  maxSpeed: number
+  neighborRadius: number
+  separationWeight: number
+  alignmentWeight: number
+  cohesionWeight: number
+  obstacleAvoidanceWeight: number
+}
+
+// Fractal Tree types
+export interface FractalTreeSettings {
+  branchAngle: number
+  lengthRatio: number
+  recursionDepth: number
+  initialLength: number
+}
+
+// Neural Network types
+export interface NeuralNetworkSettings {
+  layers: number[]
+  learningRate: number
+  activationFunction: string
+}
+
+// Wave Interference types
+export interface WaveInterferenceSettings {
+  waveCount: number
+  amplitude: number
+  wavelength: number
+}
+
+// Cellular Automata types
+export interface CellularAutomataSettings {
+  gridSize: number
+  cellSize: number
+  ruleSet: string
+}
+
+// Sound Wave types
+export interface SoundWaveSettings {
+  frequency: number
+  amplitude: number
+  waveform: string
 }
 
 export interface SuggestionStats {

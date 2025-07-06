@@ -1,4 +1,5 @@
 import { VisualizationSuggestion, SuggestionFilters, SuggestionStats } from '../types'
+import { SQLiteProvider } from '../database/sqlite-provider'
 
 // Storage interfaces for different backends
 interface StorageProvider {
@@ -8,6 +9,7 @@ interface StorageProvider {
   update(id: string, updates: Partial<VisualizationSuggestion>): Promise<void>
   delete(id: string): Promise<void>
   getStats(): Promise<SuggestionStats>
+  clearAll(): Promise<void>
 }
 
 // Local Storage Implementation
@@ -80,6 +82,11 @@ class LocalStorageProvider implements StorageProvider {
     }
     
     return await this.updateStats()
+  }
+
+  async clearAll(): Promise<void> {
+    localStorage.removeItem(this.STORAGE_KEY)
+    localStorage.removeItem(this.STATS_KEY)
   }
 
   private async updateStats(): Promise<SuggestionStats> {
@@ -211,6 +218,10 @@ class FileSystemProvider implements StorageProvider {
   async getStats(): Promise<SuggestionStats> {
     throw new Error('FileSystemProvider not implemented in browser environment')
   }
+
+  async clearAll(): Promise<void> {
+    throw new Error('FileSystemProvider not implemented in browser environment')
+  }
 }
 
 // API Storage Implementation (for backend integration)
@@ -293,6 +304,16 @@ class APIProvider implements StorageProvider {
     }
     
     return response.json()
+  }
+
+  async clearAll(): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/clear`, {
+      method: 'DELETE'
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Failed to clear suggestions: ${response.statusText}`)
+    }
   }
 }
 
@@ -391,13 +412,17 @@ export class SuggestionsService {
       await this.provider.save(suggestion)
     }
   }
+
+  async clearAllSuggestions(): Promise<void> {
+    await this.provider.clearAll()
+  }
 }
 
 // Default service instance
 export const suggestionsService = new SuggestionsService()
 
 // Factory function to create service with different providers
-export function createSuggestionsService(providerType: 'local' | 'api' | 'file' = 'local', config?: any): SuggestionsService {
+export function createSuggestionsService(providerType: 'local' | 'api' | 'file' | 'sqlite' = 'local', config?: any): SuggestionsService {
   let provider: StorageProvider
   
   switch (providerType) {
@@ -406,6 +431,9 @@ export function createSuggestionsService(providerType: 'local' | 'api' | 'file' 
       break
     case 'file':
       provider = new FileSystemProvider(config?.filePath)
+      break
+    case 'sqlite':
+      provider = new SQLiteProvider(config?.dbPath)
       break
     case 'local':
     default:

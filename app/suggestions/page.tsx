@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import AppLayout from '@/components/layout/AppLayout'
 import { SuggestionsNavigation, SuggestionsMobileNavigation } from '@/components/navigation/PageNavigation'
+import { DatabaseManager } from '@/components/suggestions/DatabaseManager'
+import { SampleDataLoader } from '@/components/suggestions/SampleDataLoader'
 import Link from 'next/link'
 
 interface Suggestion {
@@ -23,7 +25,7 @@ interface Suggestion {
   downvotes: number
   status: 'pending' | 'approved' | 'implemented' | 'rejected'
   category: string
-  complexity: 'low' | 'medium' | 'high'
+  complexity: 'low' | 'medium' | 'high' | 'new-visual' | 'bug' | 'improvement' | 'feature' | 'enhancement'
 }
 
 const mockSuggestions: Suggestion[] = [
@@ -126,13 +128,15 @@ const mockSuggestions: Suggestion[] = [
 ]
 
 const categories = [
-  'Organic', 'Geometric', 'Physics', 'Algorithm', 'Abstract', 'Mathematical', 'Artistic', 'Scientific'
+  'Packaging', 'Branding', 'Customer Experience', 'Events', 'Social Media', 'Audio Branding', 'Retail', 'Market Analysis', 'Supply Chain', 'Web Design'
 ]
 
-const complexityLevels = [
-  { value: 'low', label: 'Low', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
-  { value: 'medium', label: 'Medium', color: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-300' },
-  { value: 'high', label: 'High', color: 'bg-red-500/10 text-red-700 dark:text-red-300' }
+const suggestionTypes = [
+  { value: 'new-visual', label: 'New Visual', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
+  { value: 'bug', label: 'Bug Fix', color: 'bg-red-500/10 text-red-700 dark:text-red-300' },
+  { value: 'improvement', label: 'Improvement', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
+  { value: 'feature', label: 'Feature Request', color: 'bg-purple-500/10 text-purple-700 dark:text-purple-300' },
+  { value: 'enhancement', label: 'Enhancement', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-300' }
 ]
 
 const statusConfig = {
@@ -145,7 +149,7 @@ const statusConfig = {
 export default function SuggestionsPage() {
   const [suggestions, setSuggestions] = useState<Suggestion[]>(mockSuggestions)
   const [filterCategory, setFilterCategory] = useState('')
-  const [filterComplexity, setFilterComplexity] = useState('')
+  const [filterType, setFilterType] = useState('')
   const [sortBy, setSortBy] = useState<'score' | 'date' | 'title'>('score')
 
   const handleUpvote = (id: string) => {
@@ -163,8 +167,8 @@ export default function SuggestionsPage() {
   const filteredSuggestions = suggestions
     .filter(s => {
       const categoryMatch = !filterCategory || s.category === filterCategory
-      const complexityMatch = !filterComplexity || s.complexity === filterComplexity
-      return categoryMatch && complexityMatch
+      const typeMatch = !filterType || s.complexity === filterType
+      return categoryMatch && typeMatch
     })
     .sort((a, b) => {
       if (sortBy === 'score') {
@@ -190,6 +194,12 @@ export default function SuggestionsPage() {
         </div>
         {/* Main Content */}
         <div className="container mx-auto px-8 py-8">
+          {/* Database Management */}
+          <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <DatabaseManager />
+            <SampleDataLoader />
+          </div>
+          
           {/* Add Suggestion Button */}
           <div className="mb-8">
             <Link href="/suggestions/new" className="block">
@@ -226,13 +236,13 @@ export default function SuggestionsPage() {
                 </select>
                 
                 <select
-                  value={filterComplexity}
-                  onChange={(e) => setFilterComplexity(e.target.value)}
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
                   className="h-10 px-4 border border-input bg-background text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
                 >
-                  <option value="">All Complexities</option>
-                  {complexityLevels.map(level => (
-                    <option key={level.value} value={level.value}>{level.label}</option>
+                  <option value="">All Types</option>
+                  {suggestionTypes.map(type => (
+                    <option key={type.value} value={type.value}>{type.label}</option>
                   ))}
                 </select>
                 
@@ -331,9 +341,9 @@ export default function SuggestionsPage() {
                         </Badge>
                         
                         <Badge className={cn(
-                          complexityLevels.find(l => l.value === suggestion.complexity)?.color
+                          suggestionTypes.find(t => t.value === suggestion.complexity)?.color
                         )}>
-                          {complexityLevels.find(l => l.value === suggestion.complexity)?.label}
+                          {suggestionTypes.find(t => t.value === suggestion.complexity)?.label}
                         </Badge>
                         
                         <Badge className={cn(
@@ -423,9 +433,9 @@ export default function SuggestionsPage() {
                               
                               <Badge className={cn(
                                 'text-xs',
-                                complexityLevels.find(l => l.value === suggestion.complexity)?.color
+                                suggestionTypes.find(t => t.value === suggestion.complexity)?.color
                               )}>
-                                {complexityLevels.find(l => l.value === suggestion.complexity)?.label}
+                                {suggestionTypes.find(t => t.value === suggestion.complexity)?.label}
                               </Badge>
                               
                               <Badge className={cn(

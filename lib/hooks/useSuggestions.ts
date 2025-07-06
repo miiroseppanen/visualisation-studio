@@ -6,7 +6,7 @@ import { VisualizationGenerator, GeneratedVisualization } from '../services/visu
 interface UseSuggestionsOptions {
   autoLoad?: boolean
   filters?: SuggestionFilters
-  providerType?: 'local' | 'api' | 'file'
+  providerType?: 'local' | 'api' | 'file' | 'sqlite'
   providerConfig?: any
 }
 
@@ -47,6 +47,9 @@ interface UseSuggestionsReturn {
   // Export/Import
   exportSuggestions: () => Promise<string>
   importSuggestions: (jsonData: string) => Promise<void>
+  
+  // Database management
+  clearAllSuggestions: () => Promise<void>
   
   // Utility
   refresh: () => Promise<void>
@@ -239,6 +242,22 @@ export function useSuggestions(options: UseSuggestionsOptions = {}): UseSuggesti
     }
   }, [service, loadSuggestions])
 
+  // Database management
+  const clearAllSuggestions = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      await service.clearAllSuggestions()
+      await loadSuggestions() // Refresh the list
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to clear suggestions')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }, [service, loadSuggestions])
+
   // Utility
   const refresh = useCallback(async () => {
     await loadSuggestions()
@@ -278,6 +297,9 @@ export function useSuggestions(options: UseSuggestionsOptions = {}): UseSuggesti
     // Export/Import
     exportSuggestions,
     importSuggestions,
+    
+    // Database management
+    clearAllSuggestions,
     
     // Utility
     refresh,
