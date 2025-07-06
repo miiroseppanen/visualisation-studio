@@ -179,7 +179,91 @@ export default function CellularAutomataPage() {
     }, 1000 / animationSettings.speed)
 
     return () => clearInterval(interval)
-  }, [animationSettings.isAnimating, animationSettings.speed, currentRule, isClient])
+  }, [animationSettings.isAnimating, animationSettings.speed, currentRule, isClient, stepSimulation])
+
+  // Render loop for continuous rendering
+  useEffect(() => {
+    if (!isClient || !canvasRef.current) return
+
+    let renderFrameId: number | null = null
+
+    const render = () => {
+      const canvas = canvasRef.current
+      if (!canvas) return
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+
+      // Clear canvas
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
+
+      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+      // Draw cells
+      grid.forEach(row => {
+        row.forEach(cell => {
+          if (!cell.alive) return
+
+          let color: string
+          switch (colorMode) {
+            case 'binary':
+              color = isDark ? '#ffffff' : '#000000'
+              break
+            case 'age':
+              const ageHue = (cell.age * 20) % 360
+              color = `hsl(${ageHue}, 70%, 50%)`
+              break
+            case 'neighbors':
+              const neighbors = countNeighbors(cell.x, cell.y)
+              const neighborHue = (neighbors * 40) % 360
+              color = `hsl(${neighborHue}, 70%, 50%)`
+              break
+            default:
+              color = isDark ? '#ffffff' : '#000000'
+          }
+
+          ctx.fillStyle = color
+          ctx.fillRect(
+            cell.x * cellSize,
+            cell.y * cellSize,
+            cellSize - 1,
+            cellSize - 1
+          )
+        })
+      })
+
+      // Draw grid lines
+      if (showGrid) {
+        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+        ctx.lineWidth = 1
+
+        for (let x = 0; x <= gridSize; x++) {
+          ctx.beginPath()
+          ctx.moveTo(x * cellSize, 0)
+          ctx.lineTo(x * cellSize, gridSize * cellSize)
+          ctx.stroke()
+        }
+
+        for (let y = 0; y <= gridSize; y++) {
+          ctx.beginPath()
+          ctx.moveTo(0, y * cellSize)
+          ctx.lineTo(gridSize * cellSize, y * cellSize)
+          ctx.stroke()
+        }
+      }
+
+      renderFrameId = requestAnimationFrame(render)
+    }
+
+    renderFrameId = requestAnimationFrame(render)
+
+    return () => {
+      if (renderFrameId) {
+        cancelAnimationFrame(renderFrameId)
+      }
+    }
+  }, [grid, showGrid, colorMode, cellSize, theme, isClient, countNeighbors])
 
   // Handle pause all animations
   useEffect(() => {
@@ -210,75 +294,6 @@ export default function CellularAutomataPage() {
       handlePauseAllAnimations()
     }
   }, [])
-
-  // Render loop
-  useEffect(() => {
-    if (!isClient || !canvasRef.current) return
-
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    // Clear canvas
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-    ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
-
-    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-
-    // Draw cells
-    grid.forEach(row => {
-      row.forEach(cell => {
-        if (!cell.alive) return
-
-        let color: string
-        switch (colorMode) {
-          case 'binary':
-            color = isDark ? '#ffffff' : '#000000'
-            break
-          case 'age':
-            const ageHue = (cell.age * 20) % 360
-            color = `hsl(${ageHue}, 70%, 50%)`
-            break
-          case 'neighbors':
-            const neighbors = countNeighbors(cell.x, cell.y)
-            const neighborHue = (neighbors * 40) % 360
-            color = `hsl(${neighborHue}, 70%, 50%)`
-            break
-          default:
-            color = isDark ? '#ffffff' : '#000000'
-        }
-
-        ctx.fillStyle = color
-        ctx.fillRect(
-          cell.x * cellSize,
-          cell.y * cellSize,
-          cellSize - 1,
-          cellSize - 1
-        )
-      })
-    })
-
-    // Draw grid lines
-    if (showGrid) {
-      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-      ctx.lineWidth = 1
-
-      for (let x = 0; x <= gridSize; x++) {
-        ctx.beginPath()
-        ctx.moveTo(x * cellSize, 0)
-        ctx.lineTo(x * cellSize, gridSize * cellSize)
-        ctx.stroke()
-      }
-
-      for (let y = 0; y <= gridSize; y++) {
-        ctx.beginPath()
-        ctx.moveTo(0, y * cellSize)
-        ctx.lineTo(gridSize * cellSize, y * cellSize)
-        ctx.stroke()
-      }
-    }
-
-  }, [grid, showGrid, colorMode, cellSize, theme, isClient])
 
   // Handle canvas click
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {

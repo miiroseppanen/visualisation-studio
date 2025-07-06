@@ -9,7 +9,7 @@ import ParticleSettings from '@/components/flow-field/ParticleSettings'
 import { AnimationControls } from '@/components/flow-field/AnimationControls'
 import type { FlowFieldAnimationSettings, FlowFieldPanelState } from '@/lib/types'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
-import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
+import { registerAnimationFrame, unregisterAnimationFrame, updateTrailEfficiently } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { useTheme } from '@/components/ui/ThemeProvider'
@@ -266,6 +266,8 @@ export default function FlowFieldPage() {
   useEffect(() => {
     if (!animationSettings.isAnimating || !isClient) return
 
+    let frameId: number | null = null
+
     const animate = () => {
       setParticles(prevParticles => 
         prevParticles.map(particle => {
@@ -342,21 +344,18 @@ export default function FlowFieldPage() {
           const finalX = newX < 0 ? width : newX > width ? 0 : newX
           const finalY = newY < 0 ? height : newY > height ? 0 : newY
 
-          // Update trail
-          const newTrail = [...particle.trail, { 
-            x: particle.x, 
-            y: particle.y, 
-            life: 1, 
-            phase: particle.phase 
-          }]
-          if (newTrail.length > particle.maxTrailLength) {
-            newTrail.shift()
-          }
-
-          // Fade trail
-          newTrail.forEach(point => {
-            point.life *= 0.95
-          })
+          // Update trail more efficiently
+          const newTrail = updateTrailEfficiently(
+            particle.trail,
+            { 
+              x: particle.x, 
+              y: particle.y, 
+              life: 1, 
+              phase: particle.phase 
+            },
+            particle.maxTrailLength,
+            0.95
+          )
 
           return {
             ...particle,
@@ -372,7 +371,7 @@ export default function FlowFieldPage() {
         }).filter(particle => particle.life > 0)
       )
 
-      // Update wave functions
+      // Update wave functions more efficiently
       setWaveFunctions(prevWaves => 
         prevWaves.map(wave => ({
           ...wave,
@@ -382,19 +381,25 @@ export default function FlowFieldPage() {
       )
 
       setAnimationSettings(prev => ({ ...prev, time: prev.time + 0.02 }))
-      const frameId = requestAnimationFrame(animate)
+      
+      frameId = requestAnimationFrame(animate)
       animationRef.current = frameId
       registerAnimationFrame(frameId)
     }
 
-    const frameId = requestAnimationFrame(animate)
+    frameId = requestAnimationFrame(animate)
     animationRef.current = frameId
     registerAnimationFrame(frameId)
 
     return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId)
+        unregisterAnimationFrame(frameId)
+      }
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
       }
     }
   }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, isClient])

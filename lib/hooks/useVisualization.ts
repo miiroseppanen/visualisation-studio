@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import type { Pole } from '../types'
+import { createAnimationLoop, createCleanupManager, createDebouncedResizeHandler } from '@/lib/utils'
 
 // Generic types for the unified hook
 export interface VisualizationState<TSettings, TAnimationSettings, TPanelState> {
@@ -88,29 +89,17 @@ export function useVisualization<TSettings, TAnimationSettings, TPanelState>(
     updateTime: (time: number) => void,
     frameTime: number = 16
   ) => {
-    if (isAnimating) {
-      const animate = () => {
-        updateTime(frameTime)
-        animationRef.current = requestAnimationFrame(animate)
-      }
-      animationRef.current = requestAnimationFrame(animate)
-    } else {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
-    }
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
-    }
+    return createAnimationLoop(() => {
+      updateTime(frameTime)
+    }, isAnimating)
   }, [])
 
   // Canvas utilities
   const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
+
+    const cleanupManager = createCleanupManager()
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect()
@@ -136,17 +125,22 @@ export function useVisualization<TSettings, TAnimationSettings, TPanelState>(
 
     resizeCanvas()
     
+    // Use debounced resize handler to prevent excessive resizing
+    const debouncedResize = createDebouncedResizeHandler(resizeCanvas, 100)
+    
     // Use ResizeObserver for more reliable resize detection
-    const resizeObserver = new ResizeObserver(resizeCanvas)
+    const resizeObserver = new ResizeObserver(debouncedResize)
     resizeObserver.observe(canvas)
     
     // Also listen for window resize for viewport changes
-    window.addEventListener('resize', resizeCanvas)
+    window.addEventListener('resize', debouncedResize)
     
-    return () => {
+    cleanupManager.add(() => {
       resizeObserver.disconnect()
-      window.removeEventListener('resize', resizeCanvas)
-    }
+      window.removeEventListener('resize', debouncedResize)
+    })
+    
+    return cleanupManager.cleanup
   }, [])
 
   return {

@@ -191,23 +191,30 @@ export default function SoundWavePage() {
   useEffect(() => {
     if (!animationSettings.isAnimating || !isClient) return
 
+    let frameId: number | null = null
+
     const animate = () => {
       setAnimationSettings(prev => ({ ...prev, time: prev.time + 0.02 * prev.waveSpeed }))
       generateWaveData()
       
-      const frameId = requestAnimationFrame(animate)
+      frameId = requestAnimationFrame(animate)
       animationRef.current = frameId
       registerAnimationFrame(frameId)
     }
 
-    const frameId = requestAnimationFrame(animate)
+    frameId = requestAnimationFrame(animate)
     animationRef.current = frameId
     registerAnimationFrame(frameId)
 
     return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId)
+        unregisterAnimationFrame(frameId)
+      }
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
       }
     }
   }, [animationSettings.isAnimating, animationSettings.waveSpeed, isClient])

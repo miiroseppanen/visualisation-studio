@@ -292,6 +292,8 @@ export default function FractalTreePage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    let renderFrameId: number | null = null
+
     const render = () => {
       // Clear canvas
       ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
@@ -308,9 +310,15 @@ export default function FractalTreePage() {
     if (animationSettings.isAnimating) {
       const animate = () => {
         render()
-        requestAnimationFrame(animate)
+        renderFrameId = requestAnimationFrame(animate)
       }
-      requestAnimationFrame(animate)
+      renderFrameId = requestAnimationFrame(animate)
+    }
+
+    return () => {
+      if (renderFrameId) {
+        cancelAnimationFrame(renderFrameId)
+      }
     }
   }, [tree, showBranches, showLeaves, theme, isClient, animationSettings.isAnimating])
 

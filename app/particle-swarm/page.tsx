@@ -9,7 +9,7 @@ import SwarmSettings from '@/components/particle-swarm/SwarmSettings'
 import BehaviorSettings from '@/components/particle-swarm/BehaviorSettings'
 import type { ParticleSwarmAnimationSettings, ParticleSwarmPanelState } from '@/lib/types'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
-import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
+import { registerAnimationFrame, unregisterAnimationFrame, updateTrailEfficiently } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
 
 interface Particle {
@@ -228,6 +228,8 @@ export default function ParticleSwarmPage() {
   useEffect(() => {
     if (!animationSettings.isAnimating || !isClient) return
 
+    let frameId: number | null = null
+
     const animate = () => {
       setParticles(prevParticles => {
         const canvas = canvasRef.current
@@ -266,16 +268,13 @@ export default function ParticleSwarmPage() {
           if (newY < 0) newY = height
           if (newY > height) newY = 0
 
-          // Update trail
-          const newTrail = [...particle.trail, { x: particle.x, y: particle.y, opacity: 1 }]
-          if (newTrail.length > particle.maxTrailLength) {
-            newTrail.shift()
-          }
-
-          // Fade trail
-          newTrail.forEach(point => {
-            point.opacity *= 0.95
-          })
+          // Update trail more efficiently
+          const newTrail = updateTrailEfficiently(
+            particle.trail,
+            { x: particle.x, y: particle.y, opacity: 1 },
+            particle.maxTrailLength,
+            0.95
+          )
 
           return {
             ...particle,
@@ -289,19 +288,25 @@ export default function ParticleSwarmPage() {
       })
 
       setAnimationSettings(prev => ({ ...prev, time: prev.time + animationSettings.speed * 0.02 }))
-      const frameId = requestAnimationFrame(animate)
+      
+      frameId = requestAnimationFrame(animate)
       animationRef.current = frameId
       registerAnimationFrame(frameId)
     }
 
-    const frameId = requestAnimationFrame(animate)
+    frameId = requestAnimationFrame(animate)
     animationRef.current = frameId
     registerAnimationFrame(frameId)
 
     return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId)
+        unregisterAnimationFrame(frameId)
+      }
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
       }
     }
   }, [animationSettings.isAnimating, animationSettings.speed, isClient, cohesionStrength, separationStrength, alignmentStrength, attractionStrength, maxSpeed, perceptionRadius, attractors])
