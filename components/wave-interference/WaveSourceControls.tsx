@@ -10,6 +10,7 @@ import { Plus, Radio, ChevronDown, ChevronRight, RotateCcw } from 'lucide-react'
 import { ListCard } from '@/components/ui/list-card'
 import { CollapsibleHeader } from '@/components/ui/collapsible-header'
 import { COLOR_PALETTE } from '@/lib/constants'
+import { useTranslation } from 'react-i18next'
 
 interface WaveSource {
   id: string
@@ -57,16 +58,18 @@ export default function WaveSourceControls({
   onSetShowWavefronts,
   onUpdateSource
 }: WaveSourceControlsProps) {
+  const { t } = useTranslation()
+  
   const sourceTypeOptions = [
     {
       value: 'sine',
-      label: 'Sine Wave',
+      label: t('visualizationSettings.sineWave'),
       icon: <Radio className="w-4 h-4 text-white" />,
       color: COLOR_PALETTE.positive
     },
     {
       value: 'cosine',
-      label: 'Cosine Wave',
+      label: t('visualizationSettings.cosineWave'),
       icon: <Radio className="w-4 h-4 text-white" />,
       color: COLOR_PALETTE.negative
     }
@@ -80,13 +83,13 @@ export default function WaveSourceControls({
 
   return (
     <CollapsibleSection
-      title={`Wave Sources (${waveSources.filter(s => s.active).length})`}
+      title={`${t('visualizationSettings.waveSources')} (${waveSources.filter(s => s.active).length})`}
       defaultOpen={expanded}
     >
       <div className="space-y-4 mt-4">
         {/* Add Source Controls */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-900 dark:text-white">Add New Source</Label>
+          <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.addNewSource')}</Label>
           
           {/* Add Source Button */}
           <Button
@@ -96,13 +99,13 @@ export default function WaveSourceControls({
             className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             <Plus className="w-4 h-4 mr-2" />
-            {isAddingSource ? 'Cancel Adding' : 'Add Wave Source'}
+            {isAddingSource ? t('visualizationSettings.cancelAdding') : t('visualizationSettings.addWaveSource')}
           </Button>
           
           {/* Quick Type Selection for New Sources */}
           {isAddingSource && (
             <div className="space-y-2">
-              <Label className="text-xs text-gray-600 dark:text-gray-300">Default Wave Type for New Sources</Label>
+              <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.defaultWaveType')}</Label>
               <div className="flex space-x-2">
                 <Button
                   variant={selectedSourceType === 'sine' ? 'default' : 'outline'}
@@ -111,7 +114,7 @@ export default function WaveSourceControls({
                   className="flex-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <Radio className="w-3 h-3 mr-1" />
-                  Sine
+                  {t('visualizationSettings.sine')}
                 </Button>
                 <Button
                   variant={selectedSourceType === 'cosine' ? 'default' : 'outline'}
@@ -120,7 +123,7 @@ export default function WaveSourceControls({
                   className="flex-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <Radio className="w-3 h-3 mr-1" />
-                  Cosine
+                  {t('visualizationSettings.cosine')}
                 </Button>
               </div>
             </div>
@@ -130,10 +133,10 @@ export default function WaveSourceControls({
         {/* Global Controls */}
         {waveSources.length > 0 && (
           <div className="space-y-3">
-            <Label className="text-sm font-medium text-gray-900 dark:text-white">Global Wave Settings</Label>
+            <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.globalWaveSettings')}</Label>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label className="text-xs text-gray-600 dark:text-gray-300">All Sources Frequency</Label>
+                <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.allSourcesFrequency')}</Label>
                 <span className="text-xs text-gray-600 dark:text-gray-300">
                   {waveSources.length > 0 ? Math.round(waveSources.reduce((sum, source) => sum + source.frequency, 0) / waveSources.length * 10) / 10 : 0}
                 </span>
@@ -159,14 +162,14 @@ export default function WaveSourceControls({
         {/* Existing Sources */}
         {waveSources.length > 0 && (
           <div className="space-y-3">
-            <Label className="text-sm font-medium text-gray-900 dark:text-white">Current Sources</Label>
+            <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.currentSources')}</Label>
             {waveSources.map(source => (
               <div key={source.id} className="space-y-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <ListCard
                   icon={<Radio className="w-8 h-8 text-white" />}
                   iconColor={source.active ? COLOR_PALETTE.positive : COLOR_PALETTE.negative}
-                  title={`Source ${source.id}`}
-                  subtitle={`Position: (${Math.round(source.x)}, ${Math.round(source.y)})`}
+                  title={`${t('visualizationSettings.source')} ${source.id}`}
+                  subtitle={`${t('visualizationSettings.position')}: (${Math.round(source.x)}, ${Math.round(source.y)})`}
                   onRemove={() => onRemoveSource(source.id)}
                   typeOptions={sourceTypeOptions}
                   currentType={selectedSourceType}
@@ -177,7 +180,7 @@ export default function WaveSourceControls({
                 {/* Frequency Slider */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <Label className="text-xs text-gray-600 dark:text-gray-300">Frequency</Label>
+                    <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.frequency')}</Label>
                     <span className="text-xs text-gray-600 dark:text-gray-300">{source.frequency}</span>
                   </div>
                   <Slider
@@ -197,7 +200,7 @@ export default function WaveSourceControls({
                 {/* Amplitude Slider */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <Label className="text-xs text-gray-600 dark:text-gray-300">Amplitude</Label>
+                    <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.amplitude')}</Label>
                     <span className="text-xs text-gray-600 dark:text-gray-300">{source.amplitude}</span>
                   </div>
                   <Slider
@@ -217,7 +220,7 @@ export default function WaveSourceControls({
                 {/* Wavelength Slider */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <Label className="text-xs text-gray-600 dark:text-gray-300">Wavelength</Label>
+                    <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.wavelength')}</Label>
                     <span className="text-xs text-gray-600 dark:text-gray-300">{source.wavelength}</span>
                   </div>
                   <Slider
@@ -245,7 +248,7 @@ export default function WaveSourceControls({
                       }
                     }}
                   />
-                  <Label htmlFor={`source-active-${source.id}`} className="text-sm">Active</Label>
+                  <Label htmlFor={`source-active-${source.id}`} className="text-sm">{t('visualizationSettings.active')}</Label>
                 </div>
               </div>
             ))}
@@ -254,7 +257,7 @@ export default function WaveSourceControls({
 
         {/* Display Options */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-900 dark:text-white">Display Options</Label>
+          <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.displayOptions')}</Label>
           
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -262,7 +265,7 @@ export default function WaveSourceControls({
               checked={showWaveSources}
               onCheckedChange={(checked) => onSetShowWaveSources(checked as boolean)}
             />
-            <Label htmlFor="showWaveSources" className="text-sm text-gray-900 dark:text-white">Show Wave Sources</Label>
+            <Label htmlFor="showWaveSources" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showWaveSources')}</Label>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -271,7 +274,7 @@ export default function WaveSourceControls({
               checked={showInterference}
               onCheckedChange={(checked) => onSetShowInterference(checked as boolean)}
             />
-            <Label htmlFor="showInterference" className="text-sm text-gray-900 dark:text-white">Show Interference Pattern</Label>
+            <Label htmlFor="showInterference" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showInterferencePattern')}</Label>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -280,13 +283,13 @@ export default function WaveSourceControls({
               checked={showWavefronts}
               onCheckedChange={(checked) => onSetShowWavefronts(checked as boolean)}
             />
-            <Label htmlFor="showWavefronts" className="text-sm text-gray-900 dark:text-white">Show Wavefronts</Label>
+            <Label htmlFor="showWavefronts" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showWavefronts')}</Label>
           </div>
         </div>
 
         {waveSources.length === 0 && (
           <div className="text-center py-4 text-sm text-gray-600 dark:text-gray-300">
-            No wave sources yet. Use the controls above to add wave sources.
+            {t('visualizationSettings.noWaveSources')}
           </div>
         )}
       </div>

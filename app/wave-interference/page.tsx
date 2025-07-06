@@ -10,7 +10,6 @@ import WaveSettings from '@/components/wave-interference/WaveSettings'
 import type { WaveInterferenceAnimationSettings, WaveInterferencePanelState } from '@/lib/types'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
-import { useTheme } from '@/components/ui/ThemeProvider'
 
 interface WaveSource {
   id: string
@@ -23,13 +22,20 @@ interface WaveSource {
   active: boolean
 }
 
+interface InterferenceLine {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  intensity: number
+}
+
 export default function WaveInterferencePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const renderFrameRef = useRef<number>()
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
-  const { theme } = useTheme()
 
   // Wave sources state
   const [waveSources, setWaveSources] = useState<WaveSource[]>([
@@ -42,7 +48,7 @@ export default function WaveInterferencePage() {
   const [showWaveSources, setShowWaveSources] = useState(true)
   const [showInterference, setShowInterference] = useState(true)
   const [showWavefronts, setShowWavefronts] = useState(true)
-  const [resolution, setResolution] = useState(2)
+  const [lineDensity, setLineDensity] = useState(50)
   const [selectedSourceType, setSelectedSourceType] = useState<'sine' | 'cosine'>('sine')
   const [isAddingSource, setIsAddingSource] = useState(false)
 
@@ -120,6 +126,52 @@ export default function WaveInterferencePage() {
     return totalAmplitude
   }, [waveSources, selectedSourceType, animationSettings.waveSpeed])
 
+  // Generate interference lines
+  const generateInterferenceLines = useCallback((width: number, height: number): InterferenceLine[] => {
+    const lines: InterferenceLine[] = []
+    const spacing = Math.max(5, Math.min(20, 1000 / lineDensity))
+    
+    // Generate horizontal lines
+    for (let y = 0; y < height; y += spacing) {
+      for (let x = 0; x < width - spacing; x += spacing) {
+        const amplitude1 = calculateWaveAmplitude(x, y, animationSettings.time)
+        const amplitude2 = calculateWaveAmplitude(x + spacing, y, animationSettings.time)
+        
+        const intensity = Math.abs(amplitude1 - amplitude2) / 100
+        if (intensity > 0.1) {
+          lines.push({
+            x1: x,
+            y1: y,
+            x2: x + spacing,
+            y2: y,
+            intensity: Math.min(1, intensity)
+          })
+        }
+      }
+    }
+    
+    // Generate vertical lines
+    for (let x = 0; x < width; x += spacing) {
+      for (let y = 0; y < height - spacing; y += spacing) {
+        const amplitude1 = calculateWaveAmplitude(x, y, animationSettings.time)
+        const amplitude2 = calculateWaveAmplitude(x, y + spacing, animationSettings.time)
+        
+        const intensity = Math.abs(amplitude1 - amplitude2) / 100
+        if (intensity > 0.1) {
+          lines.push({
+            x1: x,
+            y1: y,
+            x2: x,
+            y2: y + spacing,
+            intensity: Math.min(1, intensity)
+          })
+        }
+      }
+    }
+    
+    return lines
+  }, [calculateWaveAmplitude, animationSettings.time, lineDensity])
+
   // Animation loop
   useEffect(() => {
     if (!animationSettings.isAnimating || !isClient) return
@@ -193,49 +245,43 @@ export default function WaveInterferencePage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Clear canvas
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-    ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
-
     const width = canvas.width / window.devicePixelRatio
     const height = canvas.height / window.devicePixelRatio
 
-    // Draw interference pattern
+    // Clear canvas with white background
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, width, height)
+
+    // Draw interference pattern as lines
     if (showInterference) {
-      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      const lines = generateInterferenceLines(width, height)
       
-      for (let x = 0; x < width; x += resolution) {
-        for (let y = 0; y < height; y += resolution) {
-          const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
-          const normalizedAmplitude = (amplitude + 100) / 200 // Normalize to 0-1
-          
-          // Create interference pattern colors
-          const intensity = Math.abs(normalizedAmplitude - 0.5) * 2
-          const alpha = 0.3 + intensity * 0.7
-          
-          const color = isDark 
-            ? `rgba(255, 255, 255, ${alpha})`
-            : `rgba(0, 0, 0, ${alpha})`
-          
-          ctx.fillStyle = color
-          ctx.fillRect(x, y, resolution, resolution)
-        }
-      }
+      ctx.strokeStyle = '#000000'
+      ctx.lineCap = 'round'
+      
+      lines.forEach(line => {
+        ctx.lineWidth = line.intensity * 3 + 0.5
+        ctx.globalAlpha = line.intensity * 0.8 + 0.2
+        ctx.beginPath()
+        ctx.moveTo(line.x1, line.y1)
+        ctx.lineTo(line.x2, line.y2)
+        ctx.stroke()
+      })
+      
+      ctx.globalAlpha = 1
     }
 
-    // Draw wavefronts
+    // Draw wavefronts as circles
     if (showWavefronts) {
-      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      const wavefrontColor = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
-      
-      ctx.strokeStyle = wavefrontColor
+      ctx.strokeStyle = '#000000'
       ctx.lineWidth = 1
+      ctx.globalAlpha = 0.3
 
       waveSources.forEach(source => {
         if (!source.active) return
 
         const phase = source.phase + (animationSettings.time * source.frequency * animationSettings.waveSpeed)
-        const wavefrontCount = 8
+        const wavefrontCount = 6
 
         for (let i = 0; i < wavefrontCount; i++) {
           const radius = (i * source.wavelength) + (phase * source.wavelength / (2 * Math.PI))
@@ -245,17 +291,17 @@ export default function WaveInterferencePage() {
           ctx.stroke()
         }
       })
+      
+      ctx.globalAlpha = 1
     }
 
-    // Draw wave sources
+    // Draw wave sources with colors
     if (showWaveSources) {
       waveSources.forEach(source => {
         if (!source.active) return
 
-        const color = source.active ? '#3b82f6' : '#6b7280'
-        
-        // Draw source circle
-        ctx.fillStyle = color
+        // Draw source circle with color
+        ctx.fillStyle = source.active ? '#3b82f6' : '#6b7280'
         ctx.beginPath()
         ctx.arc(source.x, source.y, 8, 0, 2 * Math.PI)
         ctx.fill()
@@ -273,7 +319,7 @@ export default function WaveInterferencePage() {
         ctx.fillText(source.id, source.x, source.y)
       })
     }
-  }, [showInterference, showWavefronts, showWaveSources, resolution, waveSources, calculateWaveAmplitude, animationSettings.time, theme])
+  }, [showInterference, showWavefronts, showWaveSources, waveSources, generateInterferenceLines, animationSettings.time])
 
   // Render loop with proper cleanup
   useEffect(() => {
@@ -338,9 +384,18 @@ export default function WaveInterferencePage() {
     const canvas = canvasRef.current
     if (!canvas) return
 
+    const width = canvas.width / window.devicePixelRatio
+    const height = canvas.height / window.devicePixelRatio
+    const lines = generateInterferenceLines(width, height)
+
     const svg = `
-      <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
+      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="white"/>
+        ${lines.map(line => `
+          <line x1="${line.x1}" y1="${line.y1}" x2="${line.x2}" y2="${line.y2}" 
+                stroke="black" stroke-width="${line.intensity * 3 + 0.5}" 
+                opacity="${line.intensity * 0.8 + 0.2}"/>
+        `).join('')}
         ${waveSources.map(source => `
           <circle cx="${source.x}" cy="${source.y}" r="8" fill="${source.active ? '#3b82f6' : '#6b7280'}"/>
           <text x="${source.x}" y="${source.y}" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12">${source.id}</text>
@@ -355,7 +410,7 @@ export default function WaveInterferencePage() {
     link.download = 'wave-interference.svg'
     link.click()
     URL.revokeObjectURL(url)
-  }, [waveSources])
+  }, [waveSources, generateInterferenceLines])
 
   // Reset to defaults
   const resetToDefaults = useCallback(() => {
@@ -373,7 +428,7 @@ export default function WaveInterferencePage() {
     setShowWaveSources(true)
     setShowInterference(true)
     setShowWavefronts(true)
-    setResolution(2)
+    setLineDensity(50)
     setSelectedSourceType('sine')
     setIsAddingSource(false)
     setIsDragging(false)
@@ -399,24 +454,24 @@ export default function WaveInterferencePage() {
       setIsDragging(true)
       setDraggedSourceId(clickedSource.id)
     } else if (isAddingSource) {
-      // Add new source at click location
+      // Add new source
+      const newId = (Math.max(...waveSources.map(s => parseInt(s.id))) + 1).toString()
       const newSource: WaveSource = {
-        id: Date.now().toString(),
+        id: newId,
         x,
         y,
-        frequency: 2,
+        frequency: selectedSourceType === 'sine' ? 2 : 1.5,
         amplitude: 50,
         phase: 0,
         wavelength: 100,
         active: true
       }
       setWaveSources(prev => [...prev, newSource])
-      setIsDragging(true)
-      setDraggedSourceId(newSource.id)
+      setIsAddingSource(false)
     }
-  }, [waveSources, isAddingSource])
+  }, [waveSources, isAddingSource, selectedSourceType])
 
-  // Handle canvas mouse move for dragging sources
+  // Handle canvas mouse move for dragging
   const handleCanvasMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDragging || !draggedSourceId) return
 
@@ -427,23 +482,17 @@ export default function WaveInterferencePage() {
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
 
-    setWaveSources(prev => prev.map(source => 
-      source.id === draggedSourceId ? { ...source, x, y } : source
-    ))
-  }, [isDragging, draggedSourceId])
+    updateSource(draggedSourceId, { x, y })
+  }, [isDragging, draggedSourceId, updateSource])
 
-  // Handle canvas mouse up to stop dragging
+  // Handle canvas mouse up
   const handleCanvasMouseUp = useCallback(() => {
     setIsDragging(false)
     setDraggedSourceId(null)
   }, [])
 
   if (!isClient) {
-    return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading wave interference visualizer...</div>
-      </div>
-    )
+    return <div>Loading...</div>
   }
 
   return (
@@ -454,7 +503,7 @@ export default function WaveInterferencePage() {
         <>
           Mode: Wave Interference | 
           Sources: {waveSources.filter(s => s.active).length} | 
-          Resolution: {resolution}px | 
+          Line Density: {lineDensity} | 
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
       }
@@ -471,9 +520,7 @@ export default function WaveInterferencePage() {
             showInterference={showInterference}
             showWavefronts={showWavefronts}
             expanded={panelState.waveSourcesExpanded}
-            onToggleExpanded={() => setPanelState(prev => ({ 
-              ...prev, waveSourcesExpanded: !prev.waveSourcesExpanded 
-            }))}
+            onToggleExpanded={() => setPanelState(prev => ({ ...prev, waveSourcesExpanded: !prev.waveSourcesExpanded }))}
             onSetSelectedSourceType={setSelectedSourceType}
             onSetIsAddingSource={setIsAddingSource}
             onRemoveSource={removeSource}
@@ -482,31 +529,27 @@ export default function WaveInterferencePage() {
             onSetShowWavefronts={setShowWavefronts}
             onUpdateSource={updateSource}
           />
-
+          
           <WaveSettings
-            resolution={resolution}
+            resolution={lineDensity}
             expanded={panelState.waveSettingsExpanded}
-            onToggleExpanded={() => setPanelState(prev => ({ 
-              ...prev, waveSettingsExpanded: !prev.waveSettingsExpanded 
-            }))}
-            onSetResolution={setResolution}
+            onToggleExpanded={() => setPanelState(prev => ({ ...prev, waveSettingsExpanded: !prev.waveSettingsExpanded }))}
+            onSetResolution={setLineDensity}
           />
-
+          
           <AnimationControls
             settings={animationSettings}
             onSettingsChange={(updates) => setAnimationSettings(prev => ({ ...prev, ...updates }))}
             onReset={resetToDefaults}
             expanded={panelState.animationExpanded}
-            onToggleExpanded={() => setPanelState(prev => ({ 
-              ...prev, animationExpanded: !prev.animationExpanded 
-            }))}
+            onToggleExpanded={() => setPanelState(prev => ({ ...prev, animationExpanded: !prev.animationExpanded }))}
           />
         </div>
       }
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair dark:invert dark:hue-rotate-180"
+        className="w-full h-full cursor-crosshair"
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}
