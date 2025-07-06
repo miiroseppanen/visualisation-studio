@@ -89,6 +89,7 @@ export default function WaveInterferencePage() {
   const [showInterference, setShowInterference] = useState(true)
   const [showWavefronts, setShowWavefronts] = useState(true)
   const [showParticles, setShowParticles] = useState(true)
+  const [showCircles, setShowCircles] = useState(true)
   const [smoothness, setSmoothness] = useState(12) // Higher for better quality
   const [lineDensity, setLineDensity] = useState(8) // Control for amount of lines
   const [selectedSourceType, setSelectedSourceType] = useState<'sine' | 'cosine'>('sine')
@@ -425,7 +426,7 @@ export default function WaveInterferencePage() {
     })
     
     // Draw spreading wave circles
-    if (showParticles) {
+    if (showCircles) {
       particles.forEach(circle => {
         const alpha = Math.max(0, Math.min(1, circle.life))
         const size = Math.max(0.1, circle.size)
@@ -433,8 +434,9 @@ export default function WaveInterferencePage() {
         // Only draw if size is valid
         if (size <= 0) return
         
-        // Draw expanding circle with fade effect
-        ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`
+        // Draw expanding circle with fade effect (black and white)
+        const intensity = Math.floor(alpha * 255)
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White circles
         ctx.lineWidth = 2 * alpha // Thicker when young, thinner as it expands
         
         ctx.beginPath()
@@ -443,7 +445,7 @@ export default function WaveInterferencePage() {
         
         // Draw inner circle for more definition
         if (alpha > 0.3) {
-          ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 150).toString(16).padStart(2, '0')}`
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // Slightly dimmer inner circle
           ctx.lineWidth = 1
           ctx.beginPath()
           ctx.arc(circle.x, circle.y, size * 0.7, 0, 2 * Math.PI)
@@ -744,6 +746,7 @@ export default function WaveInterferencePage() {
     setShowInterference(true)
     setShowWavefronts(true)
     setShowParticles(true)
+    setShowCircles(true)
     setSmoothness(12)
     setLineDensity(8)
     setSelectedSourceType('sine')
@@ -845,6 +848,7 @@ export default function WaveInterferencePage() {
             showWaveSources={showWaveSources}
             showInterference={showInterference}
             showWavefronts={showWavefronts}
+            showCircles={showCircles}
             expanded={panelState.waveSourcesExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ ...prev, waveSourcesExpanded: !prev.waveSourcesExpanded }))}
             onSetSelectedSourceType={setSelectedSourceType}
@@ -853,6 +857,7 @@ export default function WaveInterferencePage() {
             onSetShowWaveSources={setShowWaveSources}
             onSetShowInterference={setShowInterference}
             onSetShowWavefronts={setShowWavefronts}
+            onSetShowCircles={setShowCircles}
             onUpdateSource={updateSource}
           />
 

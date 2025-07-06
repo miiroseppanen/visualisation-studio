@@ -402,6 +402,7 @@
     "showWaveSources": "Näytä aaltolähteet",
     "showInterferencePattern": "Näytä interferenssikuvio",
     "showWavefronts": "Näytä aaltoetäisyydet",
+    "showCircles": "Näytä ympyrät",
     "noWaveSources": "Ei aaltolähteitä vielä. Käytä yllä olevia ohjaimia lisätäksesi aaltolähteitä."
   },
   "about": {

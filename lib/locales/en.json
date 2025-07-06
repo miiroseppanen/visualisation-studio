@@ -414,6 +414,7 @@
     "showWaveSources": "Show Wave Sources",
     "showInterferencePattern": "Show Interference Pattern",
     "showWavefronts": "Show Wavefronts",
+    "showCircles": "Show Circles",
     "noWaveSources": "No wave sources yet. Use the controls above to add wave sources."
   },
   "about": {
