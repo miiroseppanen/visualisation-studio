@@ -685,7 +685,8 @@ export default function WaveInterferencePage() {
     if (clickedSource) {
       setIsDragging(true)
       setDraggedSourceId(clickedSource.id)
-    } else if (isAddingSource) {
+    } else {
+      // Always add a new source when clicking on empty space
       const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd']
       const newId = (Math.max(...waveSources.map(s => parseInt(s.id))) + 1).toString()
       const newSource: WaveSource = {
@@ -700,9 +701,8 @@ export default function WaveInterferencePage() {
         color: colors[Math.floor(Math.random() * colors.length)]
       }
       setWaveSources(prev => [...prev, newSource])
-      setIsAddingSource(false)
     }
-  }, [waveSources, isAddingSource, selectedSourceType])
+  }, [waveSources, selectedSourceType])
 
   // Handle canvas mouse move for dragging
   const handleCanvasMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -740,7 +740,7 @@ export default function WaveInterferencePage() {
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
       }
-      helpText="Click to add source, drag to move • Wheel to zoom • Use controls to adjust wave properties"
+      helpText="Click anywhere to add source, drag to move • Wheel to zoom • Use controls to adjust wave properties"
       panelOpen={panelState.isOpen}
       onPanelToggle={() => setPanelState(prev => ({ ...prev, isOpen: !prev.isOpen }))}
       settingsContent={
