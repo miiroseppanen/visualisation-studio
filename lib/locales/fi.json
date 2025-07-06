@@ -83,6 +83,15 @@
         "harmonicAnalysis": "Harmoninen analyysi"
       }
     },
+    "waveInterference2": {
+      "title": "Aaltojen interferenssi 2",
+      "description": "Edistynyt kvantti-inspiroitu aaltointerferenssi monimutkaisilla kuvioilla ja kokeellisella fysiikalla.",
+      "features": {
+        "quantumParticles": "Kvanttipartikkelisimulaatio",
+        "waveFunctionCollapse": "Aaltofunktion romahdus",
+        "experimentalPatterns": "Kokeelliset interferenssikuvioita"
+      }
+    },
     "particleSwarm": {
       "title": "Hiukkasparvi",
       "description": "Simuloi parvikäyttäytymistä ja kollektiivista älykkyyttä interaktiivisilla hiukkasjärjestelmillä.",

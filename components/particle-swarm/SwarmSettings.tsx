@@ -1,207 +1,152 @@
 'use client'
 
 import React from 'react'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Slider } from '@/components/ui/slider'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
-import { Plus, Magnet, ChevronDown, ChevronRight } from 'lucide-react'
-import { ListCard } from '@/components/ui/list-card'
-import { COLOR_PALETTE } from '@/lib/constants'
-import { useTranslation } from 'react-i18next'
-
-interface Attractor {
-  id: string
-  x: number
-  y: number
-  strength: number
-  radius: number
-  active: boolean
-}
+import { Slider } from '@/components/ui/slider'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 
 interface SwarmSettingsProps {
   particleCount: number
+  onParticleCountChange: (value: number) => void
+  particleSize: number
+  onParticleSizeChange: (value: number) => void
   showParticles: boolean
-  showTrails: boolean
+  onShowParticlesChange: (value: boolean) => void
   showAttractors: boolean
-  isAddingAttractor: boolean
-  attractors: Attractor[]
-  expanded: boolean
-  onToggleExpanded: () => void
-  onSetParticleCount: (count: number) => void
-  onSetShowParticles: (show: boolean) => void
-  onSetShowTrails: (show: boolean) => void
-  onSetShowAttractors: (show: boolean) => void
-  onSetIsAddingAttractor: (adding: boolean) => void
-  onRemoveAttractor: (id: string) => void
-  onUpdateAttractor?: (id: string, updates: Partial<Attractor>) => void
+  onShowAttractorsChange: (value: boolean) => void
+  showTrails: boolean
+  onShowTrailsChange: (value: boolean) => void
+  showConnections: boolean
+  onShowConnectionsChange: (value: boolean) => void
+  trailLength: number
+  onTrailLengthChange: (value: number) => void
+  connectionDistance: number
+  onConnectionDistanceChange: (value: number) => void
+  isExpanded: boolean
+  onToggleExpanded: (expanded: boolean) => void
 }
 
 export default function SwarmSettings({
   particleCount,
+  onParticleCountChange,
+  particleSize,
+  onParticleSizeChange,
   showParticles,
-  showTrails,
+  onShowParticlesChange,
   showAttractors,
-  isAddingAttractor,
-  attractors,
-  expanded,
-  onToggleExpanded,
-  onSetParticleCount,
-  onSetShowParticles,
-  onSetShowTrails,
-  onSetShowAttractors,
-  onSetIsAddingAttractor,
-  onRemoveAttractor,
-  onUpdateAttractor
+  onShowAttractorsChange,
+  showTrails,
+  onShowTrailsChange,
+  showConnections,
+  onShowConnectionsChange,
+  trailLength,
+  onTrailLengthChange,
+  connectionDistance,
+  onConnectionDistanceChange,
+  isExpanded,
+  onToggleExpanded
 }: SwarmSettingsProps) {
-  const { t } = useTranslation()
   return (
-         <CollapsibleSection
-       title={`${t('visualizationSettings.swarmSettings')} (${particleCount} ${t('visualizationSettings.particleCount').toLowerCase()})`}
-       defaultOpen={expanded}
-     >
-      <div className="space-y-4 mt-4">
+    <CollapsibleSection
+      title="Swarm Settings"
+      defaultOpen={isExpanded}
+    >
+      <div className="space-y-4">
         {/* Particle Count */}
         <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.particleCount')}</Label>
-            <span className="text-xs text-gray-600 dark:text-gray-300">{particleCount}</span>
-          </div>
+          <Label htmlFor="particle-count">Particle Count: {particleCount}</Label>
           <Slider
-            value={[particleCount]}
-            onValueChange={(value) => onSetParticleCount(value[0])}
+            id="particle-count"
+            min={50}
             max={500}
-            min={10}
             step={10}
+            value={[particleCount]}
+            onValueChange={(value) => onParticleCountChange(value[0])}
             className="w-full"
           />
         </div>
 
-        {/* Add Attractor Controls */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.addAttractor')}</Label>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onSetIsAddingAttractor(!isAddingAttractor)}
-            className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {isAddingAttractor ? t('visualizationSettings.cancelAdding') : t('visualizationSettings.addAttractor')}
-          </Button>
+        {/* Particle Size */}
+        <div className="space-y-2">
+          <Label htmlFor="particle-size">Particle Size: {particleSize}</Label>
+          <Slider
+            id="particle-size"
+            min={1}
+            max={8}
+            step={0.5}
+            value={[particleSize]}
+            onValueChange={(value) => onParticleSizeChange(value[0])}
+            className="w-full"
+          />
         </div>
 
-        {/* Existing Attractors */}
-        {attractors.length > 0 && (
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.attractors')}</Label>
-            {attractors.map(attractor => (
-              <div key={attractor.id} className="space-y-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <ListCard
-                  icon={<Magnet className="w-8 h-8 text-white" />}
-                  iconColor={attractor.active ? (attractor.strength > 0 ? COLOR_PALETTE.positive : COLOR_PALETTE.negative) : COLOR_PALETTE.neutral}
-                  title={`Attractor ${attractor.id}`}
-                  subtitle={`Position: (${Math.round(attractor.x)}, ${Math.round(attractor.y)})`}
-                  onRemove={() => onRemoveAttractor(attractor.id)}
-                />
-                
-                {/* Strength Slider */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.strength')}</Label>
-                    <span className="text-xs text-gray-600 dark:text-gray-300">{attractor.strength.toFixed(2)}</span>
-                  </div>
-                  <Slider
-                    value={[attractor.strength]}
-                    onValueChange={(value) => {
-                      if (onUpdateAttractor) {
-                        onUpdateAttractor(attractor.id, { strength: value[0] })
-                      }
-                    }}
-                    max={2}
-                    min={-2}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
+        {/* Connection Distance */}
+        <div className="space-y-2">
+          <Label htmlFor="connection-distance">Connection Distance: {connectionDistance}</Label>
+          <Slider
+            id="connection-distance"
+            min={20}
+            max={150}
+            step={5}
+            value={[connectionDistance]}
+            onValueChange={(value) => onConnectionDistanceChange(value[0])}
+            className="w-full"
+          />
+        </div>
 
-                {/* Radius Slider */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.radius')}</Label>
-                    <span className="text-xs text-gray-600 dark:text-gray-300">{attractor.radius}</span>
-                  </div>
-                  <Slider
-                    value={[attractor.radius]}
-                    onValueChange={(value) => {
-                      if (onUpdateAttractor) {
-                        onUpdateAttractor(attractor.id, { radius: value[0] })
-                      }
-                    }}
-                    max={200}
-                    min={20}
-                    step={10}
-                    className="w-full"
-                  />
-                </div>
+        {/* Trail Length */}
+        <div className="space-y-2">
+          <Label htmlFor="trail-length">Trail Length: {trailLength}</Label>
+          <Slider
+            id="trail-length"
+            min={5}
+            max={50}
+            step={1}
+            value={[trailLength]}
+            onValueChange={(value) => onTrailLengthChange(value[0])}
+            className="w-full"
+          />
+        </div>
 
-                {/* Active Toggle */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`attractor-active-${attractor.id}`}
-                    checked={attractor.active}
-                    onCheckedChange={(checked) => {
-                      if (onUpdateAttractor) {
-                        onUpdateAttractor(attractor.id, { active: checked as boolean })
-                      }
-                    }}
-                  />
-                  <Label htmlFor={`attractor-active-${attractor.id}`} className="text-sm">{t('visualizationSettings.active')}</Label>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Display Options */}
+        {/* Visibility Toggles */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.displayOptions')}</Label>
-          
           <div className="flex items-center space-x-2">
             <Checkbox
-              id="showParticles"
+              id="show-particles"
               checked={showParticles}
-              onCheckedChange={(checked) => onSetShowParticles(checked as boolean)}
+              onCheckedChange={onShowParticlesChange}
             />
-            <Label htmlFor="showParticles" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showParticles')}</Label>
+            <Label htmlFor="show-particles">Show Particles</Label>
           </div>
 
           <div className="flex items-center space-x-2">
             <Checkbox
-              id="showTrails"
-              checked={showTrails}
-              onCheckedChange={(checked) => onSetShowTrails(checked as boolean)}
-            />
-            <Label htmlFor="showTrails" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showTrails')}</Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="showAttractors"
+              id="show-attractors"
               checked={showAttractors}
-              onCheckedChange={(checked) => onSetShowAttractors(checked as boolean)}
+              onCheckedChange={onShowAttractorsChange}
             />
-            <Label htmlFor="showAttractors" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showAttractors')}</Label>
+            <Label htmlFor="show-attractors">Show Attractors</Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="show-trails"
+              checked={showTrails}
+              onCheckedChange={onShowTrailsChange}
+            />
+            <Label htmlFor="show-trails">Show Trails</Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="show-connections"
+              checked={showConnections}
+              onCheckedChange={onShowConnectionsChange}
+            />
+            <Label htmlFor="show-connections">Show Connections</Label>
           </div>
         </div>
-
-        {attractors.length === 0 && (
-          <div className="text-center py-4 text-sm text-gray-600 dark:text-gray-300">
-            {t('visualizationSettings.noAttractors')}
-          </div>
-        )}
       </div>
     </CollapsibleSection>
   )

@@ -1,4 +1,4 @@
-import { Grid3X3, Magnet, Wind, Mountain, Radio, Waves, Users, TreePine, Brain, Grid, Volume2 } from 'lucide-react'
+import { Grid3X3, Magnet, Wind, Mountain, Radio, Waves, Users, Brain, Grid, Volume2 } from 'lucide-react'
 
 export interface VisualizationOption {
   id: string
@@ -43,6 +43,14 @@ export const visualizationOptions: VisualizationOption[] = [
     category: 'field'
   },
   {
+    id: 'wave-interference-2',
+    name: 'Wave Interference 2',
+    path: '/wave-interference-2',
+    icon: Waves,
+    description: 'Advanced wave interference with complex patterns and harmonics',
+    category: 'field'
+  },
+  {
     id: 'particle-swarm',
     name: 'Particle Swarm',
     path: '/particle-swarm',
@@ -50,14 +58,7 @@ export const visualizationOptions: VisualizationOption[] = [
     description: 'Watch particles flock and swarm with emergent behavior',
     category: 'flow'
   },
-  {
-    id: 'fractal-tree',
-    name: 'Fractal Tree',
-    path: '/fractal-tree',
-    icon: TreePine,
-    description: 'Generate beautiful fractal trees with recursive branching',
-    category: 'terrain'
-  },
+
   {
     id: 'turbulence',
     name: 'Turbulence',

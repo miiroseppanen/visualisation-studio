@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
-import { Download, RotateCcw } from 'lucide-react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { Download, RotateCcw, Settings, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
 import AnimationControls from '@/components/particle-swarm/AnimationControls'
@@ -9,7 +9,7 @@ import SwarmSettings from '@/components/particle-swarm/SwarmSettings'
 import BehaviorSettings from '@/components/particle-swarm/BehaviorSettings'
 import type { ParticleSwarmAnimationSettings, ParticleSwarmPanelState } from '@/lib/types'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
-import { registerAnimationFrame, unregisterAnimationFrame, updateTrailEfficiently } from '@/lib/utils'
+import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
 
 interface Particle {
@@ -21,48 +21,48 @@ interface Particle {
   size: number
   life: number
   maxLife: number
-  color: string
-  trail: { x: number; y: number; opacity: number }[]
-  maxTrailLength: number
+  type: 'normal' | 'attractor' | 'repeller'
 }
 
 interface Attractor {
-  id: string
   x: number
   y: number
   strength: number
   radius: number
-  active: boolean
+  type: 'attract' | 'repel'
 }
 
 export default function ParticleSwarmPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
+  const renderFrameRef = useRef<number>()
+  const particlesRef = useRef<Particle[]>([])
+  const attractorsRef = useRef<Attractor[]>([])
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const { theme } = useTheme()
 
-  // Particles state
+  // Particle system state
   const [particles, setParticles] = useState<Particle[]>([])
-  const [attractors, setAttractors] = useState<Attractor[]>([
-    { id: '1', x: 400, y: 300, strength: 0.5, radius: 100, active: true },
-    { id: '2', x: 200, y: 200, strength: -0.3, radius: 80, active: true }
-  ])
+  const [attractors, setAttractors] = useState<Attractor[]>([])
 
   // Settings state
-  const [particleCount, setParticleCount] = useState(100)
+  const [particleCount, setParticleCount] = useState(200)
+  const [showParticles, setShowParticles] = useState(true)
   const [showAttractors, setShowAttractors] = useState(true)
   const [showTrails, setShowTrails] = useState(true)
-  const [showParticles, setShowParticles] = useState(true)
-  const [isAddingAttractor, setIsAddingAttractor] = useState(false)
+  const [showConnections, setShowConnections] = useState(false)
+  const [particleSize, setParticleSize] = useState(2)
+  const [trailLength, setTrailLength] = useState(20)
+  const [connectionDistance, setConnectionDistance] = useState(50)
 
-  // Behavior settings
-  const [cohesionStrength, setCohesionStrength] = useState(0.5)
+  // Physics settings
+  const [flockStrength, setFlockStrength] = useState(0.3)
   const [separationStrength, setSeparationStrength] = useState(0.8)
-  const [alignmentStrength, setAlignmentStrength] = useState(0.3)
+  const [alignmentStrength, setAlignmentStrength] = useState(0.5)
   const [attractionStrength, setAttractionStrength] = useState(0.4)
-  const [maxSpeed, setMaxSpeed] = useState(3)
-  const [perceptionRadius, setPerceptionRadius] = useState(50)
+  const [maxSpeed, setMaxSpeed] = useState(2.0)
+  const [friction, setFriction] = useState(0.98)
 
   // Animation settings
   const [animationSettings, setAnimationSettings] = useState<ParticleSwarmAnimationSettings>({
@@ -78,10 +78,6 @@ export default function ParticleSwarmPage() {
     behaviorSettingsExpanded: true,
     animationExpanded: false
   })
-
-  // Drag state
-  const [isDragging, setIsDragging] = useState(false)
-  const [draggedAttractorId, setDraggedAttractorId] = useState<string | null>(null)
 
   // Canvas size state
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
@@ -99,14 +95,27 @@ export default function ParticleSwarmPage() {
     if (!canvas) return
 
     const resizeCanvas = () => {
-      const parent = canvas.parentElement
-      if (!parent) return
-      const rect = parent.getBoundingClientRect()
-      canvas.width = rect.width * window.devicePixelRatio
-      canvas.height = rect.height * window.devicePixelRatio
-      canvas.style.width = rect.width + 'px'
-      canvas.style.height = rect.height + 'px'
-      setCanvasSize({ width: rect.width, height: rect.height })
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      setCanvasSize({ width, height });
+
+      // Debug: log sizes
+      const parent = canvas.parentElement;
+      const grandparent = parent ? parent.parentElement : null;
+      console.log('Canvas size:', width, height);
+      if (parent) {
+        const prect = parent.getBoundingClientRect();
+        console.log('Parent size:', prect.width, prect.height);
+      }
+      if (grandparent) {
+        const grect = grandparent.getBoundingClientRect();
+        console.log('Grandparent size:', grect.width, grect.height);
+      }
     }
 
     resizeCanvas()
@@ -120,17 +129,14 @@ export default function ParticleSwarmPage() {
     }
   }, [isClient])
 
-  // Initialize particles
+  // Initialize particle system
   useEffect(() => {
-    if (!isClient) return
-
-    const canvas = canvasRef.current
-    if (!canvas) return
+    if (!isClient || canvasSize.width === 0 || canvasSize.height === 0) return
 
     const width = canvasSize.width
     const height = canvasSize.height
-    if (width === 0 || height === 0) return
 
+    // Create particles
     const newParticles: Particle[] = []
     for (let i = 0; i < particleCount; i++) {
       newParticles.push({
@@ -139,534 +145,359 @@ export default function ParticleSwarmPage() {
         y: Math.random() * height,
         vx: (Math.random() - 0.5) * 2,
         vy: (Math.random() - 0.5) * 2,
-        size: Math.random() * 3 + 1,
+        size: particleSize,
         life: 1,
         maxLife: 1,
-        color: '#3b82f6',
-        trail: [],
-        maxTrailLength: 20
+        type: 'normal'
       })
     }
+
+    // Create attractors
+    const newAttractors: Attractor[] = [
+      {
+        x: width * 0.25,
+        y: height * 0.25,
+        strength: 0.5,
+        radius: 100,
+        type: 'attract'
+      },
+      {
+        x: width * 0.75,
+        y: height * 0.75,
+        strength: -0.3,
+        radius: 80,
+        type: 'repel'
+      }
+    ]
+
     setParticles(newParticles)
-  }, [particleCount, isClient, canvasSize])
-
-  // Calculate flocking behavior
-  const calculateFlockingForces = (particle: Particle, allParticles: Particle[]) => {
-    let cohesionX = 0
-    let cohesionY = 0
-    let separationX = 0
-    let separationY = 0
-    let alignmentX = 0
-    let alignmentY = 0
-    let neighborCount = 0
-
-    allParticles.forEach(other => {
-      if (other.id === particle.id) return
-
-      const dx = other.x - particle.x
-      const dy = other.y - particle.y
-      const distance = Math.sqrt(dx * dx + dy * dy)
-
-      if (distance < perceptionRadius && distance > 0) {
-        neighborCount++
-
-        // Cohesion - move toward center of neighbors
-        cohesionX += other.x
-        cohesionY += other.y
-
-        // Separation - avoid crowding
-        const separationForce = 1 / distance
-        separationX -= dx * separationForce
-        separationY -= dy * separationForce
-
-        // Alignment - match velocity of neighbors
-        alignmentX += other.vx
-        alignmentY += other.vy
-      }
-    })
-
-    if (neighborCount > 0) {
-      cohesionX /= neighborCount
-      cohesionY /= neighborCount
-      alignmentX /= neighborCount
-      alignmentY /= neighborCount
-    }
-
-    return {
-      cohesionX: (cohesionX - particle.x) * cohesionStrength,
-      cohesionY: (cohesionY - particle.y) * cohesionStrength,
-      separationX: separationX * separationStrength,
-      separationY: separationY * separationStrength,
-      alignmentX: alignmentX * alignmentStrength,
-      alignmentY: alignmentY * alignmentStrength
-    }
-  }
-
-  // Calculate attraction/repulsion from attractors
-  const calculateAttractorForces = (particle: Particle) => {
-    let attractionX = 0
-    let attractionY = 0
-
-    attractors.forEach(attractor => {
-      if (!attractor.active) return
-
-      const dx = attractor.x - particle.x
-      const dy = attractor.y - particle.y
-      const distance = Math.sqrt(dx * dx + dy * dy)
-
-      if (distance < attractor.radius && distance > 0) {
-        const force = (attractor.strength * attractionStrength) / (distance * distance)
-        attractionX += dx * force
-        attractionY += dy * force
-      }
-    })
-
-    return { attractionX, attractionY }
-  }
+    setAttractors(newAttractors)
+    particlesRef.current = newParticles
+    attractorsRef.current = newAttractors
+  }, [isClient, canvasSize, particleCount, particleSize])
 
   // Animation loop
   useEffect(() => {
-    if (!animationSettings.isAnimating || !isClient) return
-
-    let frameId: number | null = null
-
-    const animate = () => {
-      setParticles(prevParticles => {
-        const canvas = canvasRef.current
-        if (!canvas) return prevParticles
-
-        const width = canvas.width / window.devicePixelRatio
-        const height = canvas.height / window.devicePixelRatio
-
-        return prevParticles.map(particle => {
-          // Calculate forces
-          const flocking = calculateFlockingForces(particle, prevParticles)
-          const attractor = calculateAttractorForces(particle)
-
-          // Apply forces
-          const ax = flocking.cohesionX + flocking.separationX + flocking.alignmentX + attractor.attractionX
-          const ay = flocking.cohesionY + flocking.separationY + flocking.alignmentY + attractor.attractionY
-
-          // Update velocity
-          let newVx = particle.vx + ax * 0.1
-          let newVy = particle.vy + ay * 0.1
-
-          // Limit speed
-          const speed = Math.sqrt(newVx * newVx + newVy * newVy)
-          if (speed > maxSpeed) {
-            newVx = (newVx / speed) * maxSpeed
-            newVy = (newVy / speed) * maxSpeed
-          }
-
-          // Update position
-          let newX = particle.x + newVx
-          let newY = particle.y + newVy
-
-          // Wrap around edges
-          if (newX < 0) newX = width
-          if (newX > width) newX = 0
-          if (newY < 0) newY = height
-          if (newY > height) newY = 0
-
-          // Update trail more efficiently
-          const newTrail = updateTrailEfficiently(
-            particle.trail,
-            { x: particle.x, y: particle.y, opacity: 1 },
-            particle.maxTrailLength,
-            0.95
-          )
-
-          return {
-            ...particle,
-            x: newX,
-            y: newY,
-            vx: newVx,
-            vy: newVy,
-            trail: newTrail
-          }
-        })
-      })
-
-      setAnimationSettings(prev => ({ ...prev, time: prev.time + animationSettings.speed * 0.02 }))
-      
-      frameId = requestAnimationFrame(animate)
-      animationRef.current = frameId
-      registerAnimationFrame(frameId)
-    }
-
-    frameId = requestAnimationFrame(animate)
-    animationRef.current = frameId
-    registerAnimationFrame(frameId)
-
-    return () => {
-      if (frameId) {
-        cancelAnimationFrame(frameId)
-        unregisterAnimationFrame(frameId)
-      }
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-        unregisterAnimationFrame(animationRef.current)
-        animationRef.current = undefined
-      }
-    }
-  }, [animationSettings.isAnimating, animationSettings.speed, isClient, cohesionStrength, separationStrength, alignmentStrength, attractionStrength, maxSpeed, perceptionRadius, attractors])
-
-  // Handle pause all animations
-  useEffect(() => {
-    const handlePauseAllAnimations = () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-        unregisterAnimationFrame(animationRef.current)
-        animationRef.current = undefined
-      }
-    }
-
-    const handleBeforeUnload = () => {
-      handlePauseAllAnimations()
-    }
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        handlePauseAllAnimations()
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      handlePauseAllAnimations()
-    }
-  }, [])
-
-  // Render loop
-  useEffect(() => {
-    if (!isClient || !canvasRef.current) return
+    if (!isClient || !animationSettings.isAnimating || canvasSize.width === 0) return
 
     const canvas = canvasRef.current
+    if (!canvas) return
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const render = () => {
-      // Clear canvas
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-      ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
+    const width = canvas.width / window.devicePixelRatio
+    const height = canvas.height / window.devicePixelRatio
 
-      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    const animate = () => {
+      if (!animationSettings.isAnimating) return
 
-      // Draw particle trails
-      if (showTrails) {
-        particles.forEach(particle => {
-          if (particle.trail.length < 2) return
+      // Clear canvas with fade effect
+      ctx.fillStyle = theme === 'dark' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-          ctx.beginPath()
-          ctx.moveTo(particle.trail[0].x, particle.trail[0].y)
-          
-          for (let i = 1; i < particle.trail.length; i++) {
-            const point = particle.trail[i]
-            const alpha = point.opacity * 0.3
-            const color = isDark 
-              ? `rgba(255, 255, 255, ${alpha})`
-              : `rgba(0, 0, 0, ${alpha})`
+      // Update particles
+      setParticles(prevParticles => {
+        const currentParticles = prevParticles
+        return currentParticles.map(particle => {
+          // Apply flocking behavior
+          let flockX = 0
+          let flockY = 0
+          let separationX = 0
+          let separationY = 0
+          let alignmentX = 0
+          let alignmentY = 0
+          let neighborCount = 0
+
+          // Find neighbors
+          currentParticles.forEach(other => {
+            if (other.id === particle.id) return
             
-            ctx.strokeStyle = color
-            ctx.lineWidth = 1
-            ctx.lineTo(point.x, point.y)
+            const dx = other.x - particle.x
+            const dy = other.y - particle.y
+            const distance = Math.sqrt(dx * dx + dy * dy)
+            
+            if (distance < connectionDistance && distance > 0) {
+              neighborCount++
+              
+              // Flocking (cohesion)
+              flockX += other.x
+              flockY += other.y
+              
+              // Separation
+              const separationForce = 1 / distance
+              separationX -= dx * separationForce
+              separationY -= dy * separationForce
+              
+              // Alignment
+              alignmentX += other.vx
+              alignmentY += other.vy
+            }
+          })
+
+          // Apply flocking forces
+          if (neighborCount > 0) {
+            flockX /= neighborCount
+            flockY /= neighborCount
+            alignmentX /= neighborCount
+            alignmentY /= neighborCount
+            
+            particle.vx += (flockX - particle.x) * flockStrength * 0.01
+            particle.vy += (flockY - particle.y) * flockStrength * 0.01
+            particle.vx += separationX * separationStrength * 0.01
+            particle.vy += separationY * separationStrength * 0.01
+            particle.vx += alignmentX * alignmentStrength * 0.01
+            particle.vy += alignmentY * alignmentStrength * 0.01
           }
-          ctx.stroke()
+
+          // Apply attractor forces
+          attractorsRef.current.forEach(attractor => {
+            const dx = attractor.x - particle.x
+            const dy = attractor.y - particle.y
+            const distance = Math.sqrt(dx * dx + dy * dy)
+            
+            if (distance < attractor.radius && distance > 0) {
+              const force = attractor.strength * (1 - distance / attractor.radius)
+              particle.vx += (dx / distance) * force * attractionStrength * 0.01
+              particle.vy += (dy / distance) * force * attractionStrength * 0.01
+            }
+          })
+
+          // Apply friction and speed limits
+          particle.vx *= friction
+          particle.vy *= friction
+          
+          const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
+          if (speed > maxSpeed) {
+            particle.vx = (particle.vx / speed) * maxSpeed
+            particle.vy = (particle.vy / speed) * maxSpeed
+          }
+
+          // Update position
+          particle.x += particle.vx
+          particle.y += particle.vy
+
+          // Wrap around edges
+          if (particle.x < 0) particle.x = width
+          if (particle.x > width) particle.x = 0
+          if (particle.y < 0) particle.y = height
+          if (particle.y > height) particle.y = 0
+
+          return particle
         })
-      }
+      })
 
       // Draw particles
       if (showParticles) {
-        particles.forEach(particle => {
-          const speed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
-          const normalizedSpeed = Math.min(speed / maxSpeed, 1)
-          
-          // Color based on speed
-          const hue = 200 + normalizedSpeed * 60 // Blue to cyan
-          const color = `hsl(${hue}, 70%, 50%)`
-          
-          ctx.fillStyle = color
+        particlesRef.current.forEach(particle => {
+          ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#000000'
+          ctx.globalAlpha = 0.8
           ctx.beginPath()
-          ctx.arc(particle.x, particle.y, particle.size, 0, 2 * Math.PI)
+          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
           ctx.fill()
+        })
+      }
+
+      // Draw connections
+      if (showConnections) {
+        ctx.strokeStyle = theme === 'dark' ? '#ffffff' : '#000000'
+        ctx.lineWidth = 0.5
+        ctx.globalAlpha = 0.3
+        
+        particlesRef.current.forEach(particle => {
+          particlesRef.current.forEach(other => {
+            if (particle.id >= other.id) return
+            
+            const dx = other.x - particle.x
+            const dy = other.y - particle.y
+            const distance = Math.sqrt(dx * dx + dy * dy)
+            
+            if (distance < connectionDistance) {
+              ctx.beginPath()
+              ctx.moveTo(particle.x, particle.y)
+              ctx.lineTo(other.x, other.y)
+              ctx.stroke()
+            }
+          })
         })
       }
 
       // Draw attractors
       if (showAttractors) {
-        attractors.forEach(attractor => {
-          if (!attractor.active) return
-
-          const color = attractor.strength > 0 ? '#10b981' : '#ef4444'
-          
-          // Draw attractor circle
-          ctx.fillStyle = color
-          ctx.beginPath()
-          ctx.arc(attractor.x, attractor.y, 8, 0, 2 * Math.PI)
-          ctx.fill()
-          
-          // Draw attractor border
-          ctx.strokeStyle = '#000000'
-          ctx.lineWidth = 2
-          ctx.stroke()
-          
-          // Draw influence radius
-          ctx.strokeStyle = color
+        attractorsRef.current.forEach(attractor => {
+          ctx.strokeStyle = theme === 'dark' ? '#ffffff' : '#000000'
           ctx.lineWidth = 1
-          ctx.setLineDash([5, 5])
+          ctx.globalAlpha = 0.4
           ctx.beginPath()
-          ctx.arc(attractor.x, attractor.y, attractor.radius, 0, 2 * Math.PI)
+          ctx.arc(attractor.x, attractor.y, attractor.radius, 0, Math.PI * 2)
           ctx.stroke()
-          ctx.setLineDash([])
           
-          // Draw attractor label
-          ctx.fillStyle = 'white'
-          ctx.font = 'bold 12px sans-serif'
-          ctx.textAlign = 'center'
-          ctx.textBaseline = 'middle'
-          ctx.fillText(attractor.strength > 0 ? '+' : '-', attractor.x, attractor.y)
+          ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#000000'
+          ctx.globalAlpha = 0.6
+          ctx.beginPath()
+          ctx.arc(attractor.x, attractor.y, 4, 0, Math.PI * 2)
+          ctx.fill()
         })
       }
+
+      ctx.globalAlpha = 1
+
+      animationRef.current = requestAnimationFrame(animate)
     }
 
-    // Initial render
-    render()
+    animate()
 
-    // Set up animation loop for continuous rendering
-    if (animationSettings.isAnimating) {
-      const animate = () => {
-        render()
-        requestAnimationFrame(animate)
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
       }
-      requestAnimationFrame(animate)
     }
-  }, [particles, showParticles, showTrails, showAttractors, attractors, maxSpeed, theme, isClient, animationSettings.isAnimating])
+  }, [isClient, animationSettings.isAnimating, canvasSize, theme, showParticles, showAttractors, showConnections, flockStrength, separationStrength, alignmentStrength, attractionStrength, maxSpeed, friction, connectionDistance])
 
-  // Handle canvas mouse down for adding/dragging attractors
-  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+  // Keep refs in sync with state
+  useEffect(() => {
+    particlesRef.current = particles
+  }, [particles])
 
-    const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+  useEffect(() => {
+    attractorsRef.current = attractors
+  }, [attractors])
 
-    // Check if clicking on an existing attractor for dragging
-    const clickedAttractor = attractors.find(attractor => {
-      const distance = Math.sqrt((x - attractor.x) ** 2 + (y - attractor.y) ** 2)
-      return distance <= 15 // Click radius
+  // Handle zoom
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault()
+    const delta = e.deltaY > 0 ? -1 : 1
+    setZoomLevel(prev => {
+      const newZoom = prev * (1 + delta * ZOOM_SENSITIVITY)
+      return Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, newZoom))
     })
+  }, [])
 
-    if (clickedAttractor) {
-      setIsDragging(true)
-      setDraggedAttractorId(clickedAttractor.id)
-    } else if (isAddingAttractor) {
-      // Add new attractor at click location
-      const newAttractor: Attractor = {
-        id: Date.now().toString(),
-        x,
-        y,
-        strength: 0.5,
-        radius: 100,
-        active: true
-      }
-      setAttractors(prev => [...prev, newAttractor])
-      setIsDragging(true)
-      setDraggedAttractorId(newAttractor.id)
-    }
-  }
-
-  // Handle canvas mouse move for dragging attractors
-  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDragging || !draggedAttractorId) return
-
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-
-    setAttractors(prev => prev.map(attractor => 
-      attractor.id === draggedAttractorId ? { ...attractor, x, y } : attractor
-    ))
-  }
-
-  // Handle canvas mouse up to stop dragging
-  const handleCanvasMouseUp = () => {
-    setIsDragging(false)
-    setDraggedAttractorId(null)
-  }
-
-  // Wheel event handler
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !isClient) return
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      
-      const deltaY = e.deltaY
-      const zoomChange = -deltaY * ZOOM_SENSITIVITY
-      
-      const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
-      setZoomLevel(newZoom)
-    }
+    if (!canvas) return
 
     canvas.addEventListener('wheel', handleWheel, { passive: false })
-    
-    return () => {
-      canvas.removeEventListener('wheel', handleWheel)
+    return () => canvas.removeEventListener('wheel', handleWheel)
+  }, [handleWheel])
+
+  // Reset animation
+  const handleReset = useCallback(() => {
+    setAnimationSettings(prev => ({ ...prev, time: 0 }))
+    // Reinitialize particles
+    if (canvasSize.width > 0 && canvasSize.height > 0) {
+      const width = canvasSize.width
+      const height = canvasSize.height
+      
+      const newParticles: Particle[] = []
+      for (let i = 0; i < particleCount; i++) {
+        newParticles.push({
+          id: `particle-${i}`,
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2,
+          size: particleSize,
+          life: 1,
+          maxLife: 1,
+          type: 'normal'
+        })
+      }
+      setParticles(newParticles)
+      particlesRef.current = newParticles
     }
-  }, [isClient, zoomLevel])
+  }, [canvasSize, particleCount, particleSize])
 
-  // Remove attractor
-  const removeAttractor = (id: string) => {
-    setAttractors(prev => prev.filter(attractor => attractor.id !== id))
-  }
-
-  // Update attractor
-  const updateAttractor = (id: string, updates: Partial<Attractor>) => {
-    setAttractors(prev => prev.map(attractor => 
-      attractor.id === id ? { ...attractor, ...updates } : attractor
-    ))
-  }
-
-  // Export as SVG
-  const exportSVG = () => {
+  // Download canvas
+  const handleDownload = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const svg = `
-      <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="white"/>
-        ${attractors.map(attractor => `
-          <circle cx="${attractor.x}" cy="${attractor.y}" r="8" fill="${attractor.strength > 0 ? '#10b981' : '#ef4444'}"/>
-          <text x="${attractor.x}" y="${attractor.y}" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12">${attractor.strength > 0 ? '+' : '-'}</text>
-        `).join('')}
-      </svg>
-    `
-    
-    const blob = new Blob([svg], { type: 'image/svg+xml' })
-    const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.href = url
-    link.download = 'particle-swarm.svg'
+    link.download = 'particle-swarm.png'
+    link.href = canvas.toDataURL()
     link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  // Reset to defaults
-  const resetToDefaults = () => {
-    setAttractors([
-      { id: '1', x: 400, y: 300, strength: 0.5, radius: 100, active: true },
-      { id: '2', x: 200, y: 200, strength: -0.3, radius: 80, active: true }
-    ])
-    setParticleCount(100)
-    setCohesionStrength(0.5)
-    setSeparationStrength(0.8)
-    setAlignmentStrength(0.3)
-    setAttractionStrength(0.4)
-    setMaxSpeed(3)
-    setPerceptionRadius(50)
-    setAnimationSettings({
-      isAnimating: true,
-      time: 0,
-      speed: 1.0
-    })
-    setShowAttractors(true)
-    setShowTrails(true)
-    setShowParticles(true)
-    setIsAddingAttractor(false)
-  }
+  }, [])
 
   if (!isClient) {
-    return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading particle swarm visualizer...</div>
-      </div>
-    )
+    return <div>Loading...</div>
   }
 
   return (
     <VisualizationLayout
-      onReset={resetToDefaults}
-      onExportSVG={exportSVG}
+      onReset={handleReset}
+      onExportSVG={handleDownload}
       statusContent={
         <>
           Mode: Particle Swarm | 
           Particles: {particles.length} | 
-          Attractors: {attractors.filter(a => a.active).length} | 
+          Attractors: {attractors.length} | 
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
       }
-      helpText="Click to add attractor, drag to move • Wheel to zoom • Use controls to adjust swarm behavior"
+      helpText="Watch particles flock together • Adjust behavior settings • Fullscreen minimalist animation"
       panelOpen={panelState.isOpen}
       onPanelToggle={() => setPanelState(prev => ({ ...prev, isOpen: !prev.isOpen }))}
       settingsContent={
         <div className="space-y-8">
-          <SwarmSettings
-            particleCount={particleCount}
-            showParticles={showParticles}
-            showTrails={showTrails}
-            showAttractors={showAttractors}
-            isAddingAttractor={isAddingAttractor}
-            attractors={attractors}
-            expanded={panelState.swarmSettingsExpanded}
-            onToggleExpanded={() => setPanelState(prev => ({ 
-              ...prev, swarmSettingsExpanded: !prev.swarmSettingsExpanded 
-            }))}
-            onSetParticleCount={setParticleCount}
-            onSetShowParticles={setShowParticles}
-            onSetShowTrails={setShowTrails}
-            onSetShowAttractors={setShowAttractors}
-            onSetIsAddingAttractor={setIsAddingAttractor}
-            onRemoveAttractor={removeAttractor}
-            onUpdateAttractor={updateAttractor}
-          />
-
-          <BehaviorSettings
-            cohesionStrength={cohesionStrength}
-            separationStrength={separationStrength}
-            alignmentStrength={alignmentStrength}
-            attractionStrength={attractionStrength}
-            maxSpeed={maxSpeed}
-            perceptionRadius={perceptionRadius}
-            expanded={panelState.behaviorSettingsExpanded}
-            onToggleExpanded={() => setPanelState(prev => ({ 
-              ...prev, behaviorSettingsExpanded: !prev.behaviorSettingsExpanded 
-            }))}
-            onSetCohesionStrength={setCohesionStrength}
-            onSetSeparationStrength={setSeparationStrength}
-            onSetAlignmentStrength={setAlignmentStrength}
-            onSetAttractionStrength={setAttractionStrength}
-            onSetMaxSpeed={setMaxSpeed}
-            onSetPerceptionRadius={setPerceptionRadius}
-          />
-
           <AnimationControls
             settings={animationSettings}
             onSettingsChange={(updates) => setAnimationSettings(prev => ({ ...prev, ...updates }))}
-            onReset={resetToDefaults}
+            onReset={handleReset}
             expanded={panelState.animationExpanded}
-            onToggleExpanded={() => setPanelState(prev => ({ 
-              ...prev, animationExpanded: !prev.animationExpanded 
-            }))}
+            onToggleExpanded={() => setPanelState(prev => ({ ...prev, animationExpanded: !prev.animationExpanded }))}
+          />
+          <SwarmSettings
+            particleCount={particleCount}
+            onParticleCountChange={setParticleCount}
+            particleSize={particleSize}
+            onParticleSizeChange={setParticleSize}
+            showParticles={showParticles}
+            onShowParticlesChange={setShowParticles}
+            showAttractors={showAttractors}
+            onShowAttractorsChange={setShowAttractors}
+            showTrails={showTrails}
+            onShowTrailsChange={setShowTrails}
+            showConnections={showConnections}
+            onShowConnectionsChange={setShowConnections}
+            trailLength={trailLength}
+            onTrailLengthChange={setTrailLength}
+            connectionDistance={connectionDistance}
+            onConnectionDistanceChange={setConnectionDistance}
+            isExpanded={panelState.swarmSettingsExpanded}
+            onToggleExpanded={(expanded) => setPanelState(prev => ({ ...prev, swarmSettingsExpanded: expanded }))}
+          />
+          <BehaviorSettings
+            flockStrength={flockStrength}
+            onFlockStrengthChange={setFlockStrength}
+            separationStrength={separationStrength}
+            onSeparationStrengthChange={setSeparationStrength}
+            alignmentStrength={alignmentStrength}
+            onAlignmentStrengthChange={setAlignmentStrength}
+            attractionStrength={attractionStrength}
+            onAttractionStrengthChange={setAttractionStrength}
+            maxSpeed={maxSpeed}
+            onMaxSpeedChange={setMaxSpeed}
+            friction={friction}
+            onFrictionChange={setFriction}
+            isExpanded={panelState.behaviorSettingsExpanded}
+            onToggleExpanded={(expanded) => setPanelState(prev => ({ ...prev, behaviorSettingsExpanded: expanded }))}
           />
         </div>
       }
     >
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair dark:invert dark:hue-rotate-180"
-        onMouseDown={handleCanvasMouseDown}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseUp={handleCanvasMouseUp}
-        onMouseLeave={handleCanvasMouseUp}
+        className="fixed top-0 left-0 w-screen h-screen cursor-crosshair dark:invert dark:hue-rotate-180"
+        style={{
+          width: '100vw',
+          height: '100dvh',
+          minHeight: '100dvh',
+          minWidth: '100vw',
+          display: 'block',
+          zIndex: 0,
+          background: 'transparent'
+        }}
       />
     </VisualizationLayout>
   )

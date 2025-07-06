@@ -247,9 +247,9 @@ export interface VisualizationSuggestion {
   
   // Implementation details for generating visualizations
   implementation?: {
-    type: 'grid-field' | 'flow-field' | 'turbulence' | 'circular-field' | 'topography' | 'particle-swarm' | 'fractal-tree' | 'neural-network' | 'wave-interference' | 'cellular-automata' | 'sound-wave' | 'custom'
-    baseSettings?: Partial<GridSettings | TurbulenceSettings | CircularFieldSettings | TopographyDisplaySettings | ParticleSwarmSettings | FractalTreeSettings | NeuralNetworkSettings | WaveInterferenceSettings | CellularAutomataSettings | SoundWaveSettings>
-    animationSettings?: Partial<AnimationSettings | FlowFieldAnimationSettings | TurbulenceAnimationSettings | CircularFieldAnimationSettings | TopographyAnimationSettings | ParticleSwarmAnimationSettings | FractalTreeAnimationSettings | NeuralNetworkAnimationSettings | WaveInterferenceAnimationSettings | CellularAutomataAnimationSettings | SoundWaveAnimationSettings>
+    type: 'grid-field' | 'flow-field' | 'turbulence' | 'circular-field' | 'topography' | 'particle-swarm' | 'neural-network' | 'wave-interference' | 'cellular-automata' | 'sound-wave' | 'custom'
+    baseSettings?: Partial<GridSettings | TurbulenceSettings | CircularFieldSettings | TopographyDisplaySettings | ParticleSwarmSettings | NeuralNetworkSettings | WaveInterferenceSettings | CellularAutomataSettings | SoundWaveSettings>
+    animationSettings?: Partial<AnimationSettings | FlowFieldAnimationSettings | TurbulenceAnimationSettings | CircularFieldAnimationSettings | TopographyAnimationSettings | ParticleSwarmAnimationSettings | NeuralNetworkAnimationSettings | WaveInterferenceAnimationSettings | CellularAutomataAnimationSettings | SoundWaveAnimationSettings>
     customParameters?: Record<string, any>
     rendererConfig?: {
       renderer: string
@@ -319,18 +319,7 @@ export interface ParticleSwarmPanelState {
   animationExpanded: boolean
 }
 
-// Fractal tree types
-export interface FractalTreeAnimationSettings extends BaseAnimationSettings {
-  speed: number
-  growthSpeed: number
-}
 
-export interface FractalTreePanelState {
-  isOpen: boolean
-  treeSettingsExpanded: boolean
-  branchSettingsExpanded: boolean
-  animationExpanded: boolean
-}
 
 // Neural Network types
 export interface NeuralNetworkAnimationSettings extends BaseAnimationSettings {
@@ -383,13 +372,7 @@ export interface ParticleSwarmSettings {
   obstacleAvoidanceWeight: number
 }
 
-// Fractal Tree types
-export interface FractalTreeSettings {
-  branchAngle: number
-  lengthRatio: number
-  recursionDepth: number
-  initialLength: number
-}
+
 
 // Neural Network types
 export interface NeuralNetworkSettings {

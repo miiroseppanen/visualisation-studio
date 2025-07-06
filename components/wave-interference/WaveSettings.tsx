@@ -3,29 +3,38 @@
 import React from 'react'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
+import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { useTranslation } from 'react-i18next'
 
 interface WaveSettingsProps {
-  resolution: number
-  lineDensity: number
-  interferenceContrast: number
+  showWaveFunctions: boolean
+  onShowWaveFunctionsChange: (value: boolean) => void
+  showInterference: boolean
+  onShowInterferenceChange: (value: boolean) => void
+  showCollapse: boolean
+  onShowCollapseChange: (value: boolean) => void
+  fieldDensity: number
+  onFieldDensityChange: (value: number) => void
+  interferenceStrength: number
+  onInterferenceStrengthChange: (value: number) => void
   expanded: boolean
   onToggleExpanded: () => void
-  onSetResolution: (resolution: number) => void
-  onSetLineDensity: (lineDensity: number) => void
-  onSetInterferenceContrast: (interferenceContrast: number) => void
 }
 
 export default function WaveSettings({
-  resolution,
-  lineDensity,
-  interferenceContrast,
+  showWaveFunctions,
+  onShowWaveFunctionsChange,
+  showInterference,
+  onShowInterferenceChange,
+  showCollapse,
+  onShowCollapseChange,
+  fieldDensity,
+  onFieldDensityChange,
+  interferenceStrength,
+  onInterferenceStrengthChange,
   expanded,
-  onToggleExpanded,
-  onSetResolution,
-  onSetLineDensity,
-  onSetInterferenceContrast
+  onToggleExpanded
 }: WaveSettingsProps) {
   const { t } = useTranslation()
   
@@ -34,62 +43,63 @@ export default function WaveSettings({
       title={t('visualizationSettings.waveSettings')}
       defaultOpen={expanded}
     >
-      <div className="space-y-4 mt-4">
-        {/* Smoothness Control */}
+      <div className="space-y-4">
+        {/* Field Density */}
         <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.smoothness')}</Label>
-            <span className="text-xs text-gray-600 dark:text-gray-300">{resolution}</span>
-          </div>
+          <Label htmlFor="field-density">{t('visualizationSettings.fieldDensity')}: {fieldDensity}</Label>
           <Slider
-            value={[resolution]}
-            onValueChange={(value) => onSetResolution(value[0])}
-            max={20}
-            min={2}
+            id="field-density"
+            min={10}
+            max={40}
             step={1}
+            value={[fieldDensity]}
+            onValueChange={(value) => onFieldDensityChange(value[0])}
             className="w-full"
           />
-          <p className="text-xs text-gray-600 dark:text-gray-300">
-            {t('visualizationSettings.smoothnessDescription')}
-          </p>
         </div>
 
-        {/* Line Density Control */}
+        {/* Interference Strength */}
         <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.lineDensity')}</Label>
-            <span className="text-xs text-gray-600 dark:text-gray-300">{lineDensity}</span>
-          </div>
+          <Label htmlFor="interference-strength">{t('visualizationSettings.interferenceStrength')}: {interferenceStrength.toFixed(2)}</Label>
           <Slider
-            value={[lineDensity]}
-            onValueChange={(value) => onSetLineDensity(value[0])}
-            max={20}
-            min={2}
-            step={1}
+            id="interference-strength"
+            min={0}
+            max={2}
+            step={0.01}
+            value={[interferenceStrength]}
+            onValueChange={(value) => onInterferenceStrengthChange(value[0])}
             className="w-full"
           />
-          <p className="text-xs text-gray-600 dark:text-gray-300">
-            {t('visualizationSettings.lineDensityDescription')}
-          </p>
         </div>
 
-        {/* Interference Contrast Control */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.interferenceContrast')}</Label>
-            <span className="text-xs text-gray-600 dark:text-gray-300">{interferenceContrast.toFixed(1)}</span>
+        {/* Visibility Toggles */}
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="show-wave-functions"
+              checked={showWaveFunctions}
+              onCheckedChange={onShowWaveFunctionsChange}
+            />
+            <Label htmlFor="show-wave-functions">{t('visualizationSettings.showWaveFunctions')}</Label>
           </div>
-          <Slider
-            value={[interferenceContrast]}
-            onValueChange={(value) => onSetInterferenceContrast(value[0])}
-            max={3.0}
-            min={0.1}
-            step={0.1}
-            className="w-full"
-          />
-          <p className="text-xs text-gray-600 dark:text-gray-300">
-            {t('visualizationSettings.interferenceContrastDescription')}
-          </p>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="show-interference"
+              checked={showInterference}
+              onCheckedChange={onShowInterferenceChange}
+            />
+            <Label htmlFor="show-interference">{t('visualizationSettings.showInterference')}</Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="show-collapse"
+              checked={showCollapse}
+              onCheckedChange={onShowCollapseChange}
+            />
+            <Label htmlFor="show-collapse">{t('visualizationSettings.showCollapse')}</Label>
+          </div>
         </div>
       </div>
     </CollapsibleSection>

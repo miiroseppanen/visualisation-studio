@@ -83,6 +83,15 @@
         "harmonicAnalysis": "Harmonic analysis"
       }
     },
+    "waveInterference2": {
+      "title": "Wave Interference 2",
+      "description": "Advanced quantum-inspired wave interference with complex patterns and experimental physics.",
+      "features": {
+        "quantumParticles": "Quantum particle simulation",
+        "waveFunctionCollapse": "Wave function collapse",
+        "experimentalPatterns": "Experimental interference patterns"
+      }
+    },
     "particleSwarm": {
       "title": "Particle Swarm",
       "description": "Simulate flocking behavior and collective intelligence with interactive particle systems.",
