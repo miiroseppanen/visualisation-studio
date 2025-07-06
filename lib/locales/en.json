@@ -262,7 +262,9 @@
     "electric": "Electric",
     "positive": "Positive (+)",
     "negative": "Negative (-)",
-    "position": "Position"
+    "position": "Position",
+    "windStrength": "Wind Strength",
+    "windSpeed": "Wind Speed"
   },
   "about": {
     "title": "About Visualization Studio",

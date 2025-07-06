@@ -250,7 +250,9 @@
     "electric": "Sähköinen",
     "positive": "Positiivinen (+)",
     "negative": "Negatiivinen (-)",
-    "position": "Sijainti"
+    "position": "Sijainti",
+    "windStrength": "Tuulen voimakkuus",
+    "windSpeed": "Tuulen nopeus"
   },
   "about": {
     "title": "Tietoja Visualisointi Studiosta",
