@@ -207,8 +207,8 @@ export default function WaveInterferencePage() {
     const points: InterferencePoint[] = []
     
     // Adaptive step size based on smoothness and performance
-    const baseStep = Math.max(3, Math.min(12, 25 / smoothness))
-    const adaptiveStep = Math.max(baseStep, Math.min(baseStep * 2, width / 100))
+    const baseStep = Math.max(2, Math.min(8, 20 / smoothness)) // Improved sampling density
+    const adaptiveStep = Math.max(baseStep, Math.min(baseStep * 1.5, width / 80))
     
     // Performance optimization: Reduce sampling in areas with low activity
     const step = adaptiveStep
@@ -218,7 +218,7 @@ export default function WaveInterferencePage() {
         const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
         
         // Skip points with very low amplitude for performance
-        if (Math.abs(amplitude) < 2) continue
+        if (Math.abs(amplitude) < 1) continue // Lower threshold for better detail
         
         // Calculate gradient for smooth transitions
         const dx = calculateWaveAmplitude(x + step, y, animationSettings.time) - amplitude
@@ -241,13 +241,30 @@ export default function WaveInterferencePage() {
   const drawSmoothInterference = useCallback((ctx: CanvasRenderingContext2D, points: InterferencePoint[], width: number, height: number) => {
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
     
-    // Performance optimization: Batch similar operations
-    ctx.save()
+    // Create gradient for smooth color transitions
+    const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height)/2)
+    
+    if (isDark) {
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)')
+      gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.4)')
+      gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.1)')
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
+    } else {
+      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.8)')
+      gradient.addColorStop(0.3, 'rgba(0, 0, 0, 0.4)')
+      gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.1)')
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+    }
+    
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, width, height)
+    
+    // Draw interference patterns using smooth curves
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
     
-    // Draw interference patterns using optimized contour detection
-    const contourThresholds = [0.2, 0.4, 0.6, 0.8]
+    // Draw interference lines along amplitude contours
+    const contourThresholds = isDark ? [0.2, 0.4, 0.6, 0.8] : [0.2, 0.4, 0.6, 0.8]
     
     contourThresholds.forEach((threshold, index) => {
       const alpha = isDark ? 0.3 - index * 0.05 : 0.3 - index * 0.05
@@ -256,33 +273,46 @@ export default function WaveInterferencePage() {
       ctx.strokeStyle = isDark ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 0, 0, ${alpha})`
       ctx.lineWidth = lineWidth
       
-      // Performance optimization: Filter points more efficiently
-      const contourPoints = points.filter(point => Math.abs(point.amplitude) > threshold * 50)
+      // Find contour points
+      const contourPoints: { x: number; y: number }[] = []
       
-      // Draw optimized curves through contour points
+      for (let i = 0; i < points.length; i++) {
+        const point = points[i]
+        if (Math.abs(point.amplitude) > threshold * 50) {
+          contourPoints.push({ x: point.x, y: point.y })
+        }
+      }
+      
+      // Draw smooth curves through contour points
       if (contourPoints.length > 2) {
         ctx.beginPath()
         
-        // Performance optimization: Use fewer curve segments for better performance
-        const step = Math.max(1, Math.floor(contourPoints.length / 50))
+        // Use quadratic curves for smooth paths with performance optimization
+        const step = Math.max(1, Math.floor(contourPoints.length / 100)) // Reduced for performance but still smooth
         
-        for (let i = 0; i < contourPoints.length - step; i += step) {
+        for (let i = 0; i < contourPoints.length - 2; i += step) {
           const p1 = contourPoints[i]
-          const p2 = contourPoints[i + step]
+          const p2 = contourPoints[i + 1]
+          const p3 = contourPoints[i + 2]
           
           if (i === 0) {
             ctx.moveTo(p1.x, p1.y)
           }
           
-          ctx.lineTo(p2.x, p2.y)
+          const cp1x = p1.x + (p2.x - p1.x) * 0.5
+          const cp1y = p1.y + (p2.y - p1.y) * 0.5
+          const cp2x = p2.x + (p3.x - p2.x) * 0.5
+          const cp2y = p2.y + (p3.y - p2.y) * 0.5
+          
+          ctx.quadraticCurveTo(cp1x, cp1y, p2.x, p2.y)
         }
         
         ctx.stroke()
       }
     })
     
-    // Performance optimization: Reduce streamline count based on canvas size
-    const streamlineCount = Math.min(20, Math.floor(width * height / 15000))
+    // Draw flowing streamlines
+    const streamlineCount = Math.min(30, Math.floor(width * height / 8000)) // Increased for better visual effect
     ctx.lineWidth = 1
     ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
     
@@ -295,7 +325,7 @@ export default function WaveInterferencePage() {
       
       let x = startX
       let y = startY
-      const steps = 30 // Reduced for performance
+      const steps = 40 // Increased for longer, more flowing lines
       
       for (let step = 0; step < steps; step++) {
         const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
@@ -319,8 +349,6 @@ export default function WaveInterferencePage() {
       
       ctx.stroke()
     }
-    
-    ctx.restore()
   }, [calculateWaveAmplitude, animationSettings.time, theme])
 
   // Performance optimization: Adaptive frame rate
@@ -489,16 +517,20 @@ export default function WaveInterferencePage() {
     if (showWavefronts) {
       ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
       ctx.lineWidth = 1
-      ctx.globalAlpha = 0.3
+      ctx.globalAlpha = 0.2
 
       waveSources.forEach(source => {
         if (!source.active) return
 
         const phase = source.phase + (animationSettings.time * source.frequency * animationSettings.waveSpeed)
-        const wavefrontCount = 4 // Reduced for performance
+        const wavefrontCount = 6 // Increased for better visual effect
 
         for (let i = 0; i < wavefrontCount; i++) {
           const radius = (i * source.wavelength) + (phase * source.wavelength / (2 * Math.PI))
+          
+          // Fade out wavefronts with distance
+          const fadeAlpha = Math.max(0.1, 0.3 - (i * 0.03))
+          ctx.globalAlpha = fadeAlpha
           
           ctx.beginPath()
           ctx.arc(source.x, source.y, radius, 0, 2 * Math.PI)
