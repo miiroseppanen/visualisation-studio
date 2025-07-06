@@ -214,13 +214,13 @@ export default function WaveInterferencePage() {
   // Generate interference field with enhanced visual effects
   const generateInterferenceField = useCallback((width: number, height: number): InterferenceField[] => {
     const fields: InterferenceField[] = []
-    const step = Math.max(3, Math.min(6, 15 / smoothness))
+    const step = Math.max(4, Math.min(8, 20 / smoothness)) // Increased step for better performance
     
     for (let x = 0; x < width; x += step) {
       for (let y = 0; y < height; y += step) {
         const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
         
-        if (Math.abs(amplitude) < 3) continue
+        if (Math.abs(amplitude) < 5) continue // Higher threshold for better performance
         
         const dx = calculateWaveAmplitude(x + step, y, animationSettings.time) - amplitude
         const dy = calculateWaveAmplitude(x, y + step, animationSettings.time) - amplitude
@@ -246,21 +246,21 @@ export default function WaveInterferencePage() {
       const newParticles = prev.filter(p => p.life > 0)
       
       // Limit total particles to prevent performance issues
-      if (newParticles.length > 200) {
-        return newParticles.slice(0, 200)
+      if (newParticles.length > 100) { // Reduced from 200 to 100
+        return newParticles.slice(0, 100)
       }
       
       // Add new particles from wave sources (reduced frequency)
       waveSources.forEach(source => {
-        if (!source.active || Math.random() > 0.05) return
+        if (!source.active || Math.random() > 0.08) return // Reduced frequency
         
         const angle = Math.random() * Math.PI * 2
-        const speed = 2 + Math.random() * 3
-        const size = 2 + Math.random() * 4
+        const speed = 1.5 + Math.random() * 2 // Reduced speed
+        const size = 1.5 + Math.random() * 3 // Reduced size
         
         newParticles.push({
-          x: source.x + Math.cos(angle) * 20,
-          y: source.y + Math.sin(angle) * 20,
+          x: source.x + Math.cos(angle) * 15,
+          y: source.y + Math.sin(angle) * 15,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           life: 1.0,
@@ -274,8 +274,8 @@ export default function WaveInterferencePage() {
       newParticles.forEach(particle => {
         particle.x += particle.vx
         particle.y += particle.vy
-        particle.life -= 0.02
-        particle.size *= 0.98
+        particle.life -= 0.015 // Slower decay
+        particle.size *= 0.99 // Slower size reduction
         
         // Bounce off edges
         if (particle.x <= 0 || particle.x >= width) particle.vx *= -0.8
@@ -301,7 +301,7 @@ export default function WaveInterferencePage() {
     const particleInterval = setInterval(() => {
       const { width, height } = getCanvasSize()
       updateParticles(width, height)
-    }, 100) // Update particles every 100ms instead of every frame
+    }, 150) // Update particles every 150ms for better performance
 
     return () => {
       clearInterval(particleInterval)
@@ -328,28 +328,34 @@ export default function WaveInterferencePage() {
     ctx.fillStyle = bgGradient
     ctx.fillRect(0, 0, width, height)
     
-    // Draw interference field with dynamic colors
+    // Draw interference circles instead of zigzag lines
     fields.forEach(field => {
-      const intensity = Math.min(1, field.intensity / 50)
-      const alpha = 0.3 + intensity * 0.7
+      const intensity = Math.min(1, field.intensity / 30)
+      const alpha = 0.2 + intensity * 0.6
       
       // Dynamic color based on amplitude and position
-      const hue = (field.x / width * 360 + field.amplitude * 10) % 360
-      const saturation = 70 + intensity * 30
-      const lightness = isDark ? 60 + intensity * 40 : 40 + intensity * 30
+      const hue = (field.x / width * 360 + field.amplitude * 8) % 360
+      const saturation = 60 + intensity * 40
+      const lightness = isDark ? 50 + intensity * 50 : 30 + intensity * 40
       
       ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`
-      ctx.lineWidth = 1 + intensity * 3
+      ctx.lineWidth = 1 + intensity * 2
       
-      // Draw flowing lines along field direction
-      const length = 10 + intensity * 20
-      const endX = field.x + Math.cos(field.angle) * length
-      const endY = field.y + Math.sin(field.angle) * length
+      // Draw circles to represent interference patterns
+      const radius = 5 + intensity * 15
       
       ctx.beginPath()
-      ctx.moveTo(field.x, field.y)
-      ctx.lineTo(endX, endY)
+      ctx.arc(field.x, field.y, radius, 0, 2 * Math.PI)
       ctx.stroke()
+      
+      // Draw additional smaller circles for more detail
+      if (intensity > 0.3) {
+        ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.5})`
+        ctx.lineWidth = 0.5 + intensity
+        ctx.beginPath()
+        ctx.arc(field.x, field.y, radius * 0.6, 0, 2 * Math.PI)
+        ctx.stroke()
+      }
     })
     
     // Draw wavefronts with dramatic effects
@@ -358,14 +364,14 @@ export default function WaveInterferencePage() {
         if (!source.active) return
         
         const phase = source.phase + (animationSettings.time * source.frequency * animationSettings.waveSpeed)
-        const wavefrontCount = 8
+        const wavefrontCount = 12 // Increased for more detailed wavefronts
         
         for (let i = 0; i < wavefrontCount; i++) {
           const radius = (i * source.wavelength) + (phase * source.wavelength / (2 * Math.PI))
-          const fadeAlpha = Math.max(0.05, 0.4 - (i * 0.04))
+          const fadeAlpha = Math.max(0.03, 0.5 - (i * 0.04))
           
           ctx.strokeStyle = `${source.color}${Math.floor(fadeAlpha * 255).toString(16).padStart(2, '0')}`
-          ctx.lineWidth = 2 - (i * 0.2)
+          ctx.lineWidth = 2.5 - (i * 0.15)
           
           ctx.beginPath()
           ctx.arc(source.x, source.y, radius, 0, 2 * Math.PI)
@@ -373,6 +379,30 @@ export default function WaveInterferencePage() {
         }
       })
     }
+    
+    // Draw interference rings at high amplitude points (performance optimized)
+    const highAmplitudeFields = fields.filter(f => Math.abs(f.amplitude) > 25) // Higher threshold
+    const maxRings = Math.min(20, highAmplitudeFields.length) // Limit number of rings
+    highAmplitudeFields.slice(0, maxRings).forEach(field => {
+      const amplitude = Math.abs(field.amplitude)
+      const alpha = Math.min(0.6, amplitude / 120) // Reduced alpha
+      
+      const hue = (field.x / width * 360 + amplitude * 5) % 360
+      const saturation = 80
+      const lightness = isDark ? 70 : 50
+      
+      ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`
+      ctx.lineWidth = 1
+      
+      // Draw interference rings
+      const ringCount = Math.min(2, Math.floor(amplitude / 40)) // Reduced ring count
+      for (let i = 0; i < ringCount; i++) {
+        const ringRadius = 6 + i * 5 // Smaller rings
+        ctx.beginPath()
+        ctx.arc(field.x, field.y, ringRadius, 0, 2 * Math.PI)
+        ctx.stroke()
+      }
+    })
     
     // Draw particles with glow effects
     if (showParticles) {
