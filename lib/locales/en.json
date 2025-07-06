@@ -390,6 +390,8 @@
     "waveSettings": "Wave Settings",
     "smoothness": "Smoothness",
     "smoothnessDescription": "Higher values create smoother, more organic patterns with better performance",
+    "lineDensity": "Line Density",
+    "lineDensityDescription": "Control the amount of interference lines shown (higher = more lines)",
     "waveSources": "Wave Sources",
     "addNewSource": "Add New Source",
     "cancelAdding": "Cancel Adding",

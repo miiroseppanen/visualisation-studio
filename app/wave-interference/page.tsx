@@ -90,6 +90,7 @@ export default function WaveInterferencePage() {
   const [showWavefronts, setShowWavefronts] = useState(true)
   const [showParticles, setShowParticles] = useState(true)
   const [smoothness, setSmoothness] = useState(12) // Higher for better quality
+  const [lineDensity, setLineDensity] = useState(8) // Control for amount of lines
   const [selectedSourceType, setSelectedSourceType] = useState<'sine' | 'cosine'>('sine')
   const [isAddingSource, setIsAddingSource] = useState(false)
 
@@ -214,13 +215,16 @@ export default function WaveInterferencePage() {
   // Generate interference field with enhanced visual effects
   const generateInterferenceField = useCallback((width: number, height: number): InterferenceField[] => {
     const fields: InterferenceField[] = []
-    const step = Math.max(6, Math.min(12, 30 / smoothness)) // Increased step for fewer lines
+    const step = Math.max(6, Math.min(12, 30 / smoothness)) // Base step from smoothness
+    const densityStep = Math.max(step, Math.min(step * 3, step + (20 - lineDensity) * 2)) // Adjust step based on line density
     
-    for (let x = 0; x < width; x += step) {
-      for (let y = 0; y < height; y += step) {
+    for (let x = 0; x < width; x += densityStep) {
+      for (let y = 0; y < height; y += densityStep) {
         const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
         
-        if (Math.abs(amplitude) < 8) continue // Higher threshold for fewer lines
+        // Adjust threshold based on line density - higher density = lower threshold
+        const threshold = Math.max(4, 12 - lineDensity)
+        if (Math.abs(amplitude) < threshold) continue
         
         const dx = calculateWaveAmplitude(x + step, y, animationSettings.time) - amplitude
         const dy = calculateWaveAmplitude(x, y + step, animationSettings.time) - amplitude
@@ -238,7 +242,7 @@ export default function WaveInterferencePage() {
     }
     
     return fields
-  }, [calculateWaveAmplitude, animationSettings.time, smoothness])
+  }, [calculateWaveAmplitude, animationSettings.time, smoothness, lineDensity])
 
   // Update particle system
   const updateParticles = useCallback((width: number, height: number) => {
@@ -762,6 +766,7 @@ export default function WaveInterferencePage() {
     setShowWavefronts(true)
     setShowParticles(true)
     setSmoothness(12)
+    setLineDensity(8)
     setSelectedSourceType('sine')
     setIsAddingSource(false)
     setIsDragging(false)
@@ -874,9 +879,11 @@ export default function WaveInterferencePage() {
 
           <WaveSettings
             resolution={smoothness}
+            lineDensity={lineDensity}
             expanded={panelState.waveSettingsExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ ...prev, waveSettingsExpanded: !prev.waveSettingsExpanded }))}
             onSetResolution={setSmoothness}
+            onSetLineDensity={setLineDensity}
           />
 
           <AnimationControls
