@@ -321,19 +321,19 @@ export default function WaveInterferencePage() {
     // Draw interference lines instead of circles
     if (showInterference) {
       fields.forEach(field => {
-        const intensity = Math.min(1, field.intensity / 40) // Adjusted threshold
-        const alpha = 0.15 + intensity * 0.5 // Reduced alpha
+        const intensity = Math.min(1, field.intensity / 50) // Higher threshold for stability
+        const alpha = 0.2 + intensity * 0.4 // More stable alpha range
         
-        // Dynamic color based on amplitude and position
-        const hue = (field.x / width * 360 + field.amplitude * 8) % 360
-        const saturation = 60 + intensity * 40
-        const lightness = isDark ? 50 + intensity * 50 : 30 + intensity * 40
+        // More stable color calculation - less dependent on amplitude
+        const baseHue = (field.x / width * 360) % 360 // Only position-based hue
+        const saturation = 70 + intensity * 20 // More stable saturation
+        const lightness = isDark ? 60 + intensity * 30 : 40 + intensity * 30 // More stable lightness
         
-        ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`
-        ctx.lineWidth = 0.5 + intensity * 1.5 // More narrow lines
+        ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha})`
+        ctx.lineWidth = 0.8 + intensity * 1.2 // More stable line width
         
         // Draw lines to represent interference patterns
-        const length = 6 + intensity * 15 // Shorter lines
+        const length = 8 + intensity * 12 // More stable length calculation
         const endX = field.x + Math.cos(field.angle) * length
         const endY = field.y + Math.sin(field.angle) * length
         
@@ -343,14 +343,14 @@ export default function WaveInterferencePage() {
         ctx.stroke()
         
         // Draw perpendicular lines for more detail (less frequent)
-        if (intensity > 0.6) { // Higher threshold for perpendicular lines
+        if (intensity > 0.7) { // Higher threshold for perpendicular lines
           const perpAngle = field.angle + Math.PI / 2
-          const perpLength = 3 + intensity * 6 // Shorter perpendicular lines
+          const perpLength = 4 + intensity * 4 // More stable perpendicular length
           const perpEndX = field.x + Math.cos(perpAngle) * perpLength
           const perpEndY = field.y + Math.sin(perpAngle) * perpLength
           
-          ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.5})`
-          ctx.lineWidth = 0.3 + intensity * 0.5 // Very narrow perpendicular lines
+          ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha * 0.6})`
+          ctx.lineWidth = 0.5 + intensity * 0.3 // More stable perpendicular line width
           ctx.beginPath()
           ctx.moveTo(field.x, field.y)
           ctx.lineTo(perpEndX, perpEndY)
@@ -383,21 +383,22 @@ export default function WaveInterferencePage() {
     
     // Draw interference cross patterns at high amplitude points (performance optimized)
     if (showInterference) {
-      const highAmplitudeFields = fields.filter(f => Math.abs(f.amplitude) > 25) // Higher threshold
-      const maxCrosses = Math.min(15, highAmplitudeFields.length) // Limit number of crosses
+      const highAmplitudeFields = fields.filter(f => Math.abs(f.amplitude) > 30) // Higher threshold for stability
+      const maxCrosses = Math.min(12, highAmplitudeFields.length) // Fewer crosses for stability
       highAmplitudeFields.slice(0, maxCrosses).forEach(field => {
         const amplitude = Math.abs(field.amplitude)
-        const alpha = Math.min(0.6, amplitude / 120) // Reduced alpha
+        const alpha = Math.min(0.5, amplitude / 150) // More stable alpha
         
-        const hue = (field.x / width * 360 + amplitude * 5) % 360
-        const saturation = 80
-        const lightness = isDark ? 70 : 50
+        // More stable color calculation - position-based only
+        const baseHue = (field.x / width * 360) % 360
+        const saturation = 75
+        const lightness = isDark ? 65 : 45
         
-        ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`
-        ctx.lineWidth = 1.5
+        ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha})`
+        ctx.lineWidth = 1.2
         
         // Draw interference cross patterns
-        const crossLength = 8 + amplitude / 20
+        const crossLength = 10 + amplitude / 25 // More stable length calculation
         
         // Horizontal line
         ctx.beginPath()
@@ -412,20 +413,20 @@ export default function WaveInterferencePage() {
         ctx.stroke()
         
         // Diagonal lines for more detail
-        if (amplitude > 40) {
-          ctx.lineWidth = 1
-          ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.7})`
+        if (amplitude > 50) { // Higher threshold for diagonal lines
+          ctx.lineWidth = 0.8
+          ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha * 0.6})`
           
           // Diagonal line 1
           ctx.beginPath()
-          ctx.moveTo(field.x - crossLength * 0.7, field.y - crossLength * 0.7)
-          ctx.lineTo(field.x + crossLength * 0.7, field.y + crossLength * 0.7)
+          ctx.moveTo(field.x - crossLength * 0.6, field.y - crossLength * 0.6)
+          ctx.lineTo(field.x + crossLength * 0.6, field.y + crossLength * 0.6)
           ctx.stroke()
           
           // Diagonal line 2
           ctx.beginPath()
-          ctx.moveTo(field.x - crossLength * 0.7, field.y + crossLength * 0.7)
-          ctx.lineTo(field.x + crossLength * 0.7, field.y - crossLength * 0.7)
+          ctx.moveTo(field.x - crossLength * 0.6, field.y + crossLength * 0.6)
+          ctx.lineTo(field.x + crossLength * 0.6, field.y - crossLength * 0.6)
           ctx.stroke()
         }
       })
