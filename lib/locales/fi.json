@@ -361,7 +361,16 @@
     "disableMajorContours": "Aseta 0 poistaaksesi suuret korkeuskäyrät",
     "majorContourDescription": "Kuinka usein piirretään paksumpia korkeuskäyrät",
     "styleInfo": "Tyyli: Mustavalkoiset topografiset viivat",
-    "majorMinor": "Suuri/Pieni"
+    "majorMinor": "Suuri/Pieni",
+    "visualizationMode": "Visualisointitila",
+    "streamlineMode": "Virtausviivatila",
+    "showSources": "Näytä lähteet",
+    "streamlineDensity": "Virtausviivojen tiheys",
+    "vectorDensity": "Vektorien tiheys",
+    "vectorLength": "Vektorin pituus",
+    "streamlineLength": "Virtausviivan pituus",
+    "steps": "askelta",
+    "stepSize": "Askelkoko"
   },
   "about": {
     "title": "Tietoja Visualisointi Studiosta",

@@ -5,6 +5,7 @@ import { CollapsibleHeader } from '@/components/ui/collapsible-header'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslation } from 'react-i18next'
 import type { TurbulenceSettings } from '@/lib/types'
 import {
   MIN_TURBULENCE_LINE_COUNT,
@@ -34,6 +35,8 @@ export function TurbulenceSettings({
   onToggleExpanded, 
   onSettingsChange 
 }: TurbulenceSettingsProps) {
+  const { t } = useTranslation()
+  
   // Extract streamline settings for easier access
   const streamlineSteps = settings.streamlineSteps || 50
   const streamlineStepSize = settings.streamlineStepSize || 2
@@ -72,7 +75,7 @@ export function TurbulenceSettings({
   return (
     <div className="space-y-4">
       <CollapsibleHeader
-        title="Turbulence Settings"
+        title={t('visualizationSettings.turbulenceSettings')}
         isExpanded={expanded}
         onToggle={onToggleExpanded}
       />
@@ -81,7 +84,7 @@ export function TurbulenceSettings({
         <div className="space-y-4 pl-4">
           {/* Mode Selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Visualization Mode</Label>
+            <Label className="text-sm font-medium">{t('visualizationSettings.visualizationMode')}</Label>
             
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -90,7 +93,7 @@ export function TurbulenceSettings({
                 onCheckedChange={(checked) => onSettingsChange({ streamlineMode: !!checked })}
               />
               <Label htmlFor="streamlineMode" className="text-sm">
-                Streamline Mode
+                {t('visualizationSettings.streamlineMode')}
               </Label>
             </div>
 
@@ -101,7 +104,7 @@ export function TurbulenceSettings({
                 onCheckedChange={(checked) => onSettingsChange({ showSources: !!checked })}
               />
               <Label htmlFor="showSources" className="text-sm">
-                Show Sources
+                {t('visualizationSettings.showSources')}
               </Label>
             </div>
           </div>
@@ -110,7 +113,7 @@ export function TurbulenceSettings({
           <div className="space-y-2">
             <div className="flex justify-between">
               <Label className="text-sm">
-                {settings.streamlineMode ? 'Streamline Density' : 'Vector Density'}
+                {settings.streamlineMode ? t('visualizationSettings.streamlineDensity') : t('visualizationSettings.vectorDensity')}
               </Label>
               <span className="text-xs text-muted-foreground">
                 {settings.lineCount.toLocaleString()}
@@ -130,7 +133,7 @@ export function TurbulenceSettings({
           {!settings.streamlineMode && (
             <div className="space-y-2">
               <div className="flex justify-between">
-                <Label className="text-sm">Vector Length</Label>
+                <Label className="text-sm">{t('visualizationSettings.vectorLength')}</Label>
                 <span className="text-xs text-muted-foreground">
                   {settings.lineLength}px
                 </span>
@@ -152,9 +155,9 @@ export function TurbulenceSettings({
               {/* Streamline Steps */}
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <Label className="text-sm">Streamline Length</Label>
+                  <Label className="text-sm">{t('visualizationSettings.streamlineLength')}</Label>
                   <span className="text-xs text-muted-foreground">
-                    {streamlineSteps} steps
+                    {streamlineSteps} {t('visualizationSettings.steps')}
                   </span>
                 </div>
                 <Slider
@@ -170,7 +173,7 @@ export function TurbulenceSettings({
               {/* Streamline Step Size */}
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <Label className="text-sm">Step Size</Label>
+                  <Label className="text-sm">{t('visualizationSettings.stepSize')}</Label>
                   <span className="text-xs text-muted-foreground">
                     {streamlineStepSize}px
                   </span>
@@ -195,7 +198,7 @@ export function TurbulenceSettings({
               onCheckedChange={(checked) => onSettingsChange({ showSources: !!checked })}
             />
             <Label htmlFor="showSources" className="text-sm">
-              Show Sources
+              {t('visualizationSettings.showSources')}
             </Label>
           </div>
         </div>

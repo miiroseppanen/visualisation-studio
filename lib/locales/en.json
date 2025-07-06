@@ -373,7 +373,16 @@
     "disableMajorContours": "Set to 0 to disable major contour lines",
     "majorContourDescription": "How often to draw thicker contour lines",
     "styleInfo": "Style: Black and white topographic lines",
-    "majorMinor": "Major/Minor"
+    "majorMinor": "Major/Minor",
+    "visualizationMode": "Visualization Mode",
+    "streamlineMode": "Streamline Mode",
+    "showSources": "Show Sources",
+    "streamlineDensity": "Streamline Density",
+    "vectorDensity": "Vector Density",
+    "vectorLength": "Vector Length",
+    "streamlineLength": "Streamline Length",
+    "steps": "steps",
+    "stepSize": "Step Size"
   },
   "about": {
     "title": "About Visualization Studio",
