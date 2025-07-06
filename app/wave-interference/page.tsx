@@ -245,9 +245,14 @@ export default function WaveInterferencePage() {
     setParticles(prev => {
       const newParticles = prev.filter(p => p.life > 0)
       
-      // Add new particles from wave sources
+      // Limit total particles to prevent performance issues
+      if (newParticles.length > 200) {
+        return newParticles.slice(0, 200)
+      }
+      
+      // Add new particles from wave sources (reduced frequency)
       waveSources.forEach(source => {
-        if (!source.active || Math.random() > 0.1) return
+        if (!source.active || Math.random() > 0.05) return
         
         const angle = Math.random() * Math.PI * 2
         const speed = 2 + Math.random() * 3
@@ -280,6 +285,28 @@ export default function WaveInterferencePage() {
       return newParticles
     })
   }, [waveSources])
+
+  // Separate particle update effect
+  useEffect(() => {
+    if (!animationSettings.isAnimating || !isClient) return
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const getCanvasSize = () => {
+      const rect = canvas.getBoundingClientRect()
+      return { width: rect.width, height: rect.height }
+    }
+
+    const particleInterval = setInterval(() => {
+      const { width, height } = getCanvasSize()
+      updateParticles(width, height)
+    }, 100) // Update particles every 100ms instead of every frame
+
+    return () => {
+      clearInterval(particleInterval)
+    }
+  }, [animationSettings.isAnimating, isClient, updateParticles])
 
   // Draw immersive interference visualization
   const drawImmersiveInterference = useCallback((ctx: CanvasRenderingContext2D, fields: InterferenceField[], width: number, height: number) => {
@@ -560,15 +587,12 @@ export default function WaveInterferencePage() {
     const width = canvas.width / window.devicePixelRatio
     const height = canvas.height / window.devicePixelRatio
 
-    // Update particles
-    updateParticles(width, height)
-
     // Generate and draw interference field
     if (showInterference) {
       const fields = generateInterferenceField(width, height)
       drawImmersiveInterference(ctx, fields, width, height)
     }
-  }, [showInterference, generateInterferenceField, drawImmersiveInterference, updateParticles])
+  }, [showInterference, generateInterferenceField, drawImmersiveInterference])
 
   // Render loop with performance optimization
   useEffect(() => {

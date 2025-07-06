@@ -1,7 +1,7 @@
 {
+  "/page": "app/page.js",
+  "/neural-network/page": "app/neural-network/page.js",
   "/grid-field/page": "app/grid-field/page.js",
   "/wave-interference/page": "app/wave-interference/page.js",
-  "/page": "app/page.js",
-  "/sound-wave/page": "app/sound-wave/page.js",
-  "/neural-network/page": "app/neural-network/page.js"
+  "/sound-wave/page": "app/sound-wave/page.js"
 }
