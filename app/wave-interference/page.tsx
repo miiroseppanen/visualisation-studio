@@ -214,13 +214,13 @@ export default function WaveInterferencePage() {
   // Generate interference field with enhanced visual effects
   const generateInterferenceField = useCallback((width: number, height: number): InterferenceField[] => {
     const fields: InterferenceField[] = []
-    const step = Math.max(4, Math.min(8, 20 / smoothness)) // Increased step for better performance
+    const step = Math.max(6, Math.min(12, 30 / smoothness)) // Increased step for fewer lines
     
     for (let x = 0; x < width; x += step) {
       for (let y = 0; y < height; y += step) {
         const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
         
-        if (Math.abs(amplitude) < 5) continue // Higher threshold for better performance
+        if (Math.abs(amplitude) < 8) continue // Higher threshold for fewer lines
         
         const dx = calculateWaveAmplitude(x + step, y, animationSettings.time) - amplitude
         const dy = calculateWaveAmplitude(x, y + step, animationSettings.time) - amplitude
@@ -330,8 +330,8 @@ export default function WaveInterferencePage() {
     
     // Draw interference lines instead of circles
     fields.forEach(field => {
-      const intensity = Math.min(1, field.intensity / 30)
-      const alpha = 0.2 + intensity * 0.6
+      const intensity = Math.min(1, field.intensity / 40) // Adjusted threshold
+      const alpha = 0.15 + intensity * 0.5 // Reduced alpha
       
       // Dynamic color based on amplitude and position
       const hue = (field.x / width * 360 + field.amplitude * 8) % 360
@@ -339,10 +339,10 @@ export default function WaveInterferencePage() {
       const lightness = isDark ? 50 + intensity * 50 : 30 + intensity * 40
       
       ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`
-      ctx.lineWidth = 1 + intensity * 2
+      ctx.lineWidth = 0.5 + intensity * 1.5 // More narrow lines
       
       // Draw lines to represent interference patterns
-      const length = 8 + intensity * 20
+      const length = 6 + intensity * 15 // Shorter lines
       const endX = field.x + Math.cos(field.angle) * length
       const endY = field.y + Math.sin(field.angle) * length
       
@@ -351,15 +351,15 @@ export default function WaveInterferencePage() {
       ctx.lineTo(endX, endY)
       ctx.stroke()
       
-      // Draw perpendicular lines for more detail
-      if (intensity > 0.4) {
+      // Draw perpendicular lines for more detail (less frequent)
+      if (intensity > 0.6) { // Higher threshold for perpendicular lines
         const perpAngle = field.angle + Math.PI / 2
-        const perpLength = 4 + intensity * 10
+        const perpLength = 3 + intensity * 6 // Shorter perpendicular lines
         const perpEndX = field.x + Math.cos(perpAngle) * perpLength
         const perpEndY = field.y + Math.sin(perpAngle) * perpLength
         
-        ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.6})`
-        ctx.lineWidth = 0.5 + intensity
+        ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha * 0.5})`
+        ctx.lineWidth = 0.3 + intensity * 0.5 // Very narrow perpendicular lines
         ctx.beginPath()
         ctx.moveTo(field.x, field.y)
         ctx.lineTo(perpEndX, perpEndY)
