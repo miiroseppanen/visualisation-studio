@@ -30,6 +30,19 @@ interface InterferencePoint {
   gradient: number
 }
 
+// Performance optimization: Spatial partitioning for wave sources
+interface SpatialCell {
+  sources: WaveSource[]
+  bounds: { minX: number; minY: number; maxX: number; maxY: number }
+}
+
+// Performance optimization: Memoized wave calculations
+interface WaveCache {
+  time: number
+  points: Map<string, number>
+  lastUpdate: number
+}
+
 export default function WaveInterferencePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
@@ -37,6 +50,16 @@ export default function WaveInterferencePage() {
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const { theme } = useTheme()
+
+  // Performance optimization: Cache for wave calculations
+  const waveCacheRef = useRef<WaveCache>({
+    time: 0,
+    points: new Map(),
+    lastUpdate: 0
+  })
+
+  // Performance optimization: Spatial partitioning
+  const spatialGridRef = useRef<SpatialCell[][]>([])
 
   // Wave sources state
   const [waveSources, setWaveSources] = useState<WaveSource[]>([
@@ -52,6 +75,10 @@ export default function WaveInterferencePage() {
   const [smoothness, setSmoothness] = useState(8) // Controls sampling density
   const [selectedSourceType, setSelectedSourceType] = useState<'sine' | 'cosine'>('sine')
   const [isAddingSource, setIsAddingSource] = useState(false)
+
+  // Performance optimization: Adaptive rendering
+  const [frameRate, setFrameRate] = useState(60)
+  const [lastFrameTime, setLastFrameTime] = useState(0)
 
   // Animation settings
   const [animationSettings, setAnimationSettings] = useState<WaveInterferenceAnimationSettings>({
@@ -78,49 +105,74 @@ export default function WaveInterferencePage() {
     setIsClient(true)
   }, [])
 
-  // Canvas setup and resize handling
-  useEffect(() => {
-    if (!isClient) return
+  // Performance optimization: Update spatial grid when sources change
+  const updateSpatialGrid = useCallback((sources: WaveSource[], width: number, height: number) => {
+    const cellSize = 200 // Optimal cell size for performance
+    const cols = Math.ceil(width / cellSize)
+    const rows = Math.ceil(height / cellSize)
+    
+    const grid: SpatialCell[][] = Array(rows).fill(null).map(() => 
+      Array(cols).fill(null).map(() => ({ sources: [], bounds: { minX: 0, minY: 0, maxX: 0, maxY: 0 } }))
+    )
 
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect()
-      const dpr = window.devicePixelRatio || 1
-      canvas.width = rect.width * dpr
-      canvas.height = rect.height * dpr
-      canvas.style.width = rect.width + 'px'
-      canvas.style.height = rect.height + 'px'
+    sources.forEach(source => {
+      if (!source.active) return
       
-      // Ensure the canvas context is properly scaled
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        ctx.scale(dpr, dpr)
+      const col = Math.floor(source.x / cellSize)
+      const row = Math.floor(source.y / cellSize)
+      
+      if (col >= 0 && col < cols && row >= 0 && row < rows) {
+        grid[row][col].sources.push(source)
+        grid[row][col].bounds = {
+          minX: col * cellSize,
+          minY: row * cellSize,
+          maxX: (col + 1) * cellSize,
+          maxY: (row + 1) * cellSize
+        }
+      }
+    })
+
+    spatialGridRef.current = grid
+  }, [])
+
+  // Performance optimization: Memoized wave amplitude calculation with spatial partitioning
+  const calculateWaveAmplitude = useCallback((x: number, y: number, time: number): number => {
+    // Check cache first
+    const cacheKey = `${x.toFixed(1)},${y.toFixed(1)},${time.toFixed(2)}`
+    const cache = waveCacheRef.current
+    
+    if (Math.abs(cache.time - time) < 0.01 && cache.points.has(cacheKey)) {
+      return cache.points.get(cacheKey)!
+    }
+
+    let totalAmplitude = 0
+    const activeSources = waveSources.filter(s => s.active)
+    
+    // Use spatial partitioning to only check relevant sources
+    const cellSize = 200
+    const col = Math.floor(x / cellSize)
+    const row = Math.floor(y / cellSize)
+    const grid = spatialGridRef.current
+    
+    const relevantSources: WaveSource[] = []
+    
+    // Check current cell and adjacent cells
+    for (let r = Math.max(0, row - 1); r <= Math.min(grid.length - 1, row + 1); r++) {
+      for (let c = Math.max(0, col - 1); c <= Math.min(grid[0].length - 1, col + 1); c++) {
+        relevantSources.push(...grid[r][c].sources)
       }
     }
 
-    resizeCanvas()
-    window.addEventListener('resize', resizeCanvas)
-    
-    // Use ResizeObserver for more reliable resize detection
-    const resizeObserver = new ResizeObserver(resizeCanvas)
-    resizeObserver.observe(canvas)
-    
-    return () => {
-      window.removeEventListener('resize', resizeCanvas)
-      resizeObserver.disconnect()
-    }
-  }, [isClient])
+    // Fallback to all sources if spatial partitioning fails
+    const sourcesToCheck = relevantSources.length > 0 ? relevantSources : activeSources
 
-  // Memoized wave amplitude calculation
-  const calculateWaveAmplitude = useCallback((x: number, y: number, time: number): number => {
-    let totalAmplitude = 0
-
-    waveSources.forEach(source => {
-      if (!source.active) return
-
+    sourcesToCheck.forEach(source => {
       const distance = Math.sqrt((x - source.x) ** 2 + (y - source.y) ** 2)
+      
+      // Performance optimization: Skip sources that are too far away
+      const maxInfluence = source.amplitude * 3
+      if (distance > maxInfluence) return
+      
       const phase = source.phase + (time * source.frequency * animationSettings.waveSpeed)
       const wavePhase = (distance / source.wavelength) * 2 * Math.PI + phase
       
@@ -136,17 +188,37 @@ export default function WaveInterferencePage() {
       totalAmplitude += waveValue * amplitudeAtPoint
     })
 
+    // Cache the result
+    cache.points.set(cacheKey, totalAmplitude)
+    cache.time = time
+    
+    // Limit cache size for memory management
+    if (cache.points.size > 10000) {
+      const entries = Array.from(cache.points.entries())
+      cache.points.clear()
+      entries.slice(-5000).forEach(([key, value]) => cache.points.set(key, value))
+    }
+
     return totalAmplitude
   }, [waveSources, selectedSourceType, animationSettings.waveSpeed])
 
-  // Generate smooth interference pattern
+  // Performance optimization: Adaptive sampling based on smoothness
   const generateSmoothInterference = useCallback((width: number, height: number): InterferencePoint[] => {
     const points: InterferencePoint[] = []
-    const step = Math.max(2, Math.min(8, 20 / smoothness))
+    
+    // Adaptive step size based on smoothness and performance
+    const baseStep = Math.max(3, Math.min(12, 25 / smoothness))
+    const adaptiveStep = Math.max(baseStep, Math.min(baseStep * 2, width / 100))
+    
+    // Performance optimization: Reduce sampling in areas with low activity
+    const step = adaptiveStep
     
     for (let x = 0; x < width; x += step) {
       for (let y = 0; y < height; y += step) {
         const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
+        
+        // Skip points with very low amplitude for performance
+        if (Math.abs(amplitude) < 2) continue
         
         // Calculate gradient for smooth transitions
         const dx = calculateWaveAmplitude(x + step, y, animationSettings.time) - amplitude
@@ -165,34 +237,17 @@ export default function WaveInterferencePage() {
     return points
   }, [calculateWaveAmplitude, animationSettings.time, smoothness])
 
-  // Draw smooth interference pattern
+  // Performance optimization: Optimized drawing with reduced operations
   const drawSmoothInterference = useCallback((ctx: CanvasRenderingContext2D, points: InterferencePoint[], width: number, height: number) => {
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
     
-    // Create gradient for smooth color transitions
-    const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height)/2)
-    
-    if (isDark) {
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)')
-      gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.4)')
-      gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.1)')
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
-    } else {
-      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.8)')
-      gradient.addColorStop(0.3, 'rgba(0, 0, 0, 0.4)')
-      gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.1)')
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-    }
-    
-    ctx.fillStyle = gradient
-    ctx.fillRect(0, 0, width, height)
-    
-    // Draw interference patterns using smooth curves
+    // Performance optimization: Batch similar operations
+    ctx.save()
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
     
-    // Draw interference lines along amplitude contours
-    const contourThresholds = isDark ? [0.2, 0.4, 0.6, 0.8] : [0.2, 0.4, 0.6, 0.8]
+    // Draw interference patterns using optimized contour detection
+    const contourThresholds = [0.2, 0.4, 0.6, 0.8]
     
     contourThresholds.forEach((threshold, index) => {
       const alpha = isDark ? 0.3 - index * 0.05 : 0.3 - index * 0.05
@@ -201,44 +256,33 @@ export default function WaveInterferencePage() {
       ctx.strokeStyle = isDark ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 0, 0, ${alpha})`
       ctx.lineWidth = lineWidth
       
-      // Find contour points
-      const contourPoints: { x: number; y: number }[] = []
+      // Performance optimization: Filter points more efficiently
+      const contourPoints = points.filter(point => Math.abs(point.amplitude) > threshold * 50)
       
-      for (let i = 0; i < points.length; i++) {
-        const point = points[i]
-        if (Math.abs(point.amplitude) > threshold * 50) {
-          contourPoints.push({ x: point.x, y: point.y })
-        }
-      }
-      
-      // Draw smooth curves through contour points
+      // Draw optimized curves through contour points
       if (contourPoints.length > 2) {
         ctx.beginPath()
         
-        // Use quadratic curves for smooth paths
-        for (let i = 0; i < contourPoints.length - 2; i += 2) {
+        // Performance optimization: Use fewer curve segments for better performance
+        const step = Math.max(1, Math.floor(contourPoints.length / 50))
+        
+        for (let i = 0; i < contourPoints.length - step; i += step) {
           const p1 = contourPoints[i]
-          const p2 = contourPoints[i + 1]
-          const p3 = contourPoints[i + 2]
+          const p2 = contourPoints[i + step]
           
           if (i === 0) {
             ctx.moveTo(p1.x, p1.y)
           }
           
-          const cp1x = p1.x + (p2.x - p1.x) * 0.5
-          const cp1y = p1.y + (p2.y - p1.y) * 0.5
-          const cp2x = p2.x + (p3.x - p2.x) * 0.5
-          const cp2y = p2.y + (p3.y - p2.y) * 0.5
-          
-          ctx.quadraticCurveTo(cp1x, cp1y, p2.x, p2.y)
+          ctx.lineTo(p2.x, p2.y)
         }
         
         ctx.stroke()
       }
     })
     
-    // Draw flowing streamlines
-    const streamlineCount = Math.floor(width * height / 10000)
+    // Performance optimization: Reduce streamline count based on canvas size
+    const streamlineCount = Math.min(20, Math.floor(width * height / 15000))
     ctx.lineWidth = 1
     ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
     
@@ -251,7 +295,7 @@ export default function WaveInterferencePage() {
       
       let x = startX
       let y = startY
-      const steps = 50
+      const steps = 30 // Reduced for performance
       
       for (let step = 0; step < steps; step++) {
         const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
@@ -275,16 +319,44 @@ export default function WaveInterferencePage() {
       
       ctx.stroke()
     }
+    
+    ctx.restore()
   }, [calculateWaveAmplitude, animationSettings.time, theme])
 
-  // Animation loop
+  // Performance optimization: Adaptive frame rate
+  const updateFrameRate = useCallback(() => {
+    const now = performance.now()
+    const delta = now - lastFrameTime
+    const currentFPS = 1000 / delta
+    
+    // Adjust frame rate based on performance
+    if (currentFPS < 30) {
+      setFrameRate(prev => Math.max(15, prev - 5))
+    } else if (currentFPS > 55) {
+      setFrameRate(prev => Math.min(60, prev + 2))
+    }
+    
+    setLastFrameTime(now)
+  }, [lastFrameTime])
+
+  // Animation loop with performance optimization
   useEffect(() => {
     if (!animationSettings.isAnimating || !isClient) return
 
     let frameId: number | null = null
+    let lastUpdate = 0
 
-    const animate = () => {
+    const animate = (currentTime: number) => {
+      // Performance optimization: Throttle updates based on frame rate
+      const targetInterval = 1000 / frameRate
+      if (currentTime - lastUpdate < targetInterval) {
+        frameId = requestAnimationFrame(animate)
+        return
+      }
+      
+      lastUpdate = currentTime
       setAnimationSettings(prev => ({ ...prev, time: prev.time + animationSettings.speed * 0.02 }))
+      updateFrameRate()
       
       frameId = requestAnimationFrame(animate)
       animationRef.current = frameId
@@ -306,7 +378,7 @@ export default function WaveInterferencePage() {
         animationRef.current = undefined
       }
     }
-  }, [animationSettings.isAnimating, animationSettings.speed, isClient])
+  }, [animationSettings.isAnimating, animationSettings.speed, isClient, frameRate, updateFrameRate])
 
   // Handle pause all animations
   useEffect(() => {
@@ -342,7 +414,56 @@ export default function WaveInterferencePage() {
     }
   }, [])
 
-  // Memoized render function
+  // Canvas setup and resize handling with performance optimization
+  useEffect(() => {
+    if (!isClient) return
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = rect.width * dpr
+      canvas.height = rect.height * dpr
+      canvas.style.width = rect.width + 'px'
+      canvas.style.height = rect.height + 'px'
+      
+      // Update spatial grid when canvas size changes
+      updateSpatialGrid(waveSources, rect.width, rect.height)
+      
+      // Ensure the canvas context is properly scaled
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.scale(dpr, dpr)
+      }
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+    
+    // Use ResizeObserver for more reliable resize detection
+    const resizeObserver = new ResizeObserver(resizeCanvas)
+    resizeObserver.observe(canvas)
+    
+    return () => {
+      window.removeEventListener('resize', resizeCanvas)
+      resizeObserver.disconnect()
+    }
+  }, [isClient, waveSources, updateSpatialGrid])
+
+  // Performance optimization: Update spatial grid when sources change
+  useEffect(() => {
+    if (!isClient) return
+    
+    const canvas = canvasRef.current
+    if (!canvas) return
+    
+    const rect = canvas.getBoundingClientRect()
+    updateSpatialGrid(waveSources, rect.width, rect.height)
+  }, [waveSources, updateSpatialGrid, isClient])
+
+  // Memoized render function with performance optimization
   const render = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -364,7 +485,7 @@ export default function WaveInterferencePage() {
       drawSmoothInterference(ctx, points, width, height)
     }
 
-    // Draw wavefronts as smooth circles
+    // Draw wavefronts as smooth circles with performance optimization
     if (showWavefronts) {
       ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
       ctx.lineWidth = 1
@@ -374,7 +495,7 @@ export default function WaveInterferencePage() {
         if (!source.active) return
 
         const phase = source.phase + (animationSettings.time * source.frequency * animationSettings.waveSpeed)
-        const wavefrontCount = 6
+        const wavefrontCount = 4 // Reduced for performance
 
         for (let i = 0; i < wavefrontCount; i++) {
           const radius = (i * source.wavelength) + (phase * source.wavelength / (2 * Math.PI))
@@ -414,7 +535,7 @@ export default function WaveInterferencePage() {
     }
   }, [showInterference, showWavefronts, showWaveSources, waveSources, generateSmoothInterference, drawSmoothInterference, animationSettings.time, theme])
 
-  // Render loop with proper cleanup
+  // Render loop with performance optimization
   useEffect(() => {
     if (!isClient || !canvasRef.current) return
 
@@ -521,6 +642,14 @@ export default function WaveInterferencePage() {
     setIsAddingSource(false)
     setIsDragging(false)
     setDraggedSourceId(null)
+    setFrameRate(60)
+    
+    // Clear cache
+    waveCacheRef.current = {
+      time: 0,
+      points: new Map(),
+      lastUpdate: 0
+    }
   }, [])
 
   // Handle canvas mouse down for adding/dragging sources
@@ -592,6 +721,7 @@ export default function WaveInterferencePage() {
           Mode: Wave Interference | 
           Sources: {waveSources.filter(s => s.active).length} | 
           Smoothness: {smoothness} | 
+          FPS: {frameRate} | 
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
       }
