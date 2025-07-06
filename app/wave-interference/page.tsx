@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { Download, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
@@ -26,6 +26,7 @@ interface WaveSource {
 export default function WaveInterferencePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
+  const renderFrameRef = useRef<number>()
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const { theme } = useTheme()
@@ -93,8 +94,8 @@ export default function WaveInterferencePage() {
     }
   }, [isClient])
 
-  // Calculate wave amplitude at a point
-  const calculateWaveAmplitude = (x: number, y: number, time: number): number => {
+  // Memoized wave amplitude calculation
+  const calculateWaveAmplitude = useCallback((x: number, y: number, time: number): number => {
     let totalAmplitude = 0
 
     waveSources.forEach(source => {
@@ -117,7 +118,7 @@ export default function WaveInterferencePage() {
     })
 
     return totalAmplitude
-  }
+  }, [waveSources, selectedSourceType, animationSettings.waveSpeed])
 
   // Animation loop
   useEffect(() => {
@@ -158,6 +159,10 @@ export default function WaveInterferencePage() {
         unregisterAnimationFrame(animationRef.current)
         animationRef.current = undefined
       }
+      if (renderFrameRef.current) {
+        cancelAnimationFrame(renderFrameRef.current)
+        renderFrameRef.current = undefined
+      }
     }
 
     const handleBeforeUnload = () => {
@@ -180,112 +185,203 @@ export default function WaveInterferencePage() {
     }
   }, [])
 
-  // Render loop
-  useEffect(() => {
-    if (!isClient || !canvasRef.current) return
-
+  // Memoized render function
+  const render = useCallback(() => {
     const canvas = canvasRef.current
+    if (!canvas) return
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const render = () => {
-      // Clear canvas
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-      ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
+    // Clear canvas
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+    ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
 
-      const width = canvas.width / window.devicePixelRatio
-      const height = canvas.height / window.devicePixelRatio
+    const width = canvas.width / window.devicePixelRatio
+    const height = canvas.height / window.devicePixelRatio
 
-      // Draw interference pattern
-      if (showInterference) {
-        const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        
-        for (let x = 0; x < width; x += resolution) {
-          for (let y = 0; y < height; y += resolution) {
-            const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
-            const normalizedAmplitude = (amplitude + 100) / 200 // Normalize to 0-1
-            
-            // Create interference pattern colors
-            const intensity = Math.abs(normalizedAmplitude - 0.5) * 2
-            const alpha = 0.3 + intensity * 0.7
-            
-            const color = isDark 
-              ? `rgba(255, 255, 255, ${alpha})`
-              : `rgba(0, 0, 0, ${alpha})`
-            
-            ctx.fillStyle = color
-            ctx.fillRect(x, y, resolution, resolution)
-          }
+    // Draw interference pattern
+    if (showInterference) {
+      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      
+      for (let x = 0; x < width; x += resolution) {
+        for (let y = 0; y < height; y += resolution) {
+          const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
+          const normalizedAmplitude = (amplitude + 100) / 200 // Normalize to 0-1
+          
+          // Create interference pattern colors
+          const intensity = Math.abs(normalizedAmplitude - 0.5) * 2
+          const alpha = 0.3 + intensity * 0.7
+          
+          const color = isDark 
+            ? `rgba(255, 255, 255, ${alpha})`
+            : `rgba(0, 0, 0, ${alpha})`
+          
+          ctx.fillStyle = color
+          ctx.fillRect(x, y, resolution, resolution)
         }
       }
-
-      // Draw wavefronts
-      if (showWavefronts) {
-        const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        const wavefrontColor = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
-        
-        ctx.strokeStyle = wavefrontColor
-        ctx.lineWidth = 1
-
-        waveSources.forEach(source => {
-          if (!source.active) return
-
-          const phase = source.phase + (animationSettings.time * source.frequency * animationSettings.waveSpeed)
-          const wavefrontCount = 8
-
-          for (let i = 0; i < wavefrontCount; i++) {
-            const radius = (i * source.wavelength) + (phase * source.wavelength / (2 * Math.PI))
-            
-            ctx.beginPath()
-            ctx.arc(source.x, source.y, radius, 0, 2 * Math.PI)
-            ctx.stroke()
-          }
-        })
-      }
-
-      // Draw wave sources
-      if (showWaveSources) {
-        waveSources.forEach(source => {
-          if (!source.active) return
-
-          const color = source.active ? '#3b82f6' : '#6b7280'
-          
-          // Draw source circle
-          ctx.fillStyle = color
-          ctx.beginPath()
-          ctx.arc(source.x, source.y, 8, 0, 2 * Math.PI)
-          ctx.fill()
-          
-          // Draw source border
-          ctx.strokeStyle = '#000000'
-          ctx.lineWidth = 2
-          ctx.stroke()
-          
-          // Draw source label
-          ctx.fillStyle = 'white'
-          ctx.font = 'bold 12px sans-serif'
-          ctx.textAlign = 'center'
-          ctx.textBaseline = 'middle'
-          ctx.fillText(source.id, source.x, source.y)
-        })
-      }
     }
+
+    // Draw wavefronts
+    if (showWavefronts) {
+      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      const wavefrontColor = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
+      
+      ctx.strokeStyle = wavefrontColor
+      ctx.lineWidth = 1
+
+      waveSources.forEach(source => {
+        if (!source.active) return
+
+        const phase = source.phase + (animationSettings.time * source.frequency * animationSettings.waveSpeed)
+        const wavefrontCount = 8
+
+        for (let i = 0; i < wavefrontCount; i++) {
+          const radius = (i * source.wavelength) + (phase * source.wavelength / (2 * Math.PI))
+          
+          ctx.beginPath()
+          ctx.arc(source.x, source.y, radius, 0, 2 * Math.PI)
+          ctx.stroke()
+        }
+      })
+    }
+
+    // Draw wave sources
+    if (showWaveSources) {
+      waveSources.forEach(source => {
+        if (!source.active) return
+
+        const color = source.active ? '#3b82f6' : '#6b7280'
+        
+        // Draw source circle
+        ctx.fillStyle = color
+        ctx.beginPath()
+        ctx.arc(source.x, source.y, 8, 0, 2 * Math.PI)
+        ctx.fill()
+        
+        // Draw source border
+        ctx.strokeStyle = '#000000'
+        ctx.lineWidth = 2
+        ctx.stroke()
+        
+        // Draw source label
+        ctx.fillStyle = 'white'
+        ctx.font = 'bold 12px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(source.id, source.x, source.y)
+      })
+    }
+  }, [showInterference, showWavefronts, showWaveSources, resolution, waveSources, calculateWaveAmplitude, animationSettings.time, theme])
+
+  // Render loop with proper cleanup
+  useEffect(() => {
+    if (!isClient || !canvasRef.current) return
 
     // Initial render
     render()
 
-    // Set up animation loop for continuous rendering
+    // Set up animation loop for continuous rendering only when animating
     if (animationSettings.isAnimating) {
       const animate = () => {
         render()
-        requestAnimationFrame(animate)
+        renderFrameRef.current = requestAnimationFrame(animate)
       }
-      requestAnimationFrame(animate)
+      renderFrameRef.current = requestAnimationFrame(animate)
     }
-  }, [waveSources, showWaveSources, showInterference, showWavefronts, resolution, selectedSourceType, animationSettings, theme, isClient])
+
+    return () => {
+      if (renderFrameRef.current) {
+        cancelAnimationFrame(renderFrameRef.current)
+        renderFrameRef.current = undefined
+      }
+    }
+  }, [render, isClient, animationSettings.isAnimating])
+
+  // Wheel event handler
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !isClient) return
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      
+      const deltaY = e.deltaY
+      const zoomChange = -deltaY * ZOOM_SENSITIVITY
+      
+      const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
+      setZoomLevel(newZoom)
+    }
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
+    
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel)
+    }
+  }, [isClient, zoomLevel])
+
+  // Remove source
+  const removeSource = useCallback((id: string) => {
+    setWaveSources(prev => prev.filter(source => source.id !== id))
+  }, [])
+
+  // Update source
+  const updateSource = useCallback((id: string, updates: Partial<WaveSource>) => {
+    setWaveSources(prev => prev.map(source => 
+      source.id === id ? { ...source, ...updates } : source
+    ))
+  }, [])
+
+  // Export as SVG
+  const exportSVG = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const svg = `
+      <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="white"/>
+        ${waveSources.map(source => `
+          <circle cx="${source.x}" cy="${source.y}" r="8" fill="${source.active ? '#3b82f6' : '#6b7280'}"/>
+          <text x="${source.x}" y="${source.y}" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12">${source.id}</text>
+        `).join('')}
+      </svg>
+    `
+    
+    const blob = new Blob([svg], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'wave-interference.svg'
+    link.click()
+    URL.revokeObjectURL(url)
+  }, [waveSources])
+
+  // Reset to defaults
+  const resetToDefaults = useCallback(() => {
+    setWaveSources([
+      { id: '1', x: 200, y: 300, frequency: 2, amplitude: 50, phase: 0, wavelength: 100, active: true },
+      { id: '2', x: 600, y: 300, frequency: 2, amplitude: 50, phase: 0, wavelength: 100, active: true },
+      { id: '3', x: 400, y: 200, frequency: 1.5, amplitude: 40, phase: 0, wavelength: 120, active: true }
+    ])
+    setAnimationSettings({
+      isAnimating: true,
+      time: 0,
+      speed: 1.0,
+      waveSpeed: 2.0
+    })
+    setShowWaveSources(true)
+    setShowInterference(true)
+    setShowWavefronts(true)
+    setResolution(2)
+    setSelectedSourceType('sine')
+    setIsAddingSource(false)
+    setIsDragging(false)
+    setDraggedSourceId(null)
+  }, [])
 
   // Handle canvas mouse down for adding/dragging sources
-  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleCanvasMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -318,10 +414,10 @@ export default function WaveInterferencePage() {
       setIsDragging(true)
       setDraggedSourceId(newSource.id)
     }
-  }
+  }, [waveSources, isAddingSource])
 
   // Handle canvas mouse move for dragging sources
-  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleCanvasMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDragging || !draggedSourceId) return
 
     const canvas = canvasRef.current
@@ -334,92 +430,13 @@ export default function WaveInterferencePage() {
     setWaveSources(prev => prev.map(source => 
       source.id === draggedSourceId ? { ...source, x, y } : source
     ))
-  }
+  }, [isDragging, draggedSourceId])
 
   // Handle canvas mouse up to stop dragging
-  const handleCanvasMouseUp = () => {
+  const handleCanvasMouseUp = useCallback(() => {
     setIsDragging(false)
     setDraggedSourceId(null)
-  }
-
-  // Wheel event handler
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || !isClient) return
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      
-      const deltaY = e.deltaY
-      const zoomChange = -deltaY * ZOOM_SENSITIVITY
-      
-      const newZoom = Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, zoomLevel + zoomChange))
-      setZoomLevel(newZoom)
-    }
-
-    canvas.addEventListener('wheel', handleWheel, { passive: false })
-    
-    return () => {
-      canvas.removeEventListener('wheel', handleWheel)
-    }
-  }, [isClient, zoomLevel])
-
-  // Remove source
-  const removeSource = (id: string) => {
-    setWaveSources(prev => prev.filter(source => source.id !== id))
-  }
-
-  // Update source
-  const updateSource = (id: string, updates: Partial<WaveSource>) => {
-    setWaveSources(prev => prev.map(source => 
-      source.id === id ? { ...source, ...updates } : source
-    ))
-  }
-
-  // Export as SVG
-  const exportSVG = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const svg = `
-      <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="white"/>
-        ${waveSources.map(source => `
-          <circle cx="${source.x}" cy="${source.y}" r="8" fill="${source.active ? '#3b82f6' : '#6b7280'}"/>
-          <text x="${source.x}" y="${source.y}" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12">${source.id}</text>
-        `).join('')}
-      </svg>
-    `
-    
-    const blob = new Blob([svg], { type: 'image/svg+xml' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'wave-interference.svg'
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  // Reset to defaults
-  const resetToDefaults = () => {
-    setWaveSources([
-      { id: '1', x: 200, y: 300, frequency: 2, amplitude: 50, phase: 0, wavelength: 100, active: true },
-      { id: '2', x: 600, y: 300, frequency: 2, amplitude: 50, phase: 0, wavelength: 100, active: true },
-      { id: '3', x: 400, y: 200, frequency: 1.5, amplitude: 40, phase: 0, wavelength: 120, active: true }
-    ])
-    setAnimationSettings({
-      isAnimating: true,
-      time: 0,
-      speed: 1.0,
-      waveSpeed: 2.0
-    })
-    setShowWaveSources(true)
-    setShowInterference(true)
-    setShowWavefronts(true)
-    setResolution(2)
-    setSelectedSourceType('sine')
-    setIsAddingSource(false)
-  }
+  }, [])
 
   if (!isClient) {
     return (

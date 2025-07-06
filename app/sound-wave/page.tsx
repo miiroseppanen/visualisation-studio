@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { Download, RotateCcw, Volume2, Music } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
@@ -28,6 +28,7 @@ interface FrequencyBin {
 export default function SoundWavePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
+  const renderFrameRef = useRef<number>()
   const [isClient, setIsClient] = useState(false)
   const { theme } = useTheme()
 
@@ -95,7 +96,7 @@ export default function SoundWavePage() {
   }, [isClient])
 
   // Initialize audio context
-  const initializeAudio = async () => {
+  const initializeAudio = useCallback(async () => {
     try {
       const context = new (window.AudioContext || (window as any).webkitAudioContext)()
       const analyserNode = context.createAnalyser()
@@ -108,10 +109,10 @@ export default function SoundWavePage() {
     } catch (error) {
       console.error('Audio initialization failed:', error)
     }
-  }
+  }, [])
 
-  // Generate synthetic wave data
-  const generateWaveData = () => {
+  // Memoized wave data generation
+  const generateWaveData = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -179,13 +180,13 @@ export default function SoundWavePage() {
 
     setWavePoints(points)
     setFrequencyBins(bins)
-  }
+  }, [baseFrequency, harmonics, waveType, noiseLevel, animationSettings])
 
   // Update wave data
   useEffect(() => {
     if (!isClient) return
     generateWaveData()
-  }, [isClient, baseFrequency, harmonics, waveType, noiseLevel, animationSettings])
+  }, [isClient, generateWaveData])
 
   // Animation loop
   useEffect(() => {
@@ -217,7 +218,7 @@ export default function SoundWavePage() {
         animationRef.current = undefined
       }
     }
-  }, [animationSettings.isAnimating, animationSettings.waveSpeed, isClient])
+  }, [animationSettings.isAnimating, animationSettings.waveSpeed, isClient, generateWaveData])
 
   // Handle pause all animations
   useEffect(() => {
@@ -226,6 +227,10 @@ export default function SoundWavePage() {
         cancelAnimationFrame(animationRef.current)
         unregisterAnimationFrame(animationRef.current)
         animationRef.current = undefined
+      }
+      if (renderFrameRef.current) {
+        cancelAnimationFrame(renderFrameRef.current)
+        renderFrameRef.current = undefined
       }
     }
 
@@ -249,11 +254,11 @@ export default function SoundWavePage() {
     }
   }, [])
 
-  // Render loop
-  useEffect(() => {
-    if (!isClient || !canvasRef.current) return
-
+  // Memoized render function
+  const render = useCallback(() => {
     const canvas = canvasRef.current
+    if (!canvas) return
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
@@ -262,121 +267,111 @@ export default function SoundWavePage() {
     ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
 
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    const width = canvas.width / window.devicePixelRatio
-    const height = canvas.height / window.devicePixelRatio
 
     // Draw waveform
     if (showWaveform && wavePoints.length > 0) {
-      switch (waveformStyle) {
-        case 'line':
-          ctx.strokeStyle = isDark ? '#3b82f6' : '#1d4ed8'
-          ctx.lineWidth = 2
-          ctx.beginPath()
-          ctx.moveTo(wavePoints[0].x, wavePoints[0].y)
-          wavePoints.forEach(point => {
+      ctx.strokeStyle = isDark ? '#3b82f6' : '#1d4ed8'
+      ctx.lineWidth = 2
+
+      if (waveformStyle === 'line') {
+        ctx.beginPath()
+        wavePoints.forEach((point, index) => {
+          if (index === 0) {
+            ctx.moveTo(point.x, point.y)
+          } else {
             ctx.lineTo(point.x, point.y)
-          })
-          ctx.stroke()
-          break
-
-        case 'bars':
-          wavePoints.forEach(point => {
-            const barHeight = Math.abs(point.y - height / 2) * 2
-            const barY = point.y > height / 2 ? height / 2 : point.y
-            const intensity = point.amplitude / harmonics
-            
-            ctx.fillStyle = isDark 
-              ? `rgba(59, 130, 246, ${intensity})`
-              : `rgba(29, 78, 216, ${intensity})`
-            ctx.fillRect(point.x - 1, barY, 2, barHeight)
-          })
-          break
-
-        case 'circles':
-          wavePoints.forEach((point, index) => {
-            if (index % 4 === 0) { // Skip some points for performance
-              const radius = Math.abs(point.y - height / 2) * 0.1 + 2
-              const intensity = point.amplitude / harmonics
-              
-              ctx.fillStyle = isDark 
-                ? `rgba(59, 130, 246, ${intensity})`
-                : `rgba(29, 78, 216, ${intensity})`
-              ctx.beginPath()
-              ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI)
-              ctx.fill()
-            }
-          })
-          break
+          }
+        })
+        ctx.stroke()
+      } else if (waveformStyle === 'bars') {
+        wavePoints.forEach(point => {
+          const barHeight = Math.abs(point.y - canvas.height / window.devicePixelRatio / 2)
+          ctx.fillStyle = isDark ? '#3b82f6' : '#1d4ed8'
+          ctx.fillRect(point.x, canvas.height / window.devicePixelRatio / 2, 2, barHeight)
+        })
+      } else if (waveformStyle === 'circles') {
+        wavePoints.forEach(point => {
+          ctx.fillStyle = isDark ? '#3b82f6' : '#1d4ed8'
+          ctx.beginPath()
+          ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI)
+          ctx.fill()
+        })
       }
     }
 
-    // Draw frequency spectrum
+    // Draw spectrum
     if (showSpectrum && frequencyBins.length > 0) {
-      const spectrumWidth = width * 0.8
-      const spectrumHeight = height * 0.3
-      const spectrumX = width * 0.1
-      const spectrumY = height * 0.7
+      const spectrumWidth = canvas.width / window.devicePixelRatio
+      const spectrumHeight = canvas.height / window.devicePixelRatio / 3
       const binWidth = spectrumWidth / frequencyBins.length
 
       frequencyBins.forEach((bin, index) => {
         const barHeight = bin.magnitude * spectrumHeight
-        const barX = spectrumX + index * binWidth
-        const barY = spectrumY + spectrumHeight - barHeight
-        
-        // Color based on frequency
-        const hue = (bin.frequency / 1000) * 360 % 360
-        ctx.fillStyle = `hsl(${hue}, 70%, 60%)`
-        ctx.fillRect(barX, barY, binWidth - 1, barHeight)
+        const x = index * binWidth
+        const y = canvas.height / window.devicePixelRatio - barHeight
+
+        ctx.fillStyle = isDark ? '#10b981' : '#059669'
+        ctx.fillRect(x, y, binWidth - 1, barHeight)
       })
     }
 
-    // Draw harmonics visualization
+    // Draw harmonics
     if (showHarmonics) {
-      const harmonicsY = height * 0.1
-      const harmonicsHeight = height * 0.2
-      
-      for (let h = 1; h <= harmonics; h++) {
-        const harmonicFreq = baseFrequency * h
-        const harmonicAmp = 1 / h
-        const x = (h / harmonics) * width * 0.8 + width * 0.1
-        const y = harmonicsY + harmonicsHeight / 2
-        
-        // Draw harmonic circle
-        const radius = harmonicAmp * 20
-        const hue = (harmonicFreq / 1000) * 360 % 360
-        ctx.fillStyle = `hsl(${hue}, 70%, 60%)`
+      ctx.strokeStyle = isDark ? 'rgba(239, 68, 68, 0.5)' : 'rgba(220, 38, 38, 0.5)'
+      ctx.lineWidth = 1
+
+      for (let h = 2; h <= harmonics; h++) {
         ctx.beginPath()
-        ctx.arc(x, y, radius, 0, 2 * Math.PI)
-        ctx.fill()
-        
-        // Draw frequency label
-        ctx.fillStyle = isDark ? '#ffffff' : '#000000'
-        ctx.font = '10px sans-serif'
-        ctx.textAlign = 'center'
-        ctx.fillText(`${harmonicFreq.toFixed(0)}Hz`, x, y + 25)
+        wavePoints.forEach((point, index) => {
+          if (index % h === 0) {
+            const harmonicY = point.y + Math.sin(point.phase * h) * 20
+            if (index === 0) {
+              ctx.moveTo(point.x, harmonicY)
+            } else {
+              ctx.lineTo(point.x, harmonicY)
+            }
+          }
+        })
+        ctx.stroke()
       }
     }
+  }, [wavePoints, frequencyBins, showWaveform, showSpectrum, showHarmonics, waveformStyle, theme])
 
-    // Draw center line
-    ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(0, height / 2)
-    ctx.lineTo(width, height / 2)
-    ctx.stroke()
+  // Render loop with proper cleanup
+  useEffect(() => {
+    if (!isClient || !canvasRef.current) return
 
-  }, [wavePoints, frequencyBins, showWaveform, showSpectrum, showHarmonics, waveformStyle, theme, isClient])
+    // Initial render
+    render()
+
+    // Set up animation loop for continuous rendering only when animating
+    if (animationSettings.isAnimating) {
+      const animate = () => {
+        render()
+        renderFrameRef.current = requestAnimationFrame(animate)
+      }
+      renderFrameRef.current = requestAnimationFrame(animate)
+    }
+
+    return () => {
+      if (renderFrameRef.current) {
+        cancelAnimationFrame(renderFrameRef.current)
+        renderFrameRef.current = undefined
+      }
+    }
+  }, [render, isClient, animationSettings.isAnimating])
 
   // Export as SVG
-  const exportSVG = () => {
+  const exportSVG = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const svg = `
       <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="white"/>
-        <polyline points="${wavePoints.map(p => `${p.x},${p.y}`).join(' ')}" 
-                  fill="none" stroke="blue" stroke-width="2"/>
+        ${wavePoints.map(point => `
+          <circle cx="${point.x}" cy="${point.y}" r="2" fill="#3b82f6"/>
+        `).join('')}
       </svg>
     `
     
@@ -387,14 +382,10 @@ export default function SoundWavePage() {
     link.download = 'sound-wave.svg'
     link.click()
     URL.revokeObjectURL(url)
-  }
+  }, [wavePoints])
 
   // Reset to defaults
-  const resetToDefaults = () => {
-    setWaveType('sine')
-    setBaseFrequency(440)
-    setHarmonics(5)
-    setNoiseLevel(0.1)
+  const resetToDefaults = useCallback(() => {
     setAnimationSettings({
       isAnimating: true,
       frequency: 440,
@@ -402,12 +393,16 @@ export default function SoundWavePage() {
       waveSpeed: 1.0,
       time: 0
     })
+    setWaveType('sine')
+    setBaseFrequency(440)
+    setHarmonics(5)
+    setNoiseLevel(0.1)
     setShowWaveform(true)
     setShowSpectrum(true)
     setShowHarmonics(true)
     setWaveformStyle('line')
     setIsListening(false)
-  }
+  }, [])
 
   if (!isClient) {
     return (

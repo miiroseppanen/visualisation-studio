@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { Download, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
@@ -28,6 +28,7 @@ interface Branch {
 export default function FractalTreePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
+  const renderFrameRef = useRef<number>()
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const { theme } = useTheme()
@@ -95,8 +96,8 @@ export default function FractalTreePage() {
     }
   }, [isClient])
 
-  // Generate fractal tree
-  const generateTree = (depth: number = 0, x: number = 400, y: number = 600, angle: number = -90, length: number = branchLength, thickness: number = baseThickness): Branch => {
+  // Memoized tree generation function
+  const generateTree = useCallback((depth: number = 0, x: number = 400, y: number = 600, angle: number = -90, length: number = branchLength, thickness: number = baseThickness): Branch => {
     if (depth >= maxDepth) {
       return {
         x,
@@ -142,9 +143,9 @@ export default function FractalTreePage() {
       growthProgress: 0,
       color: depth === 0 ? '#8b5a2b' : depth < 3 ? '#a0522d' : '#228b22'
     }
-  }
+  }, [maxDepth, branchLength, branchAngle, lengthRatio, angleVariation, thicknessRatio, baseThickness])
 
-  // Initialize tree
+  // Initialize tree with memoization
   useEffect(() => {
     if (!isClient) return
 
@@ -156,11 +157,13 @@ export default function FractalTreePage() {
 
     const newTree = generateTree(0, width / 2, height - 50, -90, branchLength, baseThickness)
     setTree(newTree)
-  }, [maxDepth, branchLength, branchAngle, lengthRatio, angleVariation, thicknessRatio, baseThickness, isClient])
+  }, [generateTree, branchLength, baseThickness, isClient])
 
   // Growth animation
   useEffect(() => {
     if (!animationSettings.isAnimating || !isGrowing || !isClient) return
+
+    let frameId: number | null = null
 
     const animate = () => {
       setTree(prevTree => {
@@ -201,19 +204,25 @@ export default function FractalTreePage() {
       })
 
       setAnimationSettings(prev => ({ ...prev, time: prev.time + animationSettings.speed * 0.02 }))
-      const frameId = requestAnimationFrame(animate)
+      
+      frameId = requestAnimationFrame(animate)
       animationRef.current = frameId
       registerAnimationFrame(frameId)
     }
 
-    const frameId = requestAnimationFrame(animate)
+    frameId = requestAnimationFrame(animate)
     animationRef.current = frameId
     registerAnimationFrame(frameId)
 
     return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId)
+        unregisterAnimationFrame(frameId)
+      }
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         unregisterAnimationFrame(animationRef.current)
+        animationRef.current = undefined
       }
     }
   }, [animationSettings.isAnimating, animationSettings.speed, animationSettings.growthSpeed, isGrowing, autoGrow, isClient])
@@ -225,6 +234,10 @@ export default function FractalTreePage() {
         cancelAnimationFrame(animationRef.current)
         unregisterAnimationFrame(animationRef.current)
         animationRef.current = undefined
+      }
+      if (renderFrameRef.current) {
+        cancelAnimationFrame(renderFrameRef.current)
+        renderFrameRef.current = undefined
       }
     }
 
@@ -248,8 +261,8 @@ export default function FractalTreePage() {
     }
   }, [])
 
-  // Render tree
-  const renderBranch = (ctx: CanvasRenderingContext2D, branch: Branch, parentX: number, parentY: number) => {
+  // Memoized render function
+  const renderBranch = useCallback((ctx: CanvasRenderingContext2D, branch: Branch, parentX: number, parentY: number) => {
     if (!showBranches || branch.growthProgress <= 0) return
 
     const currentLength = branch.length * branch.growthProgress
@@ -282,17 +295,15 @@ export default function FractalTreePage() {
         renderBranch(ctx, child, endX, endY)
       }
     })
-  }
+  }, [showBranches, showLeaves, theme])
 
-  // Render loop
+  // Render loop with proper cleanup
   useEffect(() => {
     if (!isClient || !canvasRef.current || !tree) return
 
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-
-    let renderFrameId: number | null = null
 
     const render = () => {
       // Clear canvas
@@ -306,21 +317,22 @@ export default function FractalTreePage() {
     // Initial render
     render()
 
-    // Set up animation loop for continuous rendering
+    // Set up animation loop for continuous rendering only when animating
     if (animationSettings.isAnimating) {
       const animate = () => {
         render()
-        renderFrameId = requestAnimationFrame(animate)
+        renderFrameRef.current = requestAnimationFrame(animate)
       }
-      renderFrameId = requestAnimationFrame(animate)
+      renderFrameRef.current = requestAnimationFrame(animate)
     }
 
     return () => {
-      if (renderFrameId) {
-        cancelAnimationFrame(renderFrameId)
+      if (renderFrameRef.current) {
+        cancelAnimationFrame(renderFrameRef.current)
+        renderFrameRef.current = undefined
       }
     }
-  }, [tree, showBranches, showLeaves, theme, isClient, animationSettings.isAnimating])
+  }, [tree, renderBranch, isClient, animationSettings.isAnimating])
 
   // Wheel event handler
   useEffect(() => {
@@ -345,12 +357,12 @@ export default function FractalTreePage() {
   }, [isClient, zoomLevel])
 
   // Start/stop growth
-  const toggleGrowth = () => {
+  const toggleGrowth = useCallback(() => {
     setIsGrowing(!isGrowing)
-  }
+  }, [isGrowing])
 
   // Export as SVG
-  const exportSVG = () => {
+  const exportSVG = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas || !tree) return
 
@@ -389,10 +401,10 @@ export default function FractalTreePage() {
     link.download = 'fractal-tree.svg'
     link.click()
     URL.revokeObjectURL(url)
-  }
+  }, [tree])
 
   // Reset to defaults
-  const resetToDefaults = () => {
+  const resetToDefaults = useCallback(() => {
     setMaxDepth(8)
     setBranchLength(100)
     setBranchAngle(30)
@@ -411,7 +423,7 @@ export default function FractalTreePage() {
     setShowGrowth(true)
     setAutoGrow(false)
     setIsGrowing(false)
-  }
+  }, [])
 
   if (!isClient) {
     return (

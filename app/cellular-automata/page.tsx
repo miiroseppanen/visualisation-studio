@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { Download, RotateCcw, Grid, Play, Pause } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
@@ -29,17 +29,18 @@ interface Rule {
 export default function CellularAutomataPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
+  const renderFrameRef = useRef<number>()
   const [isClient, setIsClient] = useState(false)
   const { theme } = useTheme()
 
   // Grid state
   const [grid, setGrid] = useState<Cell[][]>([])
-  const [gridSize, setGridSize] = useState(100)
-  const [cellSize, setCellSize] = useState(6)
   const [generation, setGeneration] = useState(0)
+  const [gridSize, setGridSize] = useState(50)
+  const [cellSize, setCellSize] = useState(8)
 
   // Rules state
-  const [currentRule, setCurrentRule] = useState<Rule>({
+  const [currentRule, setCurrentRule] = useState({
     name: "Conway's Game of Life",
     birth: [3],
     survive: [2, 3],
@@ -49,13 +50,13 @@ export default function CellularAutomataPage() {
   // Display settings
   const [showGrid, setShowGrid] = useState(false)
   const [showAge, setShowAge] = useState(true)
-  const [colorMode, setColorMode] = useState<'binary' | 'age' | 'neighbors'>('age')
+  const [colorMode, setColorMode] = useState<'binary' | 'age' | 'neighbors'>('binary')
 
   // Animation settings
   const [animationSettings, setAnimationSettings] = useState<CellularAutomataAnimationSettings>({
     isAnimating: false,
-    speed: 1,
-    cellSize: 6,
+    speed: 10,
+    cellSize: 8,
     time: 0
   })
 
@@ -94,8 +95,8 @@ export default function CellularAutomataPage() {
     return () => window.removeEventListener('resize', resizeCanvas)
   }, [isClient])
 
-  // Initialize grid
-  const initializeGrid = () => {
+  // Memoized grid initialization
+  const initializeGrid = useCallback(() => {
     const newGrid: Cell[][] = []
     for (let y = 0; y < gridSize; y++) {
       newGrid[y] = []
@@ -111,16 +112,16 @@ export default function CellularAutomataPage() {
     }
     setGrid(newGrid)
     setGeneration(0)
-  }
+  }, [gridSize])
 
   // Initialize grid on mount
   useEffect(() => {
     if (!isClient) return
     initializeGrid()
-  }, [isClient, gridSize])
+  }, [isClient, initializeGrid])
 
-  // Count live neighbors
-  const countNeighbors = (x: number, y: number): number => {
+  // Memoized neighbor counting
+  const countNeighbors = useCallback((x: number, y: number): number => {
     let count = 0
     for (let dy = -1; dy <= 1; dy++) {
       for (let dx = -1; dx <= 1; dx++) {
@@ -135,10 +136,10 @@ export default function CellularAutomataPage() {
       }
     }
     return count
-  }
+  }, [grid, gridSize])
 
-  // Apply rules to determine next state
-  const applyRules = (cell: Cell): boolean => {
+  // Memoized rule application
+  const applyRules = useCallback((cell: Cell): boolean => {
     const neighbors = countNeighbors(cell.x, cell.y)
     
     if (cell.alive) {
@@ -146,10 +147,10 @@ export default function CellularAutomataPage() {
     } else {
       return currentRule.birth.includes(neighbors)
     }
-  }
+  }, [countNeighbors, currentRule])
 
-  // Step simulation
-  const stepSimulation = () => {
+  // Memoized simulation step
+  const stepSimulation = useCallback(() => {
     setGrid(prevGrid => {
       const newGrid = prevGrid.map(row => 
         row.map(cell => ({
@@ -168,7 +169,7 @@ export default function CellularAutomataPage() {
     })
     
     setGeneration(prev => prev + 1)
-  }
+  }, [applyRules])
 
   // Animation loop
   useEffect(() => {
@@ -179,91 +180,7 @@ export default function CellularAutomataPage() {
     }, 1000 / animationSettings.speed)
 
     return () => clearInterval(interval)
-  }, [animationSettings.isAnimating, animationSettings.speed, currentRule, isClient, stepSimulation])
-
-  // Render loop for continuous rendering
-  useEffect(() => {
-    if (!isClient || !canvasRef.current) return
-
-    let renderFrameId: number | null = null
-
-    const render = () => {
-      const canvas = canvasRef.current
-      if (!canvas) return
-
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-
-      // Clear canvas
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-      ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
-
-      const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-
-      // Draw cells
-      grid.forEach(row => {
-        row.forEach(cell => {
-          if (!cell.alive) return
-
-          let color: string
-          switch (colorMode) {
-            case 'binary':
-              color = isDark ? '#ffffff' : '#000000'
-              break
-            case 'age':
-              const ageHue = (cell.age * 20) % 360
-              color = `hsl(${ageHue}, 70%, 50%)`
-              break
-            case 'neighbors':
-              const neighbors = countNeighbors(cell.x, cell.y)
-              const neighborHue = (neighbors * 40) % 360
-              color = `hsl(${neighborHue}, 70%, 50%)`
-              break
-            default:
-              color = isDark ? '#ffffff' : '#000000'
-          }
-
-          ctx.fillStyle = color
-          ctx.fillRect(
-            cell.x * cellSize,
-            cell.y * cellSize,
-            cellSize - 1,
-            cellSize - 1
-          )
-        })
-      })
-
-      // Draw grid lines
-      if (showGrid) {
-        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-        ctx.lineWidth = 1
-
-        for (let x = 0; x <= gridSize; x++) {
-          ctx.beginPath()
-          ctx.moveTo(x * cellSize, 0)
-          ctx.lineTo(x * cellSize, gridSize * cellSize)
-          ctx.stroke()
-        }
-
-        for (let y = 0; y <= gridSize; y++) {
-          ctx.beginPath()
-          ctx.moveTo(0, y * cellSize)
-          ctx.lineTo(gridSize * cellSize, y * cellSize)
-          ctx.stroke()
-        }
-      }
-
-      renderFrameId = requestAnimationFrame(render)
-    }
-
-    renderFrameId = requestAnimationFrame(render)
-
-    return () => {
-      if (renderFrameId) {
-        cancelAnimationFrame(renderFrameId)
-      }
-    }
-  }, [grid, showGrid, colorMode, cellSize, theme, isClient, countNeighbors])
+  }, [animationSettings.isAnimating, animationSettings.speed, stepSimulation, isClient])
 
   // Handle pause all animations
   useEffect(() => {
@@ -272,6 +189,10 @@ export default function CellularAutomataPage() {
         cancelAnimationFrame(animationRef.current)
         unregisterAnimationFrame(animationRef.current)
         animationRef.current = undefined
+      }
+      if (renderFrameRef.current) {
+        cancelAnimationFrame(renderFrameRef.current)
+        renderFrameRef.current = undefined
       }
     }
 
@@ -295,54 +216,98 @@ export default function CellularAutomataPage() {
     }
   }, [])
 
-  // Handle canvas click
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Memoized render function
+  const render = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const rect = canvas.getBoundingClientRect()
-    const x = Math.floor((e.clientX - rect.left) / cellSize)
-    const y = Math.floor((e.clientY - rect.top) / cellSize)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
-    if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-      setGrid(prevGrid => {
-        const newGrid = [...prevGrid]
-        newGrid[y][x] = {
-          ...newGrid[y][x],
-          alive: !newGrid[y][x].alive,
-          age: newGrid[y][x].alive ? 0 : 1
+    // Clear canvas
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+    ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
+
+    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
+    // Draw cells
+    grid.forEach(row => {
+      row.forEach(cell => {
+        if (!cell.alive) return
+
+        let color: string
+        switch (colorMode) {
+          case 'binary':
+            color = isDark ? '#ffffff' : '#000000'
+            break
+          case 'age':
+            const ageHue = (cell.age * 20) % 360
+            color = `hsl(${ageHue}, 70%, 50%)`
+            break
+          case 'neighbors':
+            const neighbors = countNeighbors(cell.x, cell.y)
+            const neighborHue = (neighbors * 40) % 360
+            color = `hsl(${neighborHue}, 70%, 50%)`
+            break
+          default:
+            color = isDark ? '#ffffff' : '#000000'
         }
-        return newGrid
-      })
-    }
-  }
 
-  // Add pattern
-  const addPattern = (pattern: boolean[][], centerX: number, centerY: number) => {
-    setGrid(prevGrid => {
-      const newGrid = prevGrid.map(row => [...row])
-      
-      pattern.forEach((patternRow, py) => {
-        patternRow.forEach((alive, px) => {
-          const x = (centerX + px - Math.floor(pattern[0].length / 2) + gridSize) % gridSize
-          const y = (centerY + py - Math.floor(pattern.length / 2) + gridSize) % gridSize
-          
-          if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-            newGrid[y][x] = {
-              ...newGrid[y][x],
-              alive,
-              age: alive ? 1 : 0
-            }
-          }
-        })
+        ctx.fillStyle = color
+        ctx.fillRect(
+          cell.x * cellSize,
+          cell.y * cellSize,
+          cellSize - 1,
+          cellSize - 1
+        )
       })
-      
-      return newGrid
     })
-  }
+
+    // Draw grid lines
+    if (showGrid) {
+      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+      ctx.lineWidth = 1
+
+      for (let x = 0; x <= gridSize; x++) {
+        ctx.beginPath()
+        ctx.moveTo(x * cellSize, 0)
+        ctx.lineTo(x * cellSize, gridSize * cellSize)
+        ctx.stroke()
+      }
+
+      for (let y = 0; y <= gridSize; y++) {
+        ctx.beginPath()
+        ctx.moveTo(0, y * cellSize)
+        ctx.lineTo(gridSize * cellSize, y * cellSize)
+        ctx.stroke()
+      }
+    }
+  }, [grid, showGrid, colorMode, cellSize, theme, countNeighbors])
+
+  // Render loop with proper cleanup
+  useEffect(() => {
+    if (!isClient || !canvasRef.current) return
+
+    // Initial render
+    render()
+
+    // Set up animation loop for continuous rendering
+    const animate = () => {
+      render()
+      renderFrameRef.current = requestAnimationFrame(animate)
+    }
+    renderFrameRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      if (renderFrameRef.current) {
+        cancelAnimationFrame(renderFrameRef.current)
+        renderFrameRef.current = undefined
+      }
+    }
+  }, [render, isClient])
 
   // Export as SVG
-  const exportSVG = () => {
+  const exportSVG = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -364,29 +329,75 @@ export default function CellularAutomataPage() {
     link.download = 'cellular-automata.svg'
     link.click()
     URL.revokeObjectURL(url)
-  }
+  }, [grid, cellSize])
+
+  // Handle canvas click
+  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const rect = canvas.getBoundingClientRect()
+    const x = Math.floor((e.clientX - rect.left) / cellSize)
+    const y = Math.floor((e.clientY - rect.top) / cellSize)
+
+    if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+      setGrid(prevGrid => {
+        const newGrid = [...prevGrid]
+        newGrid[y][x] = {
+          ...newGrid[y][x],
+          alive: !newGrid[y][x].alive,
+          age: newGrid[y][x].alive ? 0 : 1
+        }
+        return newGrid
+      })
+    }
+  }, [cellSize, gridSize])
+
+  // Add pattern
+  const addPattern = useCallback((pattern: boolean[][], centerX: number, centerY: number) => {
+    setGrid(prevGrid => {
+      const newGrid = prevGrid.map(row => [...row])
+      
+      pattern.forEach((patternRow, py) => {
+        patternRow.forEach((alive, px) => {
+          const x = (centerX + px - Math.floor(pattern[0].length / 2) + gridSize) % gridSize
+          const y = (centerY + py - Math.floor(pattern.length / 2) + gridSize) % gridSize
+          
+          if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+            newGrid[y][x] = {
+              ...newGrid[y][x],
+              alive,
+              age: alive ? 1 : 0
+            }
+          }
+        })
+      })
+      
+      return newGrid
+    })
+  }, [gridSize])
 
   // Reset to defaults
-  const resetToDefaults = () => {
+  const resetToDefaults = useCallback(() => {
+    setAnimationSettings({
+      isAnimating: false,
+      speed: 10,
+      cellSize: 8,
+      time: 0
+    })
     setCurrentRule({
       name: "Conway's Game of Life",
       birth: [3],
       survive: [2, 3],
       description: "Classic cellular automaton rules"
     })
-    setAnimationSettings({
-      isAnimating: false,
-      speed: 1,
-      cellSize: 6,
-      time: 0
-    })
     setShowGrid(false)
-    setShowAge(true)
-    setColorMode('age')
-    setCellSize(6)
+    setColorMode('binary')
+    setGridSize(50)
+    setCellSize(8)
     setGeneration(0)
     initializeGrid()
-  }
+  }, [initializeGrid])
 
   if (!isClient) {
     return (
@@ -414,22 +425,22 @@ export default function CellularAutomataPage() {
       onPanelToggle={() => setPanelState(prev => ({ ...prev, isOpen: !prev.isOpen }))}
       settingsContent={
         <div className="space-y-8">
-          <CellularAutomataRules
-            currentRule={currentRule}
-            showGrid={showGrid}
-            showAge={showAge}
-            colorMode={colorMode}
-            cellSize={cellSize}
-            expanded={panelState.rulesExpanded}
-            onToggleExpanded={() => setPanelState(prev => ({ 
-              ...prev, rulesExpanded: !prev.rulesExpanded 
-            }))}
-            onSetCurrentRule={setCurrentRule}
-            onSetShowGrid={setShowGrid}
-            onSetShowAge={setShowAge}
-            onSetColorMode={setColorMode}
-            onSetCellSize={setCellSize}
-          />
+                      <CellularAutomataRules
+              currentRule={currentRule}
+              showGrid={showGrid}
+              showAge={showAge}
+              colorMode={colorMode}
+              cellSize={cellSize}
+              expanded={panelState.rulesExpanded}
+              onToggleExpanded={() => setPanelState(prev => ({ 
+                ...prev, rulesExpanded: !prev.rulesExpanded 
+              }))}
+              onSetCurrentRule={setCurrentRule}
+              onSetShowGrid={setShowGrid}
+              onSetShowAge={setShowAge}
+              onSetColorMode={setColorMode}
+              onSetCellSize={setCellSize}
+            />
 
           <PatternControls
             onAddPattern={addPattern}

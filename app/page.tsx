@@ -535,9 +535,9 @@ const WaveInterferencePreview = () => {
       ctx.fillStyle = currentTheme ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Draw interference pattern
-      for (let x = 0; x < canvas.width; x += 4) {
-        for (let y = 0; y < canvas.height; y += 4) {
+      // Draw interference pattern with reduced resolution
+      for (let x = 0; x < canvas.width; x += 8) {
+        for (let y = 0; y < canvas.height; y += 8) {
           let amplitude = 0
           
           sources.forEach(source => {
@@ -553,7 +553,7 @@ const WaveInterferencePreview = () => {
             ctx.fillStyle = currentTheme 
               ? `rgba(255, 255, 255, ${alpha})` 
               : `rgba(0, 0, 0, ${alpha})`
-            ctx.fillRect(x, y, 4, 4)
+            ctx.fillRect(x, y, 8, 8)
           }
         }
       }
@@ -575,6 +575,7 @@ const WaveInterferencePreview = () => {
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
+        animationRef.current = undefined
       }
       window.removeEventListener('resize', resizeCanvas)
     }
@@ -769,6 +770,7 @@ const FractalTreePreview = () => {
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
+        animationRef.current = undefined
       }
       window.removeEventListener('resize', resizeCanvas)
     }
