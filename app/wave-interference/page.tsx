@@ -425,7 +425,7 @@ export default function WaveInterferencePage() {
       }
     })
     
-    // Draw spreading wave circles with dramatic glow effects
+    // Draw spreading wave circles (lines only)
     if (showCircles) {
       particles.forEach(circle => {
         const alpha = Math.max(0, Math.min(1, circle.life))
@@ -434,26 +434,9 @@ export default function WaveInterferencePage() {
         // Only draw if size is valid
         if (size <= 0) return
         
-        // Create dramatic glow effect with source color
-        const glowRadius = Math.max(0.1, size * 2.5)
-        const glowGradient = ctx.createRadialGradient(
-          circle.x, circle.y, 0,
-          circle.x, circle.y, glowRadius
-        )
-        glowGradient.addColorStop(0, `${circle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`)
-        glowGradient.addColorStop(0.3, `${circle.color}${Math.floor(alpha * 120).toString(16).padStart(2, '0')}`)
-        glowGradient.addColorStop(0.7, `${circle.color}${Math.floor(alpha * 60).toString(16).padStart(2, '0')}`)
-        glowGradient.addColorStop(1, 'transparent')
-        
-        // Draw glow
-        ctx.fillStyle = glowGradient
-        ctx.beginPath()
-        ctx.arc(circle.x, circle.y, glowRadius, 0, 2 * Math.PI)
-        ctx.fill()
-        
         // Draw main circle with source color
         ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`
-        ctx.lineWidth = 3 * alpha // Thicker lines for more impact
+        ctx.lineWidth = 2 * alpha // Thicker when young, thinner as it expands
         
         ctx.beginPath()
         ctx.arc(circle.x, circle.y, size, 0, 2 * Math.PI)
@@ -461,10 +444,10 @@ export default function WaveInterferencePage() {
         
         // Draw inner circle for more definition
         if (alpha > 0.4) {
-          ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 180).toString(16).padStart(2, '0')}`
-          ctx.lineWidth = 2
+          ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 150).toString(16).padStart(2, '0')}`
+          ctx.lineWidth = 1
           ctx.beginPath()
-          ctx.arc(circle.x, circle.y, size * 0.6, 0, 2 * Math.PI)
+          ctx.arc(circle.x, circle.y, size * 0.7, 0, 2 * Math.PI)
           ctx.stroke()
         }
       })
