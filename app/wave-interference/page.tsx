@@ -316,20 +316,8 @@ export default function WaveInterferencePage() {
   const drawImmersiveInterference = useCallback((ctx: CanvasRenderingContext2D, fields: InterferenceField[], width: number, height: number) => {
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
     
-    // Create dramatic background gradient
-    const bgGradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height))
-    
-    if (isDark) {
-      bgGradient.addColorStop(0, '#0a0a0a')
-      bgGradient.addColorStop(0.5, '#1a1a2e')
-      bgGradient.addColorStop(1, '#16213e')
-    } else {
-      bgGradient.addColorStop(0, '#f8fafc')
-      bgGradient.addColorStop(0.5, '#e2e8f0')
-      bgGradient.addColorStop(1, '#cbd5e1')
-    }
-    
-    ctx.fillStyle = bgGradient
+    // Create solid black background
+    ctx.fillStyle = '#000000'
     ctx.fillRect(0, 0, width, height)
     
     // Draw interference lines instead of circles
