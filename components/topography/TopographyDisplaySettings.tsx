@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CollapsibleHeader } from '@/components/ui/collapsible-header'
+import { useTranslation } from 'react-i18next'
 import type { TopographyDisplaySettings } from '@/lib/types'
 import type { TopographyPanelState } from '@/lib/types'
 
@@ -20,6 +21,8 @@ export function TopographyDisplaySettings({
   onUpdateSettings,
   onUpdatePanelState,
 }: TopographyDisplaySettingsProps) {
+  const { t } = useTranslation()
+  
   const toggleExpanded = () => {
     onUpdatePanelState({ displaySettingsExpanded: !panelState.displaySettingsExpanded })
   }
@@ -27,7 +30,7 @@ export function TopographyDisplaySettings({
   return (
     <div className="space-y-3">
       <CollapsibleHeader
-        title="Display Settings"
+        title={t('visualizationSettings.displaySettings')}
         isExpanded={panelState.displaySettingsExpanded}
         onToggle={toggleExpanded}
       />
@@ -36,7 +39,7 @@ export function TopographyDisplaySettings({
         <div className="space-y-4">
           {/* Visibility Controls */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Visibility</Label>
+            <Label className="text-sm font-medium">{t('visualizationSettings.visibility')}</Label>
             
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -47,7 +50,7 @@ export function TopographyDisplaySettings({
                 }
               />
               <Label htmlFor="show-contour-lines" className="text-sm">
-                Show Contour Lines
+                {t('visualizationSettings.showContourLines')}
               </Label>
             </div>
 
@@ -60,7 +63,7 @@ export function TopographyDisplaySettings({
                 }
               />
               <Label htmlFor="show-elevation-points" className="text-sm">
-                Show Elevation Points
+                {t('visualizationSettings.showElevationPoints')}
               </Label>
             </div>
 
@@ -73,7 +76,7 @@ export function TopographyDisplaySettings({
                 }
               />
               <Label htmlFor="show-elevation-labels" className="text-sm">
-                Show Elevation Labels
+                {t('visualizationSettings.showElevationLabels')}
               </Label>
             </div>
 
@@ -86,18 +89,18 @@ export function TopographyDisplaySettings({
                 }
               />
               <Label htmlFor="show-gradient-field" className="text-sm">
-                Show Slope Arrows
+                {t('visualizationSettings.showSlopeArrows')}
               </Label>
             </div>
           </div>
 
           {/* Line Weight Controls */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Line Weight</Label>
+            <Label className="text-sm font-medium">{t('visualizationSettings.lineWeight')}</Label>
             
             <div>
               <Label className="text-xs text-muted-foreground">
-                Minor Contour Weight: {settings.lineWeight.toFixed(1)}px
+                {t('visualizationSettings.minorContourWeight')}: {settings.lineWeight.toFixed(1)}px
               </Label>
               <Slider
                 value={[settings.lineWeight]}
@@ -111,7 +114,7 @@ export function TopographyDisplaySettings({
 
             <div>
               <Label className="text-xs text-muted-foreground">
-                Major Contour Weight: {settings.majorContourWeight.toFixed(1)}px
+                {t('visualizationSettings.majorContourWeight')}: {settings.majorContourWeight.toFixed(1)}px
               </Label>
               <Slider
                 value={[settings.majorContourWeight]}
@@ -125,7 +128,7 @@ export function TopographyDisplaySettings({
 
             <div>
               <Label className="text-xs text-muted-foreground">
-                Major Contour Interval: {settings.majorContourInterval === 0 ? 'Off (all lines same weight)' : `Every ${settings.majorContourInterval} lines`}
+                {t('visualizationSettings.majorContourInterval')}: {settings.majorContourInterval === 0 ? t('visualizationSettings.majorContourOff') : `${t('visualizationSettings.majorContourEvery')} ${settings.majorContourInterval} ${t('visualizationSettings.lines')}`}
               </Label>
               <Slider
                 value={[settings.majorContourInterval]}
@@ -136,7 +139,7 @@ export function TopographyDisplaySettings({
                 className="mt-1"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                {settings.majorContourInterval === 0 ? 'Set to 0 to disable major contour lines' : 'How often to draw thicker contour lines'}
+                {settings.majorContourInterval === 0 ? t('visualizationSettings.disableMajorContours') : t('visualizationSettings.majorContourDescription')}
               </p>
             </div>
           </div>
@@ -144,8 +147,8 @@ export function TopographyDisplaySettings({
           {/* Style Information */}
           <div className="pt-2 border-t">
             <div className="text-xs text-muted-foreground space-y-1">
-              <div>Style: Black and white topographic lines</div>
-              <div>Major/Minor: {settings.majorContourWeight.toFixed(1)}px / {settings.lineWeight.toFixed(1)}px</div>
+              <div>{t('visualizationSettings.styleInfo')}</div>
+              <div>{t('visualizationSettings.majorMinor')}: {settings.majorContourWeight.toFixed(1)}px / {settings.lineWeight.toFixed(1)}px</div>
             </div>
           </div>
         </div>

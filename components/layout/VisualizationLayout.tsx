@@ -4,6 +4,7 @@ import { SimpleNavigation } from '@/components/navigation'
 import ControlsPanel from '@/components/ControlsPanel'
 import { useMobileUI } from '@/lib/hooks/useMobileUI'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 interface VisualizationLayoutProps {
   children: React.ReactNode
@@ -37,6 +38,7 @@ export default function VisualizationLayout({
   showVisualizationNav = true,
   visualizationNavProps = {}
 }: VisualizationLayoutProps) {
+  const { t } = useTranslation()
   const { isUIVisible, isMobile, showUI } = useMobileUI()
 
   const handleCanvasClick = () => {
@@ -111,7 +113,7 @@ export default function VisualizationLayout({
         )}>
           {settingsContent && (
             <ControlsPanel 
-              title="Settings" 
+              title={t('navigation.settings')} 
               isOpen={panelOpen} 
               onToggle={onPanelToggle}
             >
