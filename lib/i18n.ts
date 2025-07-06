@@ -26,7 +26,7 @@ i18n
       }
     },
     fallbackLng: 'en',
-    debug: process.env.NODE_ENV === 'development',
+    debug: false, // Disable debug mode to reduce console noise
     
     // Language detection options
     detection: {

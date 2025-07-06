@@ -285,21 +285,10 @@ export default function GridFieldPage() {
   // Canvas setup and resize handling
   useEffect(() => {
     const canvas = canvasRef.current
-    console.log('Canvas ref:', canvas) // DEBUG: Check if canvas ref exists
     
     if (!canvas) {
-      console.error('Canvas ref is null!') // DEBUG: Log if canvas is missing
       return
     }
-
-    console.log('Canvas element:', {
-      tagName: canvas.tagName,
-      width: canvas.width,
-      height: canvas.height,
-      style: canvas.style.cssText,
-      offsetWidth: canvas.offsetWidth,
-      offsetHeight: canvas.offsetHeight
-    }) // DEBUG: Log canvas element details
 
     const renderer = new GridRenderer(canvas)
     rendererRef.current = renderer
@@ -346,9 +335,6 @@ export default function GridFieldPage() {
     if (!canvas || !rendererRef.current) return
 
     const { width, height } = rendererRef.current.getDimensions()
-    
-    // DEBUG: Log grid generation dimensions
-    console.log('Grid generation:', { width, height, gridSpacing: gridSettings.spacing, zoomLevel: zoomSettings.level })
 
     // Apply zoom to spacing and line length
     const gridSpacing = gridSettings.spacing * zoomSettings.level

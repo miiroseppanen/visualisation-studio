@@ -58,7 +58,6 @@ export default function GridSettings({
   onUpdateZoom
 }: GridSettingsProps) {
   const { t } = useTranslation()
-  console.log('t(gridSettings):', t('visualizationSettings.gridSettings'));
   return (
     <CollapsibleSection
       title={<span className="truncate">{t('visualizationSettings.gridSettings')}</span>}
