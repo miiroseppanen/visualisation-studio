@@ -9,6 +9,7 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Plus, Magnet, ChevronDown, ChevronRight } from 'lucide-react'
 import { ListCard } from '@/components/ui/list-card'
 import { COLOR_PALETTE } from '@/lib/constants'
+import { useTranslation } from 'react-i18next'
 
 interface Attractor {
   id: string
@@ -54,16 +55,17 @@ export default function SwarmSettings({
   onRemoveAttractor,
   onUpdateAttractor
 }: SwarmSettingsProps) {
+  const { t } = useTranslation()
   return (
          <CollapsibleSection
-       title={`Swarm Settings (${particleCount} particles)`}
+       title={`${t('visualizationSettings.swarmSettings')} (${particleCount} ${t('visualizationSettings.particleCount').toLowerCase()})`}
        defaultOpen={expanded}
      >
       <div className="space-y-4 mt-4">
         {/* Particle Count */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-900 dark:text-white">Particle Count</Label>
+            <Label className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.particleCount')}</Label>
             <span className="text-xs text-gray-600 dark:text-gray-300">{particleCount}</span>
           </div>
           <Slider
@@ -78,7 +80,7 @@ export default function SwarmSettings({
 
         {/* Add Attractor Controls */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-900 dark:text-white">Add Attractor</Label>
+          <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.addAttractor')}</Label>
           
           <Button
             variant="outline"
@@ -87,14 +89,14 @@ export default function SwarmSettings({
             className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             <Plus className="w-4 h-4 mr-2" />
-            {isAddingAttractor ? 'Cancel Adding' : 'Add Attractor'}
+            {isAddingAttractor ? t('visualizationSettings.cancelAdding') : t('visualizationSettings.addAttractor')}
           </Button>
         </div>
 
         {/* Existing Attractors */}
         {attractors.length > 0 && (
           <div className="space-y-3">
-            <Label className="text-sm font-medium text-gray-900 dark:text-white">Attractors</Label>
+            <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.attractors')}</Label>
             {attractors.map(attractor => (
               <div key={attractor.id} className="space-y-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <ListCard
@@ -108,7 +110,7 @@ export default function SwarmSettings({
                 {/* Strength Slider */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <Label className="text-xs text-gray-600 dark:text-gray-300">Strength</Label>
+                    <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.strength')}</Label>
                     <span className="text-xs text-gray-600 dark:text-gray-300">{attractor.strength.toFixed(2)}</span>
                   </div>
                   <Slider
@@ -128,7 +130,7 @@ export default function SwarmSettings({
                 {/* Radius Slider */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <Label className="text-xs text-gray-600 dark:text-gray-300">Radius</Label>
+                    <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.radius')}</Label>
                     <span className="text-xs text-gray-600 dark:text-gray-300">{attractor.radius}</span>
                   </div>
                   <Slider
@@ -156,7 +158,7 @@ export default function SwarmSettings({
                       }
                     }}
                   />
-                  <Label htmlFor={`attractor-active-${attractor.id}`} className="text-sm">Active</Label>
+                  <Label htmlFor={`attractor-active-${attractor.id}`} className="text-sm">{t('visualizationSettings.active')}</Label>
                 </div>
               </div>
             ))}
@@ -165,7 +167,7 @@ export default function SwarmSettings({
 
         {/* Display Options */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-900 dark:text-white">Display Options</Label>
+          <Label className="text-sm font-medium text-gray-900 dark:text-white">{t('visualizationSettings.displayOptions')}</Label>
           
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -173,7 +175,7 @@ export default function SwarmSettings({
               checked={showParticles}
               onCheckedChange={(checked) => onSetShowParticles(checked as boolean)}
             />
-            <Label htmlFor="showParticles" className="text-sm text-gray-900 dark:text-white">Show Particles</Label>
+            <Label htmlFor="showParticles" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showParticles')}</Label>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -182,7 +184,7 @@ export default function SwarmSettings({
               checked={showTrails}
               onCheckedChange={(checked) => onSetShowTrails(checked as boolean)}
             />
-            <Label htmlFor="showTrails" className="text-sm text-gray-900 dark:text-white">Show Trails</Label>
+            <Label htmlFor="showTrails" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showTrails')}</Label>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -191,13 +193,13 @@ export default function SwarmSettings({
               checked={showAttractors}
               onCheckedChange={(checked) => onSetShowAttractors(checked as boolean)}
             />
-            <Label htmlFor="showAttractors" className="text-sm text-gray-900 dark:text-white">Show Attractors</Label>
+            <Label htmlFor="showAttractors" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showAttractors')}</Label>
           </div>
         </div>
 
         {attractors.length === 0 && (
           <div className="text-center py-4 text-sm text-gray-600 dark:text-gray-300">
-            No attractors yet. Use the controls above to add attractors.
+            {t('visualizationSettings.noAttractors')}
           </div>
         )}
       </div>

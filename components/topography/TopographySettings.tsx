@@ -3,6 +3,7 @@
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { CollapsibleHeader } from '@/components/ui/collapsible-header'
+import { useTranslation } from 'react-i18next'
 import type { TopographySettings } from '@/lib/topography-physics'
 import type { TopographyPanelState } from '@/lib/types'
 
@@ -19,6 +20,8 @@ export function TopographySettings({
   onUpdateSettings,
   onUpdatePanelState,
 }: TopographySettingsProps) {
+  const { t } = useTranslation()
+  
   const toggleExpanded = () => {
     onUpdatePanelState({ topographySettingsExpanded: !panelState.topographySettingsExpanded })
   }
@@ -26,7 +29,7 @@ export function TopographySettings({
   return (
     <div className="space-y-3">
       <CollapsibleHeader
-        title="Topography Settings"
+        title={t('visualizationSettings.topographySettings')}
         isExpanded={panelState.topographySettingsExpanded}
         onToggle={toggleExpanded}
       />
@@ -35,7 +38,7 @@ export function TopographySettings({
         <div className="space-y-4">
           <div>
             <Label className="text-sm font-medium">
-              Contour Interval: {settings.contourInterval}m
+              {t('visualizationSettings.contourInterval')}: {settings.contourInterval}m
             </Label>
             <Slider
               value={[settings.contourInterval]}
@@ -52,7 +55,7 @@ export function TopographySettings({
 
           <div>
             <Label className="text-sm font-medium">
-              Min Elevation: {settings.minElevation}m
+              {t('visualizationSettings.minElevation')}: {settings.minElevation}m
             </Label>
             <Slider
               value={[settings.minElevation]}
@@ -66,7 +69,7 @@ export function TopographySettings({
 
           <div>
             <Label className="text-sm font-medium">
-              Max Elevation: {settings.maxElevation}m
+              {t('visualizationSettings.maxElevation')}: {settings.maxElevation}m
             </Label>
             <Slider
               value={[settings.maxElevation]}
@@ -80,7 +83,7 @@ export function TopographySettings({
 
           <div>
             <Label className="text-sm font-medium">
-              Resolution: {settings.resolution.toFixed(1)}x
+              {t('visualizationSettings.resolution')}: {settings.resolution.toFixed(1)}x
             </Label>
             <Slider
               value={[settings.resolution]}
@@ -97,7 +100,7 @@ export function TopographySettings({
 
           <div>
             <Label className="text-sm font-medium">
-              Smoothing: {settings.smoothing.toFixed(1)}
+              {t('visualizationSettings.smoothing')}: {settings.smoothing.toFixed(1)}
             </Label>
             <Slider
               value={[settings.smoothing]}
@@ -114,8 +117,8 @@ export function TopographySettings({
 
           <div className="pt-2 border-t">
             <div className="text-xs text-muted-foreground space-y-1">
-              <div>Elevation Range: {settings.maxElevation - settings.minElevation}m</div>
-              <div>Contour Count: ~{Math.floor((settings.maxElevation - settings.minElevation) / settings.contourInterval)}</div>
+              <div>{t('visualizationSettings.elevationRange')}: {settings.maxElevation - settings.minElevation}m</div>
+              <div>{t('visualizationSettings.contourCount')}: ~{Math.floor((settings.maxElevation - settings.minElevation) / settings.contourInterval)}</div>
             </div>
           </div>
         </div>

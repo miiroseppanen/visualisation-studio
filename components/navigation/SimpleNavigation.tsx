@@ -3,6 +3,7 @@
 import React from 'react'
 import DesktopNavigation from './DesktopNavigation'
 import MobileNavigation from './MobileNavigation'
+import { useTranslation } from 'react-i18next'
 
 interface SimpleNavigationProps {
   onReset?: () => void
@@ -24,11 +25,13 @@ export default function SimpleNavigation({
   onExportSVG,
   additionalActionButtons,
   showBackButton = true,
-  backButtonText = 'Home',
+  backButtonText,
   backButtonFallback = '/',
   className = '',
   hideNonEssential = false
 }: SimpleNavigationProps) {
+  const { t } = useTranslation()
+  const defaultBackButtonText = t('navigation.home')
   return (
     <div className={className}>
       <DesktopNavigation
@@ -36,7 +39,7 @@ export default function SimpleNavigation({
         onExportSVG={onExportSVG}
         additionalActionButtons={additionalActionButtons}
         showBackButton={showBackButton}
-        backButtonText={backButtonText}
+        backButtonText={backButtonText || defaultBackButtonText}
         backButtonFallback={backButtonFallback}
         hideNonEssential={hideNonEssential}
       />
@@ -46,7 +49,7 @@ export default function SimpleNavigation({
         onExportSVG={onExportSVG}
         additionalActionButtons={additionalActionButtons}
         showBackButton={showBackButton}
-        backButtonText={backButtonText}
+        backButtonText={backButtonText || defaultBackButtonText}
         backButtonFallback={backButtonFallback}
         hideNonEssential={hideNonEssential}
       />

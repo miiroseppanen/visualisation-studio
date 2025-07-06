@@ -122,7 +122,7 @@ export default function ControlsPanel({
             </div>
             
             <div className="flex items-center justify-between w-full">
-              <h2 className="text-lg font-normal text-gray-800 dark:text-white">{title || t('visualizationSettings.controls')}</h2>
+              <h2 className="text-lg font-normal text-gray-800 dark:text-white">{title || t('navigation.settings')}</h2>
               <button
                 onClick={handleClose}
                 className="p-1.5 rounded-md hover:bg-gray-100/50 transition-colors group touch-manipulation dark:hover:bg-white/10"
