@@ -47,11 +47,11 @@ export default function VisualizationLayout({
 
   return (
     <AppLayout showNavigation={false}>
-      <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <div className="h-screen flex flex-col bg-background relative">
         {/* Visualization Navigation */}
         {showVisualizationNav && (
           <div className={cn(
-            "transition-all duration-300 ease-in-out",
+            "w-full z-50 transition-all duration-300 ease-in-out",
             isUIVisible ? "opacity-100 translate-y-0" : "opacity-20 -translate-y-0"
           )}>
             <SimpleNavigation 
@@ -67,16 +67,15 @@ export default function VisualizationLayout({
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col relative">
-          {/* Canvas/Visualization Content */}
+        <main className="flex-1 flex flex-col relative pt-14 h-full">
           <div 
-            className="flex-1 w-full relative min-h-0 canvas-container cursor-pointer"
+            className="flex-1 w-full h-full relative cursor-pointer"
             onClick={handleCanvasClick}
           >
             {children}
           </div>
 
-          {/* Status Display - Mobile responsive */}
+          {/* Status Display */}
           <div className={cn(
             "absolute top-2 sm:top-4 left-2 sm:left-4 z-40 pointer-events-none transition-all duration-500 ease-in-out",
             statusContent && panelOpen && isUIVisible
@@ -90,7 +89,7 @@ export default function VisualizationLayout({
             </div>
           </div>
 
-          {/* Help Text - Mobile responsive */}
+          {/* Help Text */}
           <div className={cn(
             "absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-40 pointer-events-none transition-all duration-500 ease-in-out",
             helpText && panelOpen && isUIVisible
@@ -103,11 +102,9 @@ export default function VisualizationLayout({
               </div>
             </div>
           </div>
-
-
         </main>
 
-        {/* Settings Panel - Mobile responsive */}
+        {/* Settings Panel */}
         <div className={cn(
           "transition-all duration-300 ease-in-out",
           isUIVisible ? "opacity-100" : "opacity-0 pointer-events-none"

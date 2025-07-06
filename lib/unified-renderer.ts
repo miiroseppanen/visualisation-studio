@@ -35,6 +35,15 @@ export abstract class BaseRenderer {
   setupCanvas() {
     const rect = this.canvas.getBoundingClientRect()
     
+    // DEBUG: Log canvas dimensions
+    console.log('Canvas setup:', {
+      rectWidth: rect.width,
+      rectHeight: rect.height,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      isMobile: window.innerWidth < 768
+    })
+    
     // Use the container's actual size, but ensure we don't exceed viewport
     let width = rect.width
     let height = rect.height
@@ -55,6 +64,9 @@ export abstract class BaseRenderer {
     
     this.width = width
     this.height = height
+    
+    // DEBUG: Log final dimensions
+    console.log('Final canvas dimensions:', { width: this.width, height: this.height })
     
     // Set actual canvas size in memory (scaled for retina)
     this.canvas.width = this.width * this.dpr

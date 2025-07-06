@@ -285,7 +285,21 @@ export default function GridFieldPage() {
   // Canvas setup and resize handling
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    console.log('Canvas ref:', canvas) // DEBUG: Check if canvas ref exists
+    
+    if (!canvas) {
+      console.error('Canvas ref is null!') // DEBUG: Log if canvas is missing
+      return
+    }
+
+    console.log('Canvas element:', {
+      tagName: canvas.tagName,
+      width: canvas.width,
+      height: canvas.height,
+      style: canvas.style.cssText,
+      offsetWidth: canvas.offsetWidth,
+      offsetHeight: canvas.offsetHeight
+    }) // DEBUG: Log canvas element details
 
     const renderer = new GridRenderer(canvas)
     rendererRef.current = renderer
@@ -295,8 +309,18 @@ export default function GridFieldPage() {
     }
 
     resizeCanvas()
+    
+    // Use ResizeObserver for more reliable resize detection
+    const resizeObserver = new ResizeObserver(resizeCanvas)
+    resizeObserver.observe(canvas)
+    
+    // Also listen for window resize for viewport changes
     window.addEventListener('resize', resizeCanvas)
-    return () => window.removeEventListener('resize', resizeCanvas)
+    
+    return () => {
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', resizeCanvas)
+    }
   }, [])
 
   // Generate and persist random grid points only when needed
@@ -322,6 +346,9 @@ export default function GridFieldPage() {
     if (!canvas || !rendererRef.current) return
 
     const { width, height } = rendererRef.current.getDimensions()
+    
+    // DEBUG: Log grid generation dimensions
+    console.log('Grid generation:', { width, height, gridSpacing: gridSettings.spacing, zoomLevel: zoomSettings.level })
 
     // Apply zoom to spacing and line length
     const gridSpacing = gridSettings.spacing * zoomSettings.level
@@ -550,6 +577,9 @@ export default function GridFieldPage() {
       <canvas
         ref={canvasRef}
         className="w-full h-full cursor-crosshair dark:invert dark:hue-rotate-180"
+        style={{
+          display: 'block'
+        }}
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}
