@@ -244,49 +244,44 @@ export default function WaveInterferencePage() {
     return fields
   }, [calculateWaveAmplitude, animationSettings.time, smoothness, lineDensity])
 
-  // Update particle system
-  const updateParticles = useCallback((width: number, height: number) => {
+  // Update wave circles (replacing particles)
+  const updateWaveCircles = useCallback((width: number, height: number) => {
     setParticles(prev => {
-      const newParticles = prev.filter(p => p.life > 0)
+      const newCircles = prev.filter(circle => circle.life > 0)
       
-      // Limit total particles to prevent performance issues
-      if (newParticles.length > 100) { // Reduced from 200 to 100
-        return newParticles.slice(0, 100)
+      // Limit total circles to prevent performance issues
+      if (newCircles.length > 50) {
+        return newCircles.slice(0, 50)
       }
       
-      // Add new particles from wave sources (reduced frequency)
+      // Add new wave circles from wave sources
       waveSources.forEach(source => {
-        if (!source.active || Math.random() > 0.08) return // Reduced frequency
+        if (!source.active || Math.random() > 0.15) return // Reduced frequency for circles
         
-        const angle = Math.random() * Math.PI * 2
-        const speed = 1.5 + Math.random() * 2 // Reduced speed
-        const size = 1.5 + Math.random() * 3 // Reduced size
-        
-        newParticles.push({
-          x: source.x + Math.cos(angle) * 15,
-          y: source.y + Math.sin(angle) * 15,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
+        newCircles.push({
+          x: source.x,
+          y: source.y,
+          vx: 0, // Circles expand from center
+          vy: 0,
           life: 1.0,
           maxLife: 1.0,
-          size,
+          size: 5, // Start small
           color: source.color
         })
       })
       
-      // Update existing particles
-      newParticles.forEach(particle => {
-        particle.x += particle.vx
-        particle.y += particle.vy
-        particle.life -= 0.015 // Slower decay
-        particle.size *= 0.99 // Slower size reduction
+      // Update existing circles (expand outward)
+      newCircles.forEach(circle => {
+        circle.size += 2 + Math.random() * 3 // Expand outward
+        circle.life -= 0.02 // Faster decay for spreading effect
         
-        // Bounce off edges
-        if (particle.x <= 0 || particle.x >= width) particle.vx *= -0.8
-        if (particle.y <= 0 || particle.y >= height) particle.vy *= -0.8
+        // Remove circles that get too large or fade out
+        if (circle.size > 200 || circle.life <= 0) {
+          circle.life = 0
+        }
       })
       
-      return newParticles
+      return newCircles
     })
   }, [waveSources])
 
@@ -302,15 +297,15 @@ export default function WaveInterferencePage() {
       return { width: rect.width, height: rect.height }
     }
 
-    const particleInterval = setInterval(() => {
+    const circleInterval = setInterval(() => {
       const { width, height } = getCanvasSize()
-      updateParticles(width, height)
-    }, 150) // Update particles every 150ms for better performance
+      updateWaveCircles(width, height)
+    }, 150) // Update circles every 150ms for better performance
 
     return () => {
-      clearInterval(particleInterval)
+      clearInterval(circleInterval)
     }
-  }, [animationSettings.isAnimating, isClient, updateParticles])
+  }, [animationSettings.isAnimating, isClient, updateWaveCircles])
 
   // Draw immersive interference visualization
   const drawImmersiveInterference = useCallback((ctx: CanvasRenderingContext2D, fields: InterferenceField[], width: number, height: number) => {
@@ -429,35 +424,31 @@ export default function WaveInterferencePage() {
       }
     })
     
-    // Draw particles with glow effects
+    // Draw spreading wave circles
     if (showParticles) {
-      particles.forEach(particle => {
-        const alpha = Math.max(0, Math.min(1, particle.life))
-        const size = Math.max(0.1, particle.size * alpha)
+      particles.forEach(circle => {
+        const alpha = Math.max(0, Math.min(1, circle.life))
+        const size = Math.max(0.1, circle.size)
         
         // Only draw if size is valid
         if (size <= 0) return
         
-        // Glow effect
-        const glowRadius = Math.max(0.1, size * 3)
-        const glowGradient = ctx.createRadialGradient(
-          particle.x, particle.y, 0,
-          particle.x, particle.y, glowRadius
-        )
-        glowGradient.addColorStop(0, `${particle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`)
-        glowGradient.addColorStop(0.5, `${particle.color}${Math.floor(alpha * 100).toString(16).padStart(2, '0')}`)
-        glowGradient.addColorStop(1, 'transparent')
+        // Draw expanding circle with fade effect
+        ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`
+        ctx.lineWidth = 2 * alpha // Thicker when young, thinner as it expands
         
-        ctx.fillStyle = glowGradient
         ctx.beginPath()
-        ctx.arc(particle.x, particle.y, glowRadius, 0, 2 * Math.PI)
-        ctx.fill()
+        ctx.arc(circle.x, circle.y, size, 0, 2 * Math.PI)
+        ctx.stroke()
         
-        // Core particle
-        ctx.fillStyle = `${particle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, size, 0, 2 * Math.PI)
-        ctx.fill()
+        // Draw inner circle for more definition
+        if (alpha > 0.3) {
+          ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 150).toString(16).padStart(2, '0')}`
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.arc(circle.x, circle.y, size * 0.7, 0, 2 * Math.PI)
+          ctx.stroke()
+        }
       })
     }
     
@@ -837,7 +828,7 @@ export default function WaveInterferencePage() {
         <>
           Mode: Wave Interference | 
           Sources: {waveSources.filter(s => s.active).length} | 
-          Particles: {particles.length} | 
+          Circles: {particles.length} | 
           FPS: {frameRate} | 
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
