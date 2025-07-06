@@ -1,5 +1,8 @@
 {
+  "/page": "app/page.js",
   "/_not-found/page": "app/_not-found/page.js",
   "/grid-field/page": "app/grid-field/page.js",
-  "/page": "app/page.js"
+  "/flow-field/page": "app/flow-field/page.js",
+  "/circular-field/page": "app/circular-field/page.js",
+  "/particle-swarm/page": "app/particle-swarm/page.js"
 }
