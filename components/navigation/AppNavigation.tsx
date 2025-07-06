@@ -140,14 +140,16 @@ export default function AppNavigation({
 
   return (
     <header className={`sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md ${className}`}>
-      <div className="container mx-auto px-8 py-6">
+      <div className="container mx-auto px-4 lg:px-8 py-4 lg:py-6">
         <div className="flex items-center justify-between">
           <button 
             onClick={() => handleNavigationClick('/')}
-            className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
+            className="flex items-center space-x-3 lg:space-x-4 hover:opacity-80 transition-opacity"
           >
             <H23Logo size="lg" />
-            <h1 className="text-xl font-normal">Visualization Studio</h1>
+            <div className="text-left">
+              <h1 className="text-lg lg:text-xl font-normal leading-tight">Visualization Studio</h1>
+            </div>
           </button>
           
           <nav className="hidden md:flex items-center space-x-8">
@@ -201,7 +203,7 @@ export default function AppNavigation({
             })}
           </nav>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 lg:space-x-4">
             <LanguageSelector />
             <ThemeSwitcher />
             <div className="md:hidden">

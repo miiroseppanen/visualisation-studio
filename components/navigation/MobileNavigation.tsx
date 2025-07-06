@@ -64,13 +64,15 @@ export default function MobileNavigation({
               />
             )}
             
-            <div className="flex items-center space-x-2 min-w-0">
+            <div className="flex items-center space-x-2 min-w-0 px-2 py-2">
               {currentVisualization?.icon && (
                 <currentVisualization.icon className="w-5 h-5 flex-shrink-0" />
               )}
-              <span className="text-base font-medium truncate">
-                {currentVisualization?.name || 'Visualization'}
-              </span>
+              <div className="text-left">
+                <span className="text-base font-medium leading-tight">
+                  {currentVisualization?.name || 'Visualization'}
+                </span>
+              </div>
             </div>
           </div>
 

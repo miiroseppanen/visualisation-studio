@@ -138,4 +138,56 @@ export function NewSuggestionNavigation() {
       subtitle="Create a new visualization idea"
     />
   )
+}
+
+// Unified mobile navigation for suggestions
+export function SuggestionsMobileNavigation() {
+  return (
+    <div className="md:hidden rounded-lg border border-border/30 bg-background/60 backdrop-blur-md hover:bg-background/80 hover:backdrop-blur-lg transition-all duration-300 dark:bg-background/40 dark:hover:bg-background/60">
+      <div className="w-full px-4 lg:px-8 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link href="/" className="mr-2">
+              <button className="p-2 rounded-lg hover:bg-accent/40 transition-colors focus:outline-none">
+                <Home className="w-5 h-5" />
+              </button>
+            </Link>
+            <div className="text-left">
+              <h1 className="text-lg font-medium text-foreground leading-tight">Visualization Suggestions</h1>
+              <p className="text-sm text-foreground/60 leading-tight">Share ideas and vote on new visualizations</p>
+            </div>
+          </div>
+          <Link href="/suggestions/new">
+            <button className="flex items-center justify-center space-x-2 p-2 rounded-lg font-semibold shadow-sm border border-border/30 bg-background/80 text-foreground hover:bg-accent/40 transition-colors min-w-[44px]">
+              <Plus className="w-4 h-4" />
+              <span className="hidden xs:inline">New</span>
+            </button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Unified mobile navigation for new suggestion page
+export function NewSuggestionMobileNavigation() {
+  return (
+    <div className="md:hidden rounded-lg border border-border/30 bg-background/60 backdrop-blur-md hover:bg-background/80 hover:backdrop-blur-lg transition-all duration-300 dark:bg-background/40 dark:hover:bg-background/60">
+      <div className="w-full px-4 lg:px-8 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link href="/suggestions" className="mr-2">
+              <button className="p-2 rounded-lg hover:bg-accent/40 transition-colors focus:outline-none">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            </Link>
+            <div className="text-left">
+              <h1 className="text-lg font-medium text-foreground leading-tight">New Suggestion</h1>
+              <p className="text-sm text-foreground/60 leading-tight">Create a new visualization idea</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 } 

@@ -83,6 +83,9 @@ export default function ParticleSwarmPage() {
   const [isDragging, setIsDragging] = useState(false)
   const [draggedAttractorId, setDraggedAttractorId] = useState<string | null>(null)
 
+  // Canvas size state
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
+
   // Initialize client-side rendering
   useEffect(() => {
     setIsClient(true)
@@ -96,17 +99,23 @@ export default function ParticleSwarmPage() {
     if (!canvas) return
 
     const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect()
+      const parent = canvas.parentElement
+      if (!parent) return
+      const rect = parent.getBoundingClientRect()
       canvas.width = rect.width * window.devicePixelRatio
       canvas.height = rect.height * window.devicePixelRatio
       canvas.style.width = rect.width + 'px'
       canvas.style.height = rect.height + 'px'
+      setCanvasSize({ width: rect.width, height: rect.height })
     }
 
     resizeCanvas()
+    const resizeObserver = new ResizeObserver(resizeCanvas)
+    if (canvas.parentElement) resizeObserver.observe(canvas.parentElement)
     window.addEventListener('resize', resizeCanvas)
     
     return () => {
+      resizeObserver.disconnect()
       window.removeEventListener('resize', resizeCanvas)
     }
   }, [isClient])
@@ -118,8 +127,9 @@ export default function ParticleSwarmPage() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const width = canvas.width / window.devicePixelRatio
-    const height = canvas.height / window.devicePixelRatio
+    const width = canvasSize.width
+    const height = canvasSize.height
+    if (width === 0 || height === 0) return
 
     const newParticles: Particle[] = []
     for (let i = 0; i < particleCount; i++) {
@@ -138,7 +148,7 @@ export default function ParticleSwarmPage() {
       })
     }
     setParticles(newParticles)
-  }, [particleCount, isClient])
+  }, [particleCount, isClient, canvasSize])
 
   // Calculate flocking behavior
   const calculateFlockingForces = (particle: Particle, allParticles: Particle[]) => {

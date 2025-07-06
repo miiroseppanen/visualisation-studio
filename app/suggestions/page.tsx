@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import AppLayout from '@/components/layout/AppLayout'
-import { SuggestionsNavigation } from '@/components/navigation/PageNavigation'
+import { SuggestionsNavigation, SuggestionsMobileNavigation } from '@/components/navigation/PageNavigation'
 import Link from 'next/link'
 
 interface Suggestion {
@@ -184,8 +184,10 @@ export default function SuggestionsPage() {
     <AppLayout showNavigation={false}>
       <div className="min-h-screen bg-background">
         {/* Page Navigation */}
-        <SuggestionsNavigation />
-        
+        <SuggestionsMobileNavigation />
+        <div className="hidden md:block">
+          <SuggestionsNavigation />
+        </div>
         {/* Main Content */}
         <div className="container mx-auto px-8 py-8">
           {/* Add Suggestion Button */}

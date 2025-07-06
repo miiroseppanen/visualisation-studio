@@ -26,13 +26,13 @@ export function LanguageSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-1 lg:gap-2 px-2 lg:px-3">
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">{getCurrentLanguageLabel()}</span>
           <span className="sr-only">{t('common.language')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-32 lg:w-40">
         {Object.entries(languages).map(([code, label]) => (
           <DropdownMenuItem
             key={code}
