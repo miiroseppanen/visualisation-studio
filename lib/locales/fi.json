@@ -380,6 +380,8 @@
     "smoothnessDescription": "Korkeammat arvot luovat pehmeämpiä, orgaanisempia kuvioita paremmalla suorituskyvyllä",
     "lineDensity": "Viivojen Tiheys",
     "lineDensityDescription": "Ohjaa interferenssiviivojen määrää (korkeampi = enemmän viivoja)",
+    "interferenceContrast": "Interferenssin Kontrasti",
+    "interferenceContrastDescription": "Säädä interferenssikuvioiden näkyvyyttä ja voimakkuutta (korkeampi = näkyvämpi)",
     "waveSources": "Aaltolähteet",
     "addNewSource": "Lisää uusi lähde",
     "cancelAdding": "Peruuta lisäys",

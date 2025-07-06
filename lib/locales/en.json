@@ -392,6 +392,8 @@
     "smoothnessDescription": "Higher values create smoother, more organic patterns with better performance",
     "lineDensity": "Line Density",
     "lineDensityDescription": "Control the amount of interference lines shown (higher = more lines)",
+    "interferenceContrast": "Interference Contrast",
+    "interferenceContrastDescription": "Adjust the visibility and intensity of interference patterns (higher = more visible)",
     "waveSources": "Wave Sources",
     "addNewSource": "Add New Source",
     "cancelAdding": "Cancel Adding",

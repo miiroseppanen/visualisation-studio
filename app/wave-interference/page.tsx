@@ -92,6 +92,7 @@ export default function WaveInterferencePage() {
   const [showCircles, setShowCircles] = useState(true)
   const [smoothness, setSmoothness] = useState(12) // Higher for better quality
   const [lineDensity, setLineDensity] = useState(8) // Control for amount of lines
+  const [interferenceContrast, setInterferenceContrast] = useState(1.0) // Control for interference pattern contrast
   const [selectedSourceType, setSelectedSourceType] = useState<'sine' | 'cosine'>('sine')
   const [isAddingSource, setIsAddingSource] = useState(false)
 
@@ -322,18 +323,19 @@ export default function WaveInterferencePage() {
     if (showInterference) {
       fields.forEach(field => {
         const intensity = Math.min(1, field.intensity / 50) // Higher threshold for stability
-        const alpha = 0.2 + intensity * 0.4 // More stable alpha range
+        const adjustedIntensity = intensity * interferenceContrast // Apply contrast control
+        const alpha = 0.2 + adjustedIntensity * 0.4 // More stable alpha range
         
         // More stable color calculation - less dependent on amplitude
         const baseHue = (field.x / width * 360) % 360 // Only position-based hue
-        const saturation = 70 + intensity * 20 // More stable saturation
-        const lightness = isDark ? 60 + intensity * 30 : 40 + intensity * 30 // More stable lightness
+        const saturation = 70 + adjustedIntensity * 20 // More stable saturation
+        const lightness = isDark ? 60 + adjustedIntensity * 30 : 40 + adjustedIntensity * 30 // More stable lightness
         
         ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha})`
-        ctx.lineWidth = 0.8 + intensity * 1.2 // More stable line width
+        ctx.lineWidth = 0.8 + adjustedIntensity * 1.2 // More stable line width
         
         // Draw lines to represent interference patterns
-        const length = 8 + intensity * 12 // More stable length calculation
+        const length = 8 + adjustedIntensity * 12 // More stable length calculation
         const endX = field.x + Math.cos(field.angle) * length
         const endY = field.y + Math.sin(field.angle) * length
         
@@ -343,14 +345,14 @@ export default function WaveInterferencePage() {
         ctx.stroke()
         
         // Draw perpendicular lines for more detail (less frequent)
-        if (intensity > 0.7) { // Higher threshold for perpendicular lines
+        if (adjustedIntensity > 0.7) { // Higher threshold for perpendicular lines
           const perpAngle = field.angle + Math.PI / 2
-          const perpLength = 4 + intensity * 4 // More stable perpendicular length
+          const perpLength = 4 + adjustedIntensity * 4 // More stable perpendicular length
           const perpEndX = field.x + Math.cos(perpAngle) * perpLength
           const perpEndY = field.y + Math.sin(perpAngle) * perpLength
           
           ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha * 0.6})`
-          ctx.lineWidth = 0.5 + intensity * 0.3 // More stable perpendicular line width
+          ctx.lineWidth = 0.5 + adjustedIntensity * 0.3 // More stable perpendicular line width
           ctx.beginPath()
           ctx.moveTo(field.x, field.y)
           ctx.lineTo(perpEndX, perpEndY)
@@ -387,7 +389,8 @@ export default function WaveInterferencePage() {
       const maxCrosses = Math.min(12, highAmplitudeFields.length) // Fewer crosses for stability
       highAmplitudeFields.slice(0, maxCrosses).forEach(field => {
         const amplitude = Math.abs(field.amplitude)
-        const alpha = Math.min(0.5, amplitude / 150) // More stable alpha
+        const adjustedAmplitude = amplitude * interferenceContrast // Apply contrast control
+        const alpha = Math.min(0.5, adjustedAmplitude / 150) // More stable alpha
         
         // More stable color calculation - position-based only
         const baseHue = (field.x / width * 360) % 360
@@ -395,10 +398,10 @@ export default function WaveInterferencePage() {
         const lightness = isDark ? 65 : 45
         
         ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha})`
-        ctx.lineWidth = 1.2
+        ctx.lineWidth = 1.2 * interferenceContrast // Apply contrast to line width
         
         // Draw interference cross patterns
-        const crossLength = 10 + amplitude / 25 // More stable length calculation
+        const crossLength = 10 + adjustedAmplitude / 25 // More stable length calculation
         
         // Horizontal line
         ctx.beginPath()
@@ -413,8 +416,8 @@ export default function WaveInterferencePage() {
         ctx.stroke()
         
         // Diagonal lines for more detail
-        if (amplitude > 50) { // Higher threshold for diagonal lines
-          ctx.lineWidth = 0.8
+        if (adjustedAmplitude > 50) { // Higher threshold for diagonal lines
+          ctx.lineWidth = 0.8 * interferenceContrast
           ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha * 0.6})`
           
           // Diagonal line 1
@@ -494,7 +497,7 @@ export default function WaveInterferencePage() {
         ctx.fillText(source.id, source.x, source.y)
       })
     }
-  }, [calculateWaveAmplitude, animationSettings.time, theme, waveSources, particles, showWavefronts, showParticles, showWaveSources, showInterference, showCircles])
+  }, [calculateWaveAmplitude, animationSettings.time, theme, waveSources, particles, showWavefronts, showParticles, showWaveSources, showInterference, showCircles, interferenceContrast])
 
   // Performance optimization: Adaptive frame rate
   const updateFrameRate = useCallback(() => {
@@ -752,6 +755,7 @@ export default function WaveInterferencePage() {
     setShowCircles(true)
     setShowInterference(true)
     setSmoothness(12)
+    setInterferenceContrast(1.0)
     setLineDensity(8)
     setSelectedSourceType('sine')
     setIsAddingSource(false)
@@ -868,10 +872,12 @@ export default function WaveInterferencePage() {
           <WaveSettings
             resolution={smoothness}
             lineDensity={lineDensity}
+            interferenceContrast={interferenceContrast}
             expanded={panelState.waveSettingsExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ ...prev, waveSettingsExpanded: !prev.waveSettingsExpanded }))}
             onSetResolution={setSmoothness}
             onSetLineDensity={setLineDensity}
+            onSetInterferenceContrast={setInterferenceContrast}
           />
 
           <AnimationControls
