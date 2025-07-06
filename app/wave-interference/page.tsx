@@ -251,14 +251,14 @@ export default function WaveInterferencePage() {
     setParticles(prev => {
       const newCircles = prev.filter(circle => circle.life > 0)
       
-      // Limit total circles to prevent performance issues - fewer for more dramatic effect
-      if (newCircles.length > 8) { // Much fewer circles for dramatic effect
-        return newCircles.slice(0, 8)
+      // Limit total circles to prevent performance issues
+      if (newCircles.length > 15) { // Much fewer circles for dramatic effect
+        return newCircles.slice(0, 15)
       }
       
-      // Add new wave circles from wave sources - more frequent dramatic circles
+      // Add new wave circles from wave sources
       waveSources.forEach(source => {
-        if (!source.active || Math.random() > 0.6) return // More frequent circles - 40% chance
+        if (!source.active || Math.random() > 0.8) return // Much rarer circles - only 20% chance
         
         newCircles.push({
           x: source.x,
@@ -267,18 +267,18 @@ export default function WaveInterferencePage() {
           vy: 0,
           life: 1.0,
           maxLife: 1.0,
-          size: 40, // Start much larger for dramatic impact
+          size: 20, // Start larger for more impact
           color: source.color
         })
       })
       
       // Update existing circles (expand outward)
       newCircles.forEach(circle => {
-        circle.size += 3 + Math.random() * 3 // Faster expansion for more dramatic effect
+        circle.size += 2 + Math.random() * 2 // Slower expansion for more dramatic effect
         // No fade - circles maintain full opacity
         
         // Remove circles only when they get too large for performance
-        if (circle.size > 800) { // Slightly smaller limit for better performance
+        if (circle.size > 1000) { // Very large limit for performance
           circle.life = 0
         }
       })
@@ -302,7 +302,7 @@ export default function WaveInterferencePage() {
     const circleInterval = setInterval(() => {
       const { width, height } = getCanvasSize()
       updateWaveCircles(width, height)
-    }, 200) // Update circles every 200ms for more frequent dramatic circles
+    }, 300) // Update circles every 300ms for rarer spawning
 
     return () => {
       clearInterval(circleInterval)
@@ -319,17 +319,16 @@ export default function WaveInterferencePage() {
       
 
     
-    // Draw interference lines in black and white only
+    // Draw interference lines in black and white
     if (showInterference) {
       fields.forEach(field => {
         const intensity = Math.min(1, field.intensity / 50) // Higher threshold for stability
         const adjustedIntensity = intensity * interferenceContrast // Apply contrast control
-        // Lower alpha range for dimmer, less flickering lines
-        const alpha = 0.07 + adjustedIntensity * 0.18 // Max alpha now 0.25, min 0.07
+        const alpha = 0.2 + adjustedIntensity * 0.6 // Higher alpha range for black and white
         
-        // Black and white only - no colors
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines with alpha
-        ctx.lineWidth = 0.6 + adjustedIntensity * 0.7 // Slightly thinner lines for softer look
+        // Pure black and white - no colors
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines on black background
+        ctx.lineWidth = 0.8 + adjustedIntensity * 1.2 // More stable line width
         
         // Draw lines to represent interference patterns
         const length = 8 + adjustedIntensity * 12 // More stable length calculation
@@ -348,8 +347,8 @@ export default function WaveInterferencePage() {
           const perpEndX = field.x + Math.cos(perpAngle) * perpLength
           const perpEndY = field.y + Math.sin(perpAngle) * perpLength
           
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.5})` // Even dimmer for perpendicular lines
-          ctx.lineWidth = 0.4 + adjustedIntensity * 0.2 // Thinner perpendicular lines
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // Slightly more transparent white
+          ctx.lineWidth = 0.5 + adjustedIntensity * 0.3 // More stable perpendicular line width
           ctx.beginPath()
           ctx.moveTo(field.x, field.y)
           ctx.lineTo(perpEndX, perpEndY)
@@ -380,19 +379,18 @@ export default function WaveInterferencePage() {
       })
     }
     
-    // Draw interference cross patterns at high amplitude points (black and white only)
+    // Draw interference cross patterns at high amplitude points in black and white
     if (showInterference) {
       const highAmplitudeFields = fields.filter(f => Math.abs(f.amplitude) > 30) // Higher threshold for stability
       const maxCrosses = Math.min(12, highAmplitudeFields.length) // Fewer crosses for stability
       highAmplitudeFields.slice(0, maxCrosses).forEach(field => {
         const amplitude = Math.abs(field.amplitude)
         const adjustedAmplitude = amplitude * interferenceContrast // Apply contrast control
-        // Lower alpha for dimmer crosses
-        const alpha = Math.min(0.18, adjustedAmplitude / 300) // Max alpha now 0.18
+        const alpha = Math.min(0.7, adjustedAmplitude / 100) // Higher alpha for black and white
         
-        // Black and white only - no colors
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines with alpha
-        ctx.lineWidth = 0.7 * interferenceContrast // Slightly thinner crosses
+        // Pure black and white - no colors
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines on black background
+        ctx.lineWidth = 1.2 * interferenceContrast // Apply contrast to line width
         
         // Draw interference cross patterns
         const crossLength = 10 + adjustedAmplitude / 25 // More stable length calculation
@@ -411,8 +409,8 @@ export default function WaveInterferencePage() {
         
         // Diagonal lines for more detail
         if (adjustedAmplitude > 50) { // Higher threshold for diagonal lines
-          ctx.lineWidth = 0.4 * interferenceContrast
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.5})` // Even dimmer for diagonals
+          ctx.lineWidth = 0.8 * interferenceContrast
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // Slightly more transparent white
           
           // Diagonal line 1
           ctx.beginPath()
