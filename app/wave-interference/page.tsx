@@ -251,14 +251,14 @@ export default function WaveInterferencePage() {
     setParticles(prev => {
       const newCircles = prev.filter(circle => circle.life > 0)
       
-      // Limit total circles to prevent performance issues
-      if (newCircles.length > 15) { // Much fewer circles for dramatic effect
-        return newCircles.slice(0, 15)
+      // Limit total circles to prevent performance issues - fewer for more dramatic effect
+      if (newCircles.length > 8) { // Much fewer circles for dramatic effect
+        return newCircles.slice(0, 8)
       }
       
-      // Add new wave circles from wave sources
+      // Add new wave circles from wave sources - more frequent dramatic circles
       waveSources.forEach(source => {
-        if (!source.active || Math.random() > 0.8) return // Much rarer circles - only 20% chance
+        if (!source.active || Math.random() > 0.6) return // More frequent circles - 40% chance
         
         newCircles.push({
           x: source.x,
@@ -267,18 +267,18 @@ export default function WaveInterferencePage() {
           vy: 0,
           life: 1.0,
           maxLife: 1.0,
-          size: 20, // Start larger for more impact
+          size: 40, // Start much larger for dramatic impact
           color: source.color
         })
       })
       
       // Update existing circles (expand outward)
       newCircles.forEach(circle => {
-        circle.size += 2 + Math.random() * 2 // Slower expansion for more dramatic effect
+        circle.size += 3 + Math.random() * 3 // Faster expansion for more dramatic effect
         // No fade - circles maintain full opacity
         
         // Remove circles only when they get too large for performance
-        if (circle.size > 1000) { // Very large limit for performance
+        if (circle.size > 800) { // Slightly smaller limit for better performance
           circle.life = 0
         }
       })
@@ -302,7 +302,7 @@ export default function WaveInterferencePage() {
     const circleInterval = setInterval(() => {
       const { width, height } = getCanvasSize()
       updateWaveCircles(width, height)
-    }, 300) // Update circles every 300ms for rarer spawning
+    }, 200) // Update circles every 200ms for more frequent dramatic circles
 
     return () => {
       clearInterval(circleInterval)
