@@ -247,6 +247,12 @@ export default function WaveInterferencePage() {
       ctx.fillStyle = '#000000'
       ctx.fillRect(0, 0, width, height)
       
+      // Apply zoom transformation
+      ctx.save()
+      ctx.translate(width / 2, height / 2)
+      ctx.scale(zoomLevel, zoomLevel)
+      ctx.translate(-width / 2, -height / 2)
+      
 
     
     // Draw interference lines in black and white
@@ -396,7 +402,10 @@ export default function WaveInterferencePage() {
         ctx.fillText(source.id, source.x, source.y)
       })
     }
-  }, [calculateWaveAmplitude, animationSettings.time, theme, waveSources, showWavefronts, showParticles, showWaveSources, showInterference, interferenceContrast])
+    
+    // Restore canvas state after zoom transformation
+    ctx.restore()
+  }, [calculateWaveAmplitude, animationSettings.time, theme, waveSources, showWavefronts, showParticles, showWaveSources, showInterference, interferenceContrast, zoomLevel])
 
   // Performance optimization: Adaptive frame rate
   const updateFrameRate = useCallback(() => {
@@ -674,12 +683,20 @@ export default function WaveInterferencePage() {
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    const width = rect.width
+    const height = rect.height
+    
+    // Transform mouse coordinates to account for zoom
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+    
+    // Convert from screen coordinates to world coordinates
+    const x = (mouseX - width / 2) / zoomLevel + width / 2
+    const y = (mouseY - height / 2) / zoomLevel + height / 2
 
     const clickedSource = waveSources.find(source => {
       const distance = Math.sqrt((x - source.x) ** 2 + (y - source.y) ** 2)
-      return distance <= 20
+      return distance <= 20 / zoomLevel // Adjust click radius for zoom
     })
 
     if (clickedSource) {
@@ -702,7 +719,7 @@ export default function WaveInterferencePage() {
       }
       setWaveSources(prev => [...prev, newSource])
     }
-  }, [waveSources, selectedSourceType])
+  }, [waveSources, selectedSourceType, zoomLevel])
 
   // Handle canvas mouse move for dragging
   const handleCanvasMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -712,11 +729,19 @@ export default function WaveInterferencePage() {
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    const width = rect.width
+    const height = rect.height
+    
+    // Transform mouse coordinates to account for zoom
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+    
+    // Convert from screen coordinates to world coordinates
+    const x = (mouseX - width / 2) / zoomLevel + width / 2
+    const y = (mouseY - height / 2) / zoomLevel + height / 2
 
     updateSource(draggedSourceId, { x, y })
-  }, [isDragging, draggedSourceId, updateSource])
+  }, [isDragging, draggedSourceId, updateSource, zoomLevel])
 
   // Handle canvas mouse up
   const handleCanvasMouseUp = useCallback(() => {
