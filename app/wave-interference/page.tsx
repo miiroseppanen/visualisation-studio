@@ -251,13 +251,13 @@ export default function WaveInterferencePage() {
       const newCircles = prev.filter(circle => circle.life > 0)
       
       // Limit total circles to prevent performance issues
-      if (newCircles.length > 50) {
-        return newCircles.slice(0, 50)
+      if (newCircles.length > 30) { // Reduced for more dramatic effect
+        return newCircles.slice(0, 30)
       }
       
       // Add new wave circles from wave sources
       waveSources.forEach(source => {
-        if (!source.active || Math.random() > 0.15) return // Reduced frequency for circles
+        if (!source.active || Math.random() > 0.25) return // Reduced frequency for more dramatic circles
         
         newCircles.push({
           x: source.x,
@@ -266,18 +266,18 @@ export default function WaveInterferencePage() {
           vy: 0,
           life: 1.0,
           maxLife: 1.0,
-          size: 5, // Start small
+          size: 15, // Start larger for more impact
           color: source.color
         })
       })
       
       // Update existing circles (expand outward)
       newCircles.forEach(circle => {
-        circle.size += 2 + Math.random() * 3 // Expand outward
-        circle.life -= 0.02 // Faster decay for spreading effect
+        circle.size += 3 + Math.random() * 4 // Faster expansion for more dramatic effect
+        circle.life -= 0.015 // Slower decay for longer-lasting circles
         
         // Remove circles that get too large or fade out
-        if (circle.size > 200 || circle.life <= 0) {
+        if (circle.size > 300 || circle.life <= 0) { // Larger maximum size
           circle.life = 0
         }
       })
@@ -425,7 +425,7 @@ export default function WaveInterferencePage() {
       }
     })
     
-    // Draw spreading wave circles
+    // Draw spreading wave circles with dramatic glow effects
     if (showCircles) {
       particles.forEach(circle => {
         const alpha = Math.max(0, Math.min(1, circle.life))
@@ -434,21 +434,37 @@ export default function WaveInterferencePage() {
         // Only draw if size is valid
         if (size <= 0) return
         
-        // Draw expanding circle with fade effect (black and white)
-        const intensity = Math.floor(alpha * 255)
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White circles
-        ctx.lineWidth = 2 * alpha // Thicker when young, thinner as it expands
+        // Create dramatic glow effect with source color
+        const glowRadius = Math.max(0.1, size * 2.5)
+        const glowGradient = ctx.createRadialGradient(
+          circle.x, circle.y, 0,
+          circle.x, circle.y, glowRadius
+        )
+        glowGradient.addColorStop(0, `${circle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`)
+        glowGradient.addColorStop(0.3, `${circle.color}${Math.floor(alpha * 120).toString(16).padStart(2, '0')}`)
+        glowGradient.addColorStop(0.7, `${circle.color}${Math.floor(alpha * 60).toString(16).padStart(2, '0')}`)
+        glowGradient.addColorStop(1, 'transparent')
+        
+        // Draw glow
+        ctx.fillStyle = glowGradient
+        ctx.beginPath()
+        ctx.arc(circle.x, circle.y, glowRadius, 0, 2 * Math.PI)
+        ctx.fill()
+        
+        // Draw main circle with source color
+        ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`
+        ctx.lineWidth = 3 * alpha // Thicker lines for more impact
         
         ctx.beginPath()
         ctx.arc(circle.x, circle.y, size, 0, 2 * Math.PI)
         ctx.stroke()
         
         // Draw inner circle for more definition
-        if (alpha > 0.3) {
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // Slightly dimmer inner circle
-          ctx.lineWidth = 1
+        if (alpha > 0.4) {
+          ctx.strokeStyle = `${circle.color}${Math.floor(alpha * 180).toString(16).padStart(2, '0')}`
+          ctx.lineWidth = 2
           ctx.beginPath()
-          ctx.arc(circle.x, circle.y, size * 0.7, 0, 2 * Math.PI)
+          ctx.arc(circle.x, circle.y, size * 0.6, 0, 2 * Math.PI)
           ctx.stroke()
         }
       })
