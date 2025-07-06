@@ -258,7 +258,7 @@ export default function WaveInterferencePage() {
       
       // Add new wave circles from wave sources
       waveSources.forEach(source => {
-        if (!source.active || Math.random() > 0.4) return // Much slower frequency for dramatic circles
+        if (!source.active || Math.random() > 0.8) return // Much rarer circles - only 20% chance
         
         newCircles.push({
           x: source.x,
@@ -302,7 +302,7 @@ export default function WaveInterferencePage() {
     const circleInterval = setInterval(() => {
       const { width, height } = getCanvasSize()
       updateWaveCircles(width, height)
-    }, 150) // Update circles every 150ms for better performance
+    }, 300) // Update circles every 300ms for rarer spawning
 
     return () => {
       clearInterval(circleInterval)
