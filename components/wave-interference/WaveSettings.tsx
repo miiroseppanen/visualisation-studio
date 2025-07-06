@@ -27,22 +27,22 @@ export default function WaveSettings({
       defaultOpen={expanded}
     >
       <div className="space-y-4 mt-4">
-        {/* Line Density Control */}
+        {/* Smoothness Control */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.lineDensity')}</Label>
+            <Label className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.smoothness')}</Label>
             <span className="text-xs text-gray-600 dark:text-gray-300">{resolution}</span>
           </div>
           <Slider
             value={[resolution]}
             onValueChange={(value) => onSetResolution(value[0])}
-            max={100}
-            min={10}
-            step={5}
+            max={20}
+            min={2}
+            step={1}
             className="w-full"
           />
           <p className="text-xs text-gray-600 dark:text-gray-300">
-            {t('visualizationSettings.lineDensityDescription')}
+            {t('visualizationSettings.smoothnessDescription')}
           </p>
         </div>
       </div>

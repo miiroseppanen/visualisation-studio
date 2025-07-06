@@ -23,12 +23,11 @@ interface WaveSource {
   active: boolean
 }
 
-interface InterferenceLine {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-  intensity: number
+interface InterferencePoint {
+  x: number
+  y: number
+  amplitude: number
+  gradient: number
 }
 
 export default function WaveInterferencePage() {
@@ -50,7 +49,7 @@ export default function WaveInterferencePage() {
   const [showWaveSources, setShowWaveSources] = useState(true)
   const [showInterference, setShowInterference] = useState(true)
   const [showWavefronts, setShowWavefronts] = useState(true)
-  const [lineDensity, setLineDensity] = useState(50)
+  const [smoothness, setSmoothness] = useState(8) // Controls sampling density
   const [selectedSourceType, setSelectedSourceType] = useState<'sine' | 'cosine'>('sine')
   const [isAddingSource, setIsAddingSource] = useState(false)
 
@@ -140,51 +139,143 @@ export default function WaveInterferencePage() {
     return totalAmplitude
   }, [waveSources, selectedSourceType, animationSettings.waveSpeed])
 
-  // Generate interference lines
-  const generateInterferenceLines = useCallback((width: number, height: number): InterferenceLine[] => {
-    const lines: InterferenceLine[] = []
-    const spacing = Math.max(5, Math.min(20, 1000 / lineDensity))
+  // Generate smooth interference pattern
+  const generateSmoothInterference = useCallback((width: number, height: number): InterferencePoint[] => {
+    const points: InterferencePoint[] = []
+    const step = Math.max(2, Math.min(8, 20 / smoothness))
     
-    // Generate horizontal lines
-    for (let y = 0; y < height; y += spacing) {
-      for (let x = 0; x < width - spacing; x += spacing) {
-        const amplitude1 = calculateWaveAmplitude(x, y, animationSettings.time)
-        const amplitude2 = calculateWaveAmplitude(x + spacing, y, animationSettings.time)
+    for (let x = 0; x < width; x += step) {
+      for (let y = 0; y < height; y += step) {
+        const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
         
-        const intensity = Math.abs(amplitude1 - amplitude2) / 100
-        if (intensity > 0.1) {
-          lines.push({
-            x1: x,
-            y1: y,
-            x2: x + spacing,
-            y2: y,
-            intensity: Math.min(1, intensity)
-          })
-        }
+        // Calculate gradient for smooth transitions
+        const dx = calculateWaveAmplitude(x + step, y, animationSettings.time) - amplitude
+        const dy = calculateWaveAmplitude(x, y + step, animationSettings.time) - amplitude
+        const gradient = Math.sqrt(dx * dx + dy * dy)
+        
+        points.push({
+          x,
+          y,
+          amplitude,
+          gradient
+        })
       }
     }
     
-    // Generate vertical lines
-    for (let x = 0; x < width; x += spacing) {
-      for (let y = 0; y < height - spacing; y += spacing) {
-        const amplitude1 = calculateWaveAmplitude(x, y, animationSettings.time)
-        const amplitude2 = calculateWaveAmplitude(x, y + spacing, animationSettings.time)
-        
-        const intensity = Math.abs(amplitude1 - amplitude2) / 100
-        if (intensity > 0.1) {
-          lines.push({
-            x1: x,
-            y1: y,
-            x2: x,
-            y2: y + spacing,
-            intensity: Math.min(1, intensity)
-          })
-        }
-      }
+    return points
+  }, [calculateWaveAmplitude, animationSettings.time, smoothness])
+
+  // Draw smooth interference pattern
+  const drawSmoothInterference = useCallback((ctx: CanvasRenderingContext2D, points: InterferencePoint[], width: number, height: number) => {
+    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    
+    // Create gradient for smooth color transitions
+    const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height)/2)
+    
+    if (isDark) {
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)')
+      gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.4)')
+      gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.1)')
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
+    } else {
+      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.8)')
+      gradient.addColorStop(0.3, 'rgba(0, 0, 0, 0.4)')
+      gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.1)')
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
     }
     
-    return lines
-  }, [calculateWaveAmplitude, animationSettings.time, lineDensity])
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, width, height)
+    
+    // Draw interference patterns using smooth curves
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    
+    // Draw interference lines along amplitude contours
+    const contourThresholds = isDark ? [0.2, 0.4, 0.6, 0.8] : [0.2, 0.4, 0.6, 0.8]
+    
+    contourThresholds.forEach((threshold, index) => {
+      const alpha = isDark ? 0.3 - index * 0.05 : 0.3 - index * 0.05
+      const lineWidth = 2 - index * 0.3
+      
+      ctx.strokeStyle = isDark ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 0, 0, ${alpha})`
+      ctx.lineWidth = lineWidth
+      
+      // Find contour points
+      const contourPoints: { x: number; y: number }[] = []
+      
+      for (let i = 0; i < points.length; i++) {
+        const point = points[i]
+        if (Math.abs(point.amplitude) > threshold * 50) {
+          contourPoints.push({ x: point.x, y: point.y })
+        }
+      }
+      
+      // Draw smooth curves through contour points
+      if (contourPoints.length > 2) {
+        ctx.beginPath()
+        
+        // Use quadratic curves for smooth paths
+        for (let i = 0; i < contourPoints.length - 2; i += 2) {
+          const p1 = contourPoints[i]
+          const p2 = contourPoints[i + 1]
+          const p3 = contourPoints[i + 2]
+          
+          if (i === 0) {
+            ctx.moveTo(p1.x, p1.y)
+          }
+          
+          const cp1x = p1.x + (p2.x - p1.x) * 0.5
+          const cp1y = p1.y + (p2.y - p1.y) * 0.5
+          const cp2x = p2.x + (p3.x - p2.x) * 0.5
+          const cp2y = p2.y + (p3.y - p2.y) * 0.5
+          
+          ctx.quadraticCurveTo(cp1x, cp1y, p2.x, p2.y)
+        }
+        
+        ctx.stroke()
+      }
+    })
+    
+    // Draw flowing streamlines
+    const streamlineCount = Math.floor(width * height / 10000)
+    ctx.lineWidth = 1
+    ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
+    
+    for (let i = 0; i < streamlineCount; i++) {
+      const startX = Math.random() * width
+      const startY = Math.random() * height
+      
+      ctx.beginPath()
+      ctx.moveTo(startX, startY)
+      
+      let x = startX
+      let y = startY
+      const steps = 50
+      
+      for (let step = 0; step < steps; step++) {
+        const amplitude = calculateWaveAmplitude(x, y, animationSettings.time)
+        const dx = calculateWaveAmplitude(x + 5, y, animationSettings.time) - amplitude
+        const dy = calculateWaveAmplitude(x, y + 5, animationSettings.time) - amplitude
+        
+        const length = Math.sqrt(dx * dx + dy * dy)
+        if (length > 0) {
+          x += (dx / length) * 3
+          y += (dy / length) * 3
+          
+          if (x >= 0 && x < width && y >= 0 && y < height) {
+            ctx.lineTo(x, y)
+          } else {
+            break
+          }
+        } else {
+          break
+        }
+      }
+      
+      ctx.stroke()
+    }
+  }, [calculateWaveAmplitude, animationSettings.time, theme])
 
   // Animation loop
   useEffect(() => {
@@ -267,26 +358,13 @@ export default function WaveInterferencePage() {
     ctx.fillStyle = isDark ? '#000000' : '#ffffff'
     ctx.fillRect(0, 0, width, height)
 
-    // Draw interference pattern as lines
+    // Draw smooth interference pattern
     if (showInterference) {
-      const lines = generateInterferenceLines(width, height)
-      
-      ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
-      ctx.lineCap = 'round'
-      
-      lines.forEach(line => {
-        ctx.lineWidth = line.intensity * 3 + 0.5
-        ctx.globalAlpha = line.intensity * 0.8 + 0.2
-        ctx.beginPath()
-        ctx.moveTo(line.x1, line.y1)
-        ctx.lineTo(line.x2, line.y2)
-        ctx.stroke()
-      })
-      
-      ctx.globalAlpha = 1
+      const points = generateSmoothInterference(width, height)
+      drawSmoothInterference(ctx, points, width, height)
     }
 
-    // Draw wavefronts as circles
+    // Draw wavefronts as smooth circles
     if (showWavefronts) {
       ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
       ctx.lineWidth = 1
@@ -334,7 +412,7 @@ export default function WaveInterferencePage() {
         ctx.fillText(source.id, source.x, source.y)
       })
     }
-  }, [showInterference, showWavefronts, showWaveSources, waveSources, generateInterferenceLines, animationSettings.time, theme])
+  }, [showInterference, showWavefronts, showWaveSources, waveSources, generateSmoothInterference, drawSmoothInterference, animationSettings.time, theme])
 
   // Render loop with proper cleanup
   useEffect(() => {
@@ -401,16 +479,11 @@ export default function WaveInterferencePage() {
 
     const width = canvas.width / window.devicePixelRatio
     const height = canvas.height / window.devicePixelRatio
-    const lines = generateInterferenceLines(width, height)
+    const points = generateSmoothInterference(width, height)
 
     const svg = `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="white"/>
-        ${lines.map(line => `
-          <line x1="${line.x1}" y1="${line.y1}" x2="${line.x2}" y2="${line.y2}" 
-                stroke="black" stroke-width="${line.intensity * 3 + 0.5}" 
-                opacity="${line.intensity * 0.8 + 0.2}"/>
-        `).join('')}
+        <rect width="100%" height="100%" fill="${theme === 'dark' ? 'black' : 'white'}"/>
         ${waveSources.map(source => `
           <circle cx="${source.x}" cy="${source.y}" r="8" fill="${source.active ? '#3b82f6' : '#6b7280'}"/>
           <text x="${source.x}" y="${source.y}" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12">${source.id}</text>
@@ -425,7 +498,7 @@ export default function WaveInterferencePage() {
     link.download = 'wave-interference.svg'
     link.click()
     URL.revokeObjectURL(url)
-  }, [waveSources, generateInterferenceLines])
+  }, [waveSources, generateSmoothInterference, theme])
 
   // Reset to defaults
   const resetToDefaults = useCallback(() => {
@@ -443,7 +516,7 @@ export default function WaveInterferencePage() {
     setShowWaveSources(true)
     setShowInterference(true)
     setShowWavefronts(true)
-    setLineDensity(50)
+    setSmoothness(8)
     setSelectedSourceType('sine')
     setIsAddingSource(false)
     setIsDragging(false)
@@ -518,7 +591,7 @@ export default function WaveInterferencePage() {
         <>
           Mode: Wave Interference | 
           Sources: {waveSources.filter(s => s.active).length} | 
-          Line Density: {lineDensity} | 
+          Smoothness: {smoothness} | 
           Zoom: {Math.round(zoomLevel * 100)}%
         </>
       }
@@ -546,10 +619,10 @@ export default function WaveInterferencePage() {
           />
           
           <WaveSettings
-            resolution={lineDensity}
+            resolution={smoothness}
             expanded={panelState.waveSettingsExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ ...prev, waveSettingsExpanded: !prev.waveSettingsExpanded }))}
-            onSetResolution={setLineDensity}
+            onSetResolution={setSmoothness}
           />
           
           <AnimationControls
