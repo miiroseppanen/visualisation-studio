@@ -29,7 +29,7 @@ export function CollapsibleSection({
         ) : (
           <ChevronLeft className="h-4 w-4" />
         )}
-        {title}
+        <span className="truncate">{title}</span>
       </button>
       
       {isOpen && (

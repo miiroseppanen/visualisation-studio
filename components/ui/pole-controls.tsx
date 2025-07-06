@@ -18,6 +18,7 @@ import {
   DEFAULT_POLE_STRENGTH,
   COLOR_PALETTE
 } from '@/lib/constants'
+import { useTranslation } from 'react-i18next'
 
 interface PoleControlsProps {
   poles: Pole[]
@@ -46,6 +47,8 @@ export default function PoleControls({
   showPolarityControls = true,
   showGlobalControls = true
 }: PoleControlsProps) {
+  const { t } = useTranslation()
+
   const addPole = () => {
     const newPole: Pole = {
       id: generatePoleId(),
@@ -79,14 +82,14 @@ export default function PoleControls({
   const polarityOptions = [
     {
       value: 'positive',
-      label: 'Positive (+)',
-      icon: <Magnet className="w-4 h-4 text-white" />,
+      label: t('visualizationSettings.positive'),
+      icon: <Magnet className="w-4 h-4 text-white" />, 
       color: COLOR_PALETTE.positive // Red for positive
     },
     {
       value: 'negative',
-      label: 'Negative (-)',
-      icon: <Magnet className="w-4 h-4 text-white" />,
+      label: t('visualizationSettings.negative'),
+      icon: <Magnet className="w-4 h-4 text-white" />, 
       color: COLOR_PALETTE.negative // Blue for negative
     }
   ]
@@ -99,7 +102,7 @@ export default function PoleControls({
       className="flex items-center gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
     >
       <Plus className="w-4 h-4" />
-      Add Pole
+      <span className="truncate">{t('visualizationSettings.addPole')}</span>
     </Button>
   )
 
@@ -109,7 +112,7 @@ export default function PoleControls({
       icon={<Magnet className="w-8 h-8 text-white" />}
       iconColor={pole.isPositive ? COLOR_PALETTE.positive : COLOR_PALETTE.negative}
       title={pole.name}
-      subtitle={`Position: (${Math.round(pole.x)}, ${Math.round(pole.y)})`}
+      subtitle={`${t('visualizationSettings.position')}: (${Math.round(pole.x)}, ${Math.round(pole.y)})`}
       onRemove={poles.length > 1 ? () => removePole(pole.id) : undefined}
       showRemoveButton={poles.length > 1}
       typeOptions={polarityOptions}
@@ -120,7 +123,7 @@ export default function PoleControls({
       {/* Pole Strength */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-xs text-gray-600 dark:text-gray-300">Strength</Label>
+          <Label className="text-xs text-gray-600 dark:text-gray-300">{t('visualizationSettings.strength')}</Label>
           <div className="text-xs text-gray-600 dark:text-gray-300">{pole.strength}</div>
         </div>
         <Slider
@@ -139,7 +142,7 @@ export default function PoleControls({
     return (
       <div className="flex items-start gap-3">
         <CollapsibleSection
-          title={`Poles (${poles.length})`}
+          title={`${t('visualizationSettings.poles')} (${poles.length})`}
           defaultOpen={expanded}
           className="flex-1"
         >
@@ -159,7 +162,7 @@ export default function PoleControls({
                     checked={showPoles}
                     onCheckedChange={(checked) => onToggleShowPoles(checked as boolean)}
                   />
-                  <Label htmlFor="showPoles" className="text-sm text-gray-900 dark:text-white">Show Poles</Label>
+                  <Label htmlFor="showPoles" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showPoles')}</Label>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -168,9 +171,9 @@ export default function PoleControls({
                     checked={polaritySettings.attractToPoles}
                     onCheckedChange={(checked) => onUpdatePolarity({ attractToPoles: checked as boolean })}
                   />
-                  <Label htmlFor="attractToPoles" className="text-sm text-gray-900 dark:text-white">Attract to Positive Poles</Label>
+                  <Label htmlFor="attractToPoles" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.attractToPoles')}</Label>
                   <div className="text-xs text-gray-600 dark:text-gray-300 ml-2">
-                    {polaritySettings.attractToPoles ? '(Magnetic)' : '(Electric)'}
+                    {polaritySettings.attractToPoles ? `(${t('visualizationSettings.magnetic')})` : `(${t('visualizationSettings.electric')})`}
                   </div>
                 </div>
               </>
@@ -183,7 +186,7 @@ export default function PoleControls({
 
   return (
     <CollapsibleSection
-      title={`Poles (${poles.length})`}
+      title={`${t('visualizationSettings.poles')} (${poles.length})`}
       defaultOpen={expanded}
     >
       <div className="space-y-4 mt-4">
@@ -202,7 +205,7 @@ export default function PoleControls({
                 checked={showPoles}
                 onCheckedChange={(checked) => onToggleShowPoles(checked as boolean)}
               />
-              <Label htmlFor="showPoles" className="text-sm text-gray-900 dark:text-white">Show Poles</Label>
+              <Label htmlFor="showPoles" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.showPoles')}</Label>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -211,9 +214,9 @@ export default function PoleControls({
                 checked={polaritySettings.attractToPoles}
                 onCheckedChange={(checked) => onUpdatePolarity({ attractToPoles: checked as boolean })}
               />
-              <Label htmlFor="attractToPoles" className="text-sm text-gray-900 dark:text-white">Attract to Positive Poles</Label>
+              <Label htmlFor="attractToPoles" className="text-sm text-gray-900 dark:text-white">{t('visualizationSettings.attractToPoles')}</Label>
               <div className="text-xs text-gray-600 dark:text-gray-300 ml-2">
-                {polaritySettings.attractToPoles ? '(Magnetic)' : '(Electric)'}
+                {polaritySettings.attractToPoles ? `(${t('visualizationSettings.magnetic')})` : `(${t('visualizationSettings.electric')})`}
               </div>
             </div>
           </>

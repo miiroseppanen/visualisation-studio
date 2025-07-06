@@ -29,6 +29,7 @@ import {
   MIN_ZOOM_LEVEL,
   MAX_ZOOM_LEVEL
 } from '@/lib/constants'
+import { useTranslation } from 'react-i18next'
 
 interface GridSettingsProps {
   gridSettings: GridSettingsType
@@ -40,12 +41,12 @@ interface GridSettingsProps {
 }
 
 const gridTypeConfig = [
-  { type: 'rectangular', label: 'Rect', icon: Grid3X3, description: 'Square grid' },
-  { type: 'triangular', label: 'Tri', icon: Triangle, description: 'Triangular pattern' },
-  { type: 'hexagonal', label: 'Hex', icon: Hexagon, description: 'Hexagonal grid' },
-  { type: 'radial', label: 'Radial', icon: Circle, description: 'Radial pattern' },
-  { type: 'random', label: 'Random', icon: Shuffle, description: 'Random points' },
-  { type: 'spiral', label: 'Spiral', icon: RotateCcw, description: 'Spiral pattern' }
+  { type: 'rectangular', labelKey: 'visualizationSettings.rect', icon: Grid3X3, descriptionKey: 'visualizationSettings.squareGrid' },
+  { type: 'triangular', labelKey: 'visualizationSettings.tri', icon: Triangle, descriptionKey: 'visualizationSettings.triangularPattern' },
+  { type: 'hexagonal', labelKey: 'visualizationSettings.hex', icon: Hexagon, descriptionKey: 'visualizationSettings.hexagonalGrid' },
+  { type: 'radial', labelKey: 'visualizationSettings.radial', icon: Circle, descriptionKey: 'visualizationSettings.radialPattern' },
+  { type: 'random', labelKey: 'visualizationSettings.random', icon: Shuffle, descriptionKey: 'visualizationSettings.randomPoints' },
+  { type: 'spiral', labelKey: 'visualizationSettings.spiral', icon: RotateCcw, descriptionKey: 'visualizationSettings.spiralPattern' }
 ] as const
 
 export default function GridSettings({
@@ -56,27 +57,29 @@ export default function GridSettings({
   onUpdateGrid,
   onUpdateZoom
 }: GridSettingsProps) {
+  const { t } = useTranslation()
+  console.log('t(gridSettings):', t('visualizationSettings.gridSettings'));
   return (
     <CollapsibleSection
-      title="Grid Settings"
+      title={<span className="truncate">{t('visualizationSettings.gridSettings')}</span>}
       defaultOpen={expanded}
     >
       <div className="space-y-6 mt-4">
         {/* Grid Type */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Grid Type</Label>
+          <Label className="text-sm font-medium">{t('visualizationSettings.gridType')}</Label>
           <div className="grid grid-cols-3 gap-2">
-            {gridTypeConfig.map(({ type, label, icon: Icon, description }) => (
+            {gridTypeConfig.map(({ type, labelKey, icon: Icon, descriptionKey }) => (
               <Button
                 key={type}
                 variant={gridSettings.type === type ? 'default' : 'outline'}
                 size="sm"
                 className="h-auto py-3 px-2 flex flex-col items-center gap-1 text-xs"
                 onClick={() => onUpdateGrid({ type })}
-                title={description}
+                title={t(descriptionKey)}
               >
                 <Icon className="h-4 w-4" />
-                <span>{label}</span>
+                <span className="truncate">{t(labelKey)}</span>
               </Button>
             ))}
           </div>
@@ -85,7 +88,7 @@ export default function GridSettings({
         {/* Grid Spacing */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Grid Spacing</Label>
+            <Label className="text-sm font-medium">{t('visualizationSettings.gridSpacing')}</Label>
             <div className="text-sm text-muted-foreground">{gridSettings.spacing}px</div>
           </div>
           <Slider
@@ -101,7 +104,7 @@ export default function GridSettings({
         {/* Line Length */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Line Length</Label>
+            <Label className="text-sm font-medium">{t('visualizationSettings.lineLength')}</Label>
             <div className="text-sm text-muted-foreground">{gridSettings.lineLength}px</div>
           </div>
           <Slider
@@ -117,7 +120,7 @@ export default function GridSettings({
         {/* Curve Stiffness */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Curve Stiffness</Label>
+            <Label className="text-sm font-medium">{t('visualizationSettings.curveStiffness')}</Label>
             <div className="text-sm text-muted-foreground">{Math.round(gridSettings.curveStiffness * 100)}%</div>
           </div>
           <Slider
@@ -135,7 +138,7 @@ export default function GridSettings({
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium flex items-center gap-1">
               <ZoomIn className="h-3 w-3" />
-              Zoom Level
+              {t('visualizationSettings.zoomLevel')}
             </Label>
             <div className="text-sm text-muted-foreground">{Math.round(zoomSettings.level * 100)}%</div>
           </div>

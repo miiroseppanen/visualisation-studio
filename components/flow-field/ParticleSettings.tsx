@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslation } from 'react-i18next'
 
 interface ParticleSettingsProps {
   particleCount: number
@@ -31,6 +32,7 @@ export default function ParticleSettings({
   onSetShowWaveFunctions,
   onSetShowSuperposition
 }: ParticleSettingsProps) {
+  const { t } = useTranslation()
   return (
     <div>
       <button
@@ -42,7 +44,7 @@ export default function ParticleSettings({
         ) : (
           <ChevronRight className="h-4 w-4" />
         )}
-        Particle Settings
+        {t('visualizationSettings.particleSettings')}
       </button>
 
       {expanded && (
@@ -50,7 +52,7 @@ export default function ParticleSettings({
           {/* Particle Count */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Particle Count</Label>
+              <Label>{t('visualizationSettings.particleCount')}</Label>
               <div className="text-sm text-muted-foreground">{particleCount}</div>
             </div>
             <Slider
@@ -65,7 +67,7 @@ export default function ParticleSettings({
 
           {/* Visual Effects */}
           <div className="space-y-3 pt-2 border-t">
-            <Label className="text-sm font-medium">Quantum Effects</Label>
+            <Label className="text-sm font-medium">{t('visualizationSettings.quantumEffects')}</Label>
             
             {/* Particle Trails */}
             <div className="flex items-center space-x-2">
@@ -74,7 +76,7 @@ export default function ParticleSettings({
                 checked={showParticleTrails}
                 onCheckedChange={onSetShowParticleTrails}
               />
-              <Label htmlFor="particle-trails" className="text-sm">Show Particle Trails</Label>
+              <Label htmlFor="particle-trails" className="text-sm">{t('visualizationSettings.showParticleTrails')}</Label>
             </div>
 
             {/* Wave Functions */}
@@ -84,7 +86,7 @@ export default function ParticleSettings({
                 checked={showWaveFunctions}
                 onCheckedChange={onSetShowWaveFunctions}
               />
-              <Label htmlFor="wave-functions" className="text-sm">Show Wave Functions</Label>
+              <Label htmlFor="wave-functions" className="text-sm">{t('visualizationSettings.showWaveFunctions')}</Label>
             </div>
 
             {/* Superposition Effects */}
@@ -94,7 +96,7 @@ export default function ParticleSettings({
                 checked={showSuperposition}
                 onCheckedChange={onSetShowSuperposition}
               />
-              <Label htmlFor="superposition" className="text-sm">Show Superposition Effects</Label>
+              <Label htmlFor="superposition" className="text-sm">{t('visualizationSettings.showSuperpositionEffects')}</Label>
             </div>
           </div>
         </div>

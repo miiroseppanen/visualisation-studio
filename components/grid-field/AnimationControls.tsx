@@ -12,6 +12,7 @@ import {
   MIN_WIND_SPEED,
   MAX_WIND_SPEED
 } from '@/lib/constants'
+import { useTranslation } from 'react-i18next'
 
 interface AnimationControlsProps {
   animationSettings: AnimationSettings
@@ -26,6 +27,7 @@ export default function AnimationControls({
   onToggleExpanded,
   onUpdateAnimation
 }: AnimationControlsProps) {
+  const { t } = useTranslation()
   return (
     <div>
       <button
@@ -37,7 +39,7 @@ export default function AnimationControls({
         ) : (
           <ChevronRight className="h-4 w-4" />
         )}
-        Animation
+        {t('visualizationSettings.animation')}
       </button>
 
       {expanded && (
@@ -53,12 +55,12 @@ export default function AnimationControls({
               {animationSettings.isAnimating ? (
                 <>
                   <Pause className="h-3 w-3" />
-                  <span>Pause</span>
+                  <span className="truncate">{t('visualizationSettings.pause')}</span>
                 </>
               ) : (
                 <>
                   <Play className="h-3 w-3" />
-                  <span>Play</span>
+                  <span className="truncate">{t('visualizationSettings.play')}</span>
                 </>
               )}
             </Button>
@@ -67,7 +69,7 @@ export default function AnimationControls({
           {/* Wind Strength */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs">Wind Strength</Label>
+              <Label className="text-xs">{t('visualizationSettings.windStrength')}</Label>
               <div className="text-xs text-muted-foreground">{animationSettings.windStrength.toFixed(2)}</div>
             </div>
             <Slider
@@ -83,7 +85,7 @@ export default function AnimationControls({
           {/* Wind Speed */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs">Wind Speed</Label>
+              <Label className="text-xs">{t('visualizationSettings.windSpeed')}</Label>
               <div className="text-xs text-muted-foreground">{animationSettings.windSpeed.toFixed(1)}x</div>
             </div>
             <Slider

@@ -1,5 +1,5 @@
 {
-  "/suggestions/page": "app/suggestions/page.js",
-  "/page": "app/page.js",
-  "/suggestions/new/page": "app/suggestions/new/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/grid-field/page": "app/grid-field/page.js",
+  "/page": "app/page.js"
 }

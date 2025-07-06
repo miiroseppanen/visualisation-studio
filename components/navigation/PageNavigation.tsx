@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, Home, Plus, Unlock, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/components/ui/ThemeProvider'
+import { useTranslation } from 'react-i18next'
 import { Sun, Moon, Laptop } from 'lucide-react'
 import {
   DropdownMenu,
@@ -39,6 +40,7 @@ export default function PageNavigation({
   rightContent,
   className = ''
 }: PageNavigationProps) {
+  const { t } = useTranslation()
   return (
     <div className={`sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-foreground/10 ${className}`}>
       <div className="container mx-auto px-8 py-4">
@@ -111,19 +113,20 @@ export function SuggestionsNavigation({
   onAdminClick?: () => void
   onLogout?: () => void
 } = {}) {
+  const { t } = useTranslation()
   return (
     <PageNavigation
       showBackButton={true}
       backButtonText="Home"
       backButtonPath="/"
-      title="Visualization Suggestions"
-      subtitle="Share ideas and vote on new visualizations"
+      title={t('suggestions.visualizationIdeas')}
+      subtitle={t('suggestions.shareCreativeConcepts')}
       rightContent={
         <div className="flex items-center space-x-2">
           <Link href="/suggestions/new">
             <Button size="sm" className="flex items-center space-x-2">
               <Plus className="w-4 h-4" />
-              <span>New Suggestion</span>
+                              <span>{t('suggestions.newIdea')}</span>
             </Button>
           </Link>
           {onAdminClick && (
@@ -155,13 +158,14 @@ export function SuggestionsNavigation({
 
 // Specialized navigation for new suggestion page
 export function NewSuggestionNavigation() {
+  const { t } = useTranslation()
   return (
     <PageNavigation
       showBackButton={true}
-      backButtonText="Suggestions"
+      backButtonText={t('suggestions.ideas')}
       backButtonPath="/suggestions"
-      title="New Suggestion"
-      subtitle="Create a new visualization idea"
+      title={t('suggestions.newVisualizationIdea')}
+      subtitle={t('suggestions.shareCreativeConcept')}
     />
   )
 }
@@ -176,6 +180,7 @@ export function SuggestionsMobileNavigation({
   onAdminClick?: () => void
   onLogout?: () => void
 } = {}) {
+  const { t } = useTranslation()
   return (
     <div className="md:hidden rounded-lg border border-border/30 bg-background/60 backdrop-blur-md hover:bg-background/80 hover:backdrop-blur-lg transition-all duration-300 dark:bg-background/40 dark:hover:bg-background/60">
       <div className="w-full px-4 lg:px-8 py-3">
@@ -187,8 +192,8 @@ export function SuggestionsMobileNavigation({
               </button>
             </Link>
             <div className="text-left">
-              <h1 className="text-lg font-medium text-foreground leading-tight">Visualization Suggestions</h1>
-              <p className="text-sm text-foreground/60 leading-tight">Share ideas and vote on new visualizations</p>
+              <h1 className="text-lg font-medium text-foreground leading-tight">{t('suggestions.visualizationIdeas')}</h1>
+              <p className="text-sm text-foreground/60 leading-tight">{t('suggestions.shareCreativeConcepts')}</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -208,7 +213,7 @@ export function SuggestionsMobileNavigation({
             <Link href="/suggestions/new">
               <button className="flex items-center justify-center space-x-2 p-2 rounded-lg font-semibold shadow-sm border border-border/30 bg-background/80 text-foreground hover:bg-accent/40 transition-colors min-w-[44px]">
                 <Plus className="w-4 h-4" />
-                <span className="hidden xs:inline">New</span>
+                <span className="hidden xs:inline">{t('suggestions.newIdea')}</span>
               </button>
             </Link>
           </div>
@@ -220,6 +225,7 @@ export function SuggestionsMobileNavigation({
 
 // Unified mobile navigation for new suggestion page
 export function NewSuggestionMobileNavigation() {
+  const { t } = useTranslation()
   return (
     <div className="md:hidden rounded-lg border border-border/30 bg-background/60 backdrop-blur-md hover:bg-background/80 hover:backdrop-blur-lg transition-all duration-300 dark:bg-background/40 dark:hover:bg-background/60">
       <div className="w-full px-4 lg:px-8 py-3">
@@ -231,8 +237,8 @@ export function NewSuggestionMobileNavigation() {
               </button>
             </Link>
             <div className="text-left">
-              <h1 className="text-lg font-medium text-foreground leading-tight">New Suggestion</h1>
-              <p className="text-sm text-foreground/60 leading-tight">Create a new visualization idea</p>
+              <h1 className="text-lg font-medium text-foreground leading-tight">{t('suggestions.newVisualizationIdea')}</h1>
+              <p className="text-sm text-foreground/60 leading-tight">{t('suggestions.shareCreativeConcept')}</p>
             </div>
           </div>
         </div>

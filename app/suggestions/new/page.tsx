@@ -14,22 +14,24 @@ import { NewSuggestionNavigation, NewSuggestionMobileNavigation } from '@/compon
 import { useSuggestions } from '@/lib/hooks/useSuggestions'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 
 const categories = [
-  'Packaging', 'Branding', 'Customer Experience', 'Events', 'Social Media', 'Audio Branding', 'Retail', 'Market Analysis', 'Supply Chain', 'Web Design'
+  'fieldVisualizations', 'flowPatterns', 'particleSystems', 'fractalGeometry', 'neuralNetworks', 'wavePhysics', 'cellularAutomata', 'audioVisualization', 'dataVisualization', 'interactiveArt'
 ]
 
 const suggestionTypes = [
-  { value: 'new-visual', label: 'New Visual', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
-  { value: 'bug', label: 'Bug Fix', color: 'bg-red-500/10 text-red-700 dark:text-red-300' },
-  { value: 'improvement', label: 'Improvement', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
-  { value: 'feature', label: 'Feature', color: 'bg-purple-500/10 text-purple-700 dark:text-purple-300' },
-  { value: 'enhancement', label: 'Enhancement', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-300' }
+  { value: 'new-visual', labelKey: 'newVisual', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
+  { value: 'bug', labelKey: 'bugFix', color: 'bg-red-500/10 text-red-700 dark:text-red-300' },
+  { value: 'improvement', labelKey: 'improvement', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
+  { value: 'feature', labelKey: 'feature', color: 'bg-purple-500/10 text-purple-700 dark:text-purple-300' },
+  { value: 'enhancement', labelKey: 'enhancement', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-300' }
 ]
 
 export default function NewSuggestionPage() {
   const router = useRouter()
   const { addSuggestion, loading, error } = useSuggestions()
+  const { t } = useTranslation()
   
   const [formData, setFormData] = useState({
     title: '',
@@ -86,7 +88,7 @@ export default function NewSuggestionPage() {
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <div className="flex items-center space-x-2">
                   <X className="w-4 h-4 text-red-600" />
-                  <span className="text-red-800">Error: {error}</span>
+                  <span className="text-red-800">{t('suggestions.error')}: {error}</span>
                 </div>
               </div>
             )}
@@ -96,14 +98,14 @@ export default function NewSuggestionPage() {
                 <div className="space-y-3">
                   <Label htmlFor="title" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
                     <FileText className="w-4 h-4" />
-                    <span>Title</span>
+                    <span>{t('suggestions.formTitle')}</span>
                   </Label>
                   <Input
                     ref={titleInputRef}
                     id="title"
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Enter visualization title"
+                    placeholder={t('suggestions.enterVisualizationTitle')}
                     className="h-14 text-base font-light focus:ring-2 focus:ring-ring/20"
                     required
                     disabled={isSubmitting}
@@ -113,13 +115,13 @@ export default function NewSuggestionPage() {
                 <div className="space-y-3">
                   <Label htmlFor="author" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
                     <User className="w-4 h-4" />
-                    <span>Your Name</span>
+                    <span>{t('suggestions.yourName')}</span>
                   </Label>
                   <Input
                     id="author"
                     value={formData.author}
                     onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
-                    placeholder="Enter your name"
+                    placeholder={t('suggestions.enterYourName')}
                     className="h-14 text-base font-light focus:ring-2 focus:ring-ring/20"
                     required
                     disabled={isSubmitting}
@@ -130,13 +132,13 @@ export default function NewSuggestionPage() {
               <div className="space-y-3">
                 <Label htmlFor="description" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
                   <FileText className="w-4 h-4" />
-                  <span>Description</span>
+                  <span>{t('suggestions.formDescription')}</span>
                 </Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe your visualization idea in detail..."
+                                      placeholder={t('suggestions.describeVisualization')}
                   rows={5}
                   className="text-base font-light resize-none focus:ring-2 focus:ring-ring/20"
                   required
@@ -148,7 +150,7 @@ export default function NewSuggestionPage() {
                 <div className="space-y-3">
                   <Label htmlFor="category" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
                     <Tag className="w-4 h-4" />
-                    <span>Category</span>
+                    <span>{t('suggestions.category')}</span>
                   </Label>
                   <select
                     id="category"
@@ -158,9 +160,9 @@ export default function NewSuggestionPage() {
                     required
                     disabled={isSubmitting}
                   >
-                    <option value="">Select category</option>
+                    <option value="">{t('suggestions.chooseCategory')}</option>
                     {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
+                      <option key={cat} value={cat}>{t(`suggestions.${cat}`)}</option>
                     ))}
                   </select>
                 </div>
@@ -168,7 +170,7 @@ export default function NewSuggestionPage() {
                 <div className="space-y-3">
                   <Label htmlFor="complexity" className="flex items-center space-x-2 text-sm font-medium text-muted-foreground">
                     <Zap className="w-4 h-4" />
-                    <span>Type</span>
+                    <span>{t('suggestions.type')}</span>
                   </Label>
                   <select
                     id="complexity"
@@ -179,7 +181,7 @@ export default function NewSuggestionPage() {
                     disabled={isSubmitting}
                   >
                     {suggestionTypes.map(type => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
+                      <option key={type.value} value={type.value}>{t(`suggestions.${type.labelKey}`)}</option>
                     ))}
                   </select>
                 </div>
@@ -196,7 +198,7 @@ export default function NewSuggestionPage() {
                   )}
                   disabled={isSubmitting || loading || !isFormValid}
                 >
-                  {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
+                  {isSubmitting ? t('suggestions.submitting') : t('suggestions.shareVisualizationIdea')}
                 </Button>
                 <Link href="/suggestions">
                   <Button 
@@ -205,7 +207,7 @@ export default function NewSuggestionPage() {
                     variant="outline"
                     disabled={isSubmitting}
                   >
-                    Cancel
+                    {t('suggestions.cancel')}
                   </Button>
                 </Link>
               </div>

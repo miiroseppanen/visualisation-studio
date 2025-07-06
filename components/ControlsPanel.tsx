@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react"
 import { Settings, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useMobileUI } from "@/lib/hooks/useMobileUI"
+import { useTranslation } from "react-i18next"
 
 interface ControlsPanelProps {
   children: React.ReactNode
@@ -20,6 +21,7 @@ export default function ControlsPanel({
   isOpen = true, 
   onToggle 
 }: ControlsPanelProps) {
+  const { t } = useTranslation()
   const [panelState, setPanelState] = useState<PanelState>(isOpen ? 'open' : 'closed')
   const { isUIVisible, isMobile } = useMobileUI()
 
@@ -84,8 +86,8 @@ export default function ControlsPanel({
               // Mobile: Larger touch target
               "p-4 md:p-3"
             )}
-            aria-label="Open controls"
-            title={`Open ${title}`}
+            aria-label={t('visualizationSettings.openControls')}
+            title={`${t('visualizationSettings.openControls')} ${title}`}
           >
             <Settings className="w-5 h-5 md:w-4 md:h-4 group-hover:rotate-90 transition-transform duration-300" />
           </button>
@@ -120,12 +122,12 @@ export default function ControlsPanel({
             </div>
             
             <div className="flex items-center justify-between w-full">
-              <h2 className="text-lg font-normal text-gray-800 dark:text-white">{title}</h2>
+              <h2 className="text-lg font-normal text-gray-800 dark:text-white">{title || t('visualizationSettings.controls')}</h2>
               <button
                 onClick={handleClose}
                 className="p-1.5 rounded-md hover:bg-gray-100/50 transition-colors group touch-manipulation dark:hover:bg-white/10"
-                aria-label="Close panel"
-                title="Close (Esc)"
+                aria-label={t('visualizationSettings.closePanel')}
+                title={t('visualizationSettings.closeEsc')}
               >
                 <X className="w-5 h-5 md:w-4 md:h-4 text-gray-600 group-hover:text-gray-800 dark:text-white/80 dark:group-hover:text-white" />
               </button>

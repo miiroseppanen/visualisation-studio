@@ -12,31 +12,44 @@ import { cn } from '@/lib/utils'
 import AppLayout from '@/components/layout/AppLayout'
 import { SuggestionsNavigation, SuggestionsMobileNavigation } from '@/components/navigation/PageNavigation'
 import { useSuggestions } from '@/lib/hooks/useSuggestions'
+import { useTranslation } from 'react-i18next'
 import Link from 'next/link'
 
 const categories = [
-  'Packaging', 'Branding', 'Customer Experience', 'Events', 'Social Media', 'Audio Branding', 'Retail', 'Market Analysis', 'Supply Chain', 'Web Design'
+  'fieldVisualizations', 'flowPatterns', 'particleSystems', 'fractalGeometry', 'neuralNetworks', 'wavePhysics', 'cellularAutomata', 'audioVisualization', 'dataVisualization', 'interactiveArt'
 ]
 
 const suggestionTypes = [
-  { value: 'new-visual', label: 'New Visual', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
-  { value: 'bug', label: 'Bug Fix', color: 'bg-red-500/10 text-red-700 dark:text-red-300' },
-  { value: 'improvement', label: 'Improvement', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
-  { value: 'feature', label: 'Feature', color: 'bg-purple-500/10 text-purple-700 dark:text-purple-300' },
-  { value: 'enhancement', label: 'Enhancement', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-300' }
+  { value: 'new-visual', labelKey: 'newVisual', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
+  { value: 'bug', labelKey: 'bugFix', color: 'bg-red-500/10 text-red-700 dark:text-red-300' },
+  { value: 'improvement', labelKey: 'improvement', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
+  { value: 'feature', labelKey: 'feature', color: 'bg-purple-500/10 text-purple-700 dark:text-purple-300' },
+  { value: 'enhancement', labelKey: 'enhancement', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-300' }
 ]
 
-const statusConfig = {
-  pending: { label: 'Pending', color: 'bg-muted text-muted-foreground' },
-  approved: { label: 'Approved', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
-  implemented: { label: 'Implemented', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
-  rejected: { label: 'Rejected', color: 'bg-red-500/10 text-red-700 dark:text-red-300' }
+const statusConfig: Record<string, { labelKey: string; color: string }> = {
+  pending: { labelKey: 'pending', color: 'bg-muted text-muted-foreground' },
+  approved: { labelKey: 'approved', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
+  implemented: { labelKey: 'implemented', color: 'bg-green-500/10 text-green-700 dark:text-green-300' },
+  rejected: { labelKey: 'rejected', color: 'bg-red-500/10 text-red-700 dark:text-red-300' }
+}
+
+// Helper functions for translations
+const getTypeLabel = (complexity: string, translate: any) => {
+  const type = suggestionTypes.find(t => t.value === complexity)
+  return type ? translate(`suggestions.${type.labelKey}`) : ''
+}
+
+const getStatusLabel = (status: string, translate: any) => {
+  const config = statusConfig[status]
+  return config ? translate(`suggestions.${config.labelKey}`) : ''
 }
 
 // Admin PIN - in a real app, this would be stored securely
 const ADMIN_PIN = '4321'
 
 export default function SuggestionsPage() {
+  const { t } = useTranslation()
   const { 
     suggestions, 
     loading, 
@@ -47,6 +60,8 @@ export default function SuggestionsPage() {
     deleteSuggestion,
     clearSampleData
   } = useSuggestions()
+  
+
   
   const [filterCategory, setFilterCategory] = useState('')
   const [filterType, setFilterType] = useState('')
@@ -190,7 +205,7 @@ export default function SuggestionsPage() {
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading suggestions...</p>
+            <p className="text-muted-foreground">{t('loadingIdeas')}</p>
           </div>
         </div>
       </AppLayout>
@@ -205,7 +220,7 @@ export default function SuggestionsPage() {
             <div className="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-4">
               <X className="w-8 h-8 text-red-600" />
             </div>
-            <h3 className="text-lg font-medium text-foreground mb-2">Error loading suggestions</h3>
+            <h3 className="text-lg font-medium text-foreground mb-2">{t('errorLoadingIdeas')}</h3>
             <p className="text-muted-foreground">{error}</p>
           </div>
         </div>
@@ -231,80 +246,80 @@ export default function SuggestionsPage() {
         </div>
         
         {/* Main Content */}
-        <div className="container mx-auto px-8 py-8">
+        <div className="container mx-auto px-4 md:px-8 py-4 md:py-8">
 
           {/* Add Suggestion Button */}
-          <div className="mb-8">
+          <div className="mb-4 md:mb-8">
             <Link href="/suggestions/new" className="block">
               <Button 
-                className="w-full h-14 text-base font-light tracking-wide hover:bg-accent transition-all duration-300 group"
+                className="w-full h-12 md:h-14 text-base font-light tracking-wide hover:bg-accent transition-all duration-300 group"
                 variant="outline"
               >
                 <Plus className="w-5 h-5 mr-3 text-muted-foreground group-hover:text-foreground" />
-                Suggest New Visualization
+                {t('shareNewVisualizationIdea')}
               </Button>
             </Link>
           </div>
 
           {/* Filter Controls */}
-          <div className="mb-8 p-6 bg-card rounded-lg border">
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+          <div className="mb-4 md:mb-8 p-4 md:p-6 bg-card rounded-lg border">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-muted rounded flex items-center justify-center">
                   <Filter className="w-4 h-4 text-muted-foreground" />
                 </div>
-                <span className="text-sm font-medium text-muted-foreground">Filters</span>
+                <span className="text-sm font-medium text-muted-foreground">{t('filters')}</span>
               </div>
               
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-2 md:gap-4">
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
-                  className="h-10 px-4 border border-input bg-background text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
+                  className="h-9 md:h-10 px-3 md:px-4 border border-input bg-background text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
                 >
-                  <option value="">All Categories</option>
+                  <option value="">{t('suggestions.allCategories')}</option>
                   {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat} value={cat}>{t(`suggestions.${cat}`)}</option>
                   ))}
                 </select>
                 
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="h-10 px-4 border border-input bg-background text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
+                  className="h-9 md:h-10 px-3 md:px-4 border border-input bg-background text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
                 >
-                  <option value="">All Types</option>
+                  <option value="">{t('suggestions.allTypes')}</option>
                   {suggestionTypes.map(type => (
-                    <option key={type.value} value={type.value}>{type.label}</option>
+                    <option key={type.value} value={type.value}>{t(`suggestions.${type.labelKey}`)}</option>
                   ))}
                 </select>
                 
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'score' | 'date' | 'title')}
-                  className="h-10 px-4 border border-input bg-background text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
+                  className="h-9 md:h-10 px-3 md:px-4 border border-input bg-background text-sm focus:border-ring focus:ring-2 focus:ring-ring/20 rounded-md"
                 >
-                  <option value="score">Sort by Score</option>
-                  <option value="date">Sort by Date</option>
-                  <option value="title">Sort by Title</option>
+                  <option value="score">{t('suggestions.sortByScore')}</option>
+                  <option value="date">{t('suggestions.sortByDate')}</option>
+                  <option value="title">{t('suggestions.sortByTitle')}</option>
                 </select>
               </div>
             </div>
           </div>
 
           {/* Suggestions List */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Pending Suggestions */}
             {pendingSuggestions.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
-                  Pending Suggestions ({pendingSuggestions.length})
+                <h3 className="text-lg font-semibold mb-3 md:mb-4 text-gray-800 dark:text-gray-200">
+                  {t('suggestions.pendingIdeas')} ({pendingSuggestions.length})
                 </h3>
                 <div className="space-y-4">
                   {pendingSuggestions.map((suggestion) => (
                     <Card 
                       key={suggestion.id} 
-                      className="p-8 transition-all duration-300 hover:bg-accent/50"
+                      className="p-4 md:p-8 transition-all duration-300 hover:bg-accent/50"
                     >
                       <div className="flex items-start space-x-6">
                         {/* Vote Section */}
@@ -399,19 +414,19 @@ export default function SuggestionsPage() {
                             </div>
                             
                             <Badge variant="outline">
-                              {suggestion.category}
+                              {t(`suggestions.${suggestion.category}`)}
                             </Badge>
                             
                             <Badge className={cn(
                               suggestionTypes.find(t => t.value === suggestion.complexity)?.color
                             )}>
-                              {suggestionTypes.find(t => t.value === suggestion.complexity)?.label}
+                              {getTypeLabel(suggestion.complexity, t)}
                             </Badge>
                             
                             <Badge className={cn(
                               statusConfig[suggestion.status].color
                             )}>
-                              {statusConfig[suggestion.status].label}
+                              {getStatusLabel(suggestion.status, t)}
                             </Badge>
                           </div>
                         </div>
@@ -425,8 +440,8 @@ export default function SuggestionsPage() {
             {/* Approved Suggestions */}
             {approvedSuggestions.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-4 text-blue-600 dark:text-blue-400">
-                  Approved Suggestions ({approvedSuggestions.length})
+                <h3 className="text-lg font-semibold mb-3 md:mb-4 text-blue-600 dark:text-blue-400">
+                  {t('suggestions.approvedIdeas')} ({approvedSuggestions.length})
                 </h3>
                 <div className="space-y-4">
                   {approvedSuggestions.map((suggestion) => (
@@ -533,13 +548,13 @@ export default function SuggestionsPage() {
                             <Badge className={cn(
                               suggestionTypes.find(t => t.value === suggestion.complexity)?.color
                             )}>
-                              {suggestionTypes.find(t => t.value === suggestion.complexity)?.label}
+                              {getTypeLabel(suggestion.complexity, t)}
                             </Badge>
                             
                             <Badge className={cn(
                               statusConfig[suggestion.status].color
                             )}>
-                              {statusConfig[suggestion.status].label}
+                              {getStatusLabel(suggestion.status, t)}
                             </Badge>
                           </div>
                         </div>
@@ -553,8 +568,8 @@ export default function SuggestionsPage() {
             {/* Implemented Suggestions */}
             {doneSuggestions.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold mb-4 text-green-600 dark:text-green-400">
-                  Implemented Suggestions ({doneSuggestions.length})
+                <h3 className="text-lg font-semibold mb-3 md:mb-4 text-green-600 dark:text-green-400">
+                  {t('suggestions.implementedIdeas')} ({doneSuggestions.length})
                 </h3>
                 <div className="space-y-4">
                   {doneSuggestions.map((suggestion) => (
@@ -681,7 +696,7 @@ export default function SuggestionsPage() {
             {filteredSuggestions.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-gray-500 dark:text-gray-400">
-                  No suggestions found matching your filters.
+                  {t('noIdeasFound')}
                 </p>
               </div>
             )}
@@ -692,9 +707,9 @@ export default function SuggestionsPage() {
         {showPinModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-background p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
-              <h3 className="text-lg font-medium mb-4">Admin Authentication</h3>
+              <h3 className="text-lg font-medium mb-4">{t('adminAuthentication')}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Enter the 4-digit PIN to perform admin actions.
+                {t('enterPinToManage')}
               </p>
               <form onSubmit={handlePinSubmit}>
                                   <div className="flex gap-3 justify-center">
@@ -742,7 +757,7 @@ export default function SuggestionsPage() {
                   </div>
                 <div className="flex gap-2 mt-4">
                   <Button type="submit" className="flex-1">
-                    Authenticate
+                    {t('authenticate')}
                   </Button>
                   <Button
                     type="button"
@@ -753,7 +768,7 @@ export default function SuggestionsPage() {
                       setAdminAction(null)
                     }}
                   >
-                    Cancel
+                    {t('cancel')}
                   </Button>
                 </div>
               </form>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslation } from 'react-i18next'
 import type { CircularFieldAnimationSettings } from '@/lib/types'
 
 interface AnimationControlsProps {
@@ -21,6 +22,7 @@ export function AnimationControls({
   isExpanded,
   onToggle
 }: AnimationControlsProps) {
+  const { t } = useTranslation()
   const toggleAnimation = () => {
     onSettingsChange({ isAnimating: !settings.isAnimating })
   }
@@ -28,7 +30,7 @@ export function AnimationControls({
   return (
     <div className="space-y-4">
       <CollapsibleHeader
-        title="Animation"
+        title={t('visualizationSettings.animation')}
         isExpanded={isExpanded}
         onToggle={onToggle}
       />
@@ -46,12 +48,12 @@ export function AnimationControls({
               {settings.isAnimating ? (
                 <>
                   <Pause className="h-3 w-3" />
-                  <span>Pause</span>
+                  <span>{t('visualizationSettings.pause')}</span>
                 </>
               ) : (
                 <>
                   <Play className="h-3 w-3" />
-                  <span>Play</span>
+                  <span>{t('visualizationSettings.play')}</span>
                 </>
               )}
             </Button>
@@ -59,7 +61,7 @@ export function AnimationControls({
 
           {/* Animation Speed */}
           <div className="space-y-2">
-            <Label className="text-sm">Rotation Speed: {settings.rotationSpeed}</Label>
+            <Label className="text-sm">{t('visualizationSettings.rotationSpeed')}: {settings.rotationSpeed}</Label>
             <Slider
               value={[settings.rotationSpeed]}
               onValueChange={([value]) => onSettingsChange({ rotationSpeed: value })}
@@ -79,12 +81,12 @@ export function AnimationControls({
               }
             />
             <Label htmlFor="pulse-effect" className="text-sm">
-              Pulse Effect
+              {t('visualizationSettings.pulseEffect')}
             </Label>
           </div>
 
           <div className="text-xs text-gray-500">
-            Time: {Math.round(settings.time / 1000)}s
+            {t('visualizationSettings.time')}: {Math.round(settings.time / 1000)}s
           </div>
 
           {/* Reset Button */}
@@ -96,7 +98,7 @@ export function AnimationControls({
               className="flex items-center gap-2"
             >
               <RotateCcw className="h-3 w-3" />
-              <span>Reset</span>
+              <span>{t('visualizationSettings.reset')}</span>
             </Button>
           </div>
         </div>

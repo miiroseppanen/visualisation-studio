@@ -11,6 +11,7 @@ import { useTheme } from '@/components/ui/ThemeProvider'
 import { useVisualizationNavigation } from '@/lib/hooks/useVisualizationNavigation'
 import VisualizationDropdown from './VisualizationDropdown'
 import LanguageSelector from '@/components/ui/LanguageSelector'
+import { useTranslation } from 'react-i18next'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,9 +63,9 @@ const navigationItems: NavigationItem[] = [
 
 // Page sections for main page navigation
 const pageSections = [
-  { id: 'tools', title: 'Tools' },
-  { id: 'about', title: 'About' },
-  { id: 'suggestions', title: 'Suggestions' }
+  { id: 'tools', titleKey: 'navigation.tools' },
+  { id: 'about', titleKey: 'navigation.about' },
+  { id: 'suggestions', titleKey: 'navigation.ideas' }
 ]
 
 interface AppNavigationProps {
@@ -82,6 +83,7 @@ export default function AppNavigation({
   const { navigateToPath, navigateHome } = useNavigation()
   const { theme, setTheme } = useTheme()
   const { currentVisualization, allVisualizations, navigateToVisualization } = useVisualizationNavigation()
+  const { t } = useTranslation()
 
   const handleNavigationClick = (path: string) => {
     if (path === '/') {
@@ -98,7 +100,7 @@ export default function AppNavigation({
     }
   }
 
-  const ThemeSwitcher = () => (
+  const ThemeSwitcher = React.useMemo(() => () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
@@ -122,7 +124,7 @@ export default function AppNavigation({
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  ), [theme, setTheme])
 
   if (variant === 'minimal') {
     return (
@@ -159,18 +161,18 @@ export default function AppNavigation({
                 {pageSections.map(section => (
                   <button 
                     key={section.id}
-                    onClick={() => handleSectionClick(section.id)}
+                    onClick={() => {
+                      if (section.id === 'suggestions') {
+                        handleNavigationClick('/suggestions')
+                      } else {
+                        handleSectionClick(section.id)
+                      }
+                    }}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {section.title}
+                    {t(section.titleKey)}
                   </button>
                 ))}
-                <button 
-                  onClick={() => handleNavigationClick('/suggestions')}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Suggestions
-                </button>
               </>
             )}
             

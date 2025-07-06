@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslation } from 'react-i18next'
 import type { CircularFieldDisplaySettings } from '@/lib/types'
 
 interface DisplaySettingsProps {
@@ -18,10 +19,11 @@ export function DisplaySettings({
   isExpanded, 
   onToggle 
 }: DisplaySettingsProps) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-4">
       <CollapsibleHeader
-        title="Display Settings"
+        title={t('visualizationSettings.displaySettings')}
         isExpanded={isExpanded}
         onToggle={onToggle}
       />
@@ -38,7 +40,7 @@ export function DisplaySettings({
                 }
               />
               <Label htmlFor="show-field-lines" className="text-sm">
-                Show Field Lines
+                {t('visualizationSettings.showFieldLines')}
               </Label>
             </div>
 
@@ -51,7 +53,7 @@ export function DisplaySettings({
                 }
               />
               <Label htmlFor="show-poles" className="text-sm">
-                Show Poles
+                {t('visualizationSettings.showPoles')}
               </Label>
             </div>
 
@@ -64,13 +66,13 @@ export function DisplaySettings({
                 }
               />
               <Label htmlFor="show-pole-labels" className="text-sm">
-                Show Pole Labels
+                {t('visualizationSettings.showPoleLabels')}
               </Label>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm">Line Weight: {settings.lineWeight.toFixed(1)}</Label>
+            <Label className="text-sm">{t('visualizationSettings.lineWeight')}: {settings.lineWeight.toFixed(1)}</Label>
             <Slider
               value={[settings.lineWeight]}
               onValueChange={([value]) => onSettingsChange({ lineWeight: value })}
@@ -82,7 +84,7 @@ export function DisplaySettings({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm">Opacity: {Math.round(settings.opacity * 100)}%</Label>
+            <Label className="text-sm">{t('visualizationSettings.opacity')}: {Math.round(settings.opacity * 100)}%</Label>
             <Slider
               value={[settings.opacity]}
               onValueChange={([value]) => onSettingsChange({ opacity: value })}

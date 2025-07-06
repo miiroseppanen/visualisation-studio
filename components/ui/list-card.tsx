@@ -133,7 +133,7 @@ export function ListCard({
           
           {/* Element name */}
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-gray-900 dark:text-white">{title}</span>
+            <span className="text-sm font-semibold text-gray-900 dark:text-white truncate" title={title}>{title}</span>
             {subtitle && (
               <span className="text-xs text-gray-600 dark:text-gray-300">{subtitle}</span>
             )}
