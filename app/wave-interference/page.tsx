@@ -251,13 +251,13 @@ export default function WaveInterferencePage() {
       const newCircles = prev.filter(circle => circle.life > 0)
       
       // Limit total circles to prevent performance issues
-      if (newCircles.length > 30) { // Reduced for more dramatic effect
-        return newCircles.slice(0, 30)
+      if (newCircles.length > 15) { // Much fewer circles for dramatic effect
+        return newCircles.slice(0, 15)
       }
       
       // Add new wave circles from wave sources
       waveSources.forEach(source => {
-        if (!source.active || Math.random() > 0.25) return // Reduced frequency for more dramatic circles
+        if (!source.active || Math.random() > 0.4) return // Much slower frequency for dramatic circles
         
         newCircles.push({
           x: source.x,
@@ -266,18 +266,18 @@ export default function WaveInterferencePage() {
           vy: 0,
           life: 1.0,
           maxLife: 1.0,
-          size: 15, // Start larger for more impact
+          size: 20, // Start larger for more impact
           color: source.color
         })
       })
       
       // Update existing circles (expand outward)
       newCircles.forEach(circle => {
-        circle.size += 3 + Math.random() * 4 // Faster expansion for more dramatic effect
-        circle.life -= 0.015 // Slower decay for longer-lasting circles
+        circle.size += 2 + Math.random() * 2 // Slower expansion for more dramatic effect
+        circle.life -= 0.008 // Much slower decay for very long-lasting circles
         
-        // Remove circles that get too large or fade out
-        if (circle.size > 300 || circle.life <= 0) { // Larger maximum size
+        // Remove circles only when they fade out (no size limit)
+        if (circle.life <= 0) {
           circle.life = 0
         }
       })
