@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { VISUALIZATION_STYLES, buildClasses } from '@/lib/visualization-styles'
 
 interface CollapsibleSectionProps {
-  title: string
+  title: React.ReactNode
   children: React.ReactNode
   defaultOpen?: boolean
   className?: string

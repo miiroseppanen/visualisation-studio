@@ -329,7 +329,9 @@ export default function SuggestionsPage() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleUpvote(suggestion.id)
+                              if (suggestion.id) {
+                                handleUpvote(suggestion.id)
+                              }
                             }}
                             className="w-12 h-12 p-0 hover:bg-accent transition-all duration-300"
                           >
@@ -349,7 +351,9 @@ export default function SuggestionsPage() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleDownvote(suggestion.id)
+                              if (suggestion.id) {
+                                handleDownvote(suggestion.id)
+                              }
                             }}
                             className="w-12 h-12 p-0 hover:bg-accent transition-all duration-300"
                           >
@@ -377,7 +381,9 @@ export default function SuggestionsPage() {
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handleAdminAction('mark-done', suggestion.id)
+                                    if (suggestion.id) {
+                                      handleAdminAction('mark-done', suggestion.id)
+                                    }
                                   }}
                                   className="w-8 h-8 p-0 hover:bg-green-100 hover:text-green-700"
                                   title="Mark as implemented"
@@ -389,7 +395,9 @@ export default function SuggestionsPage() {
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handleAdminAction('delete', suggestion.id)
+                                    if (suggestion.id) {
+                                      handleAdminAction('delete', suggestion.id)
+                                    }
                                   }}
                                   className="w-8 h-8 p-0 hover:bg-red-100 hover:text-red-700"
                                   title="Delete suggestion"
@@ -457,7 +465,9 @@ export default function SuggestionsPage() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleUpvote(suggestion.id)
+                              if (suggestion.id) {
+                                handleUpvote(suggestion.id)
+                              }
                             }}
                             className="w-12 h-12 p-0 hover:bg-accent transition-all duration-300"
                           >
@@ -477,7 +487,9 @@ export default function SuggestionsPage() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleDownvote(suggestion.id)
+                              if (suggestion.id) {
+                                handleDownvote(suggestion.id)
+                              }
                             }}
                             className="w-12 h-12 p-0 hover:bg-accent transition-all duration-300"
                           >
@@ -505,7 +517,9 @@ export default function SuggestionsPage() {
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handleAdminAction('mark-done', suggestion.id)
+                                    if (suggestion.id) {
+                                      handleAdminAction('mark-done', suggestion.id)
+                                    }
                                   }}
                                   className="w-8 h-8 p-0 hover:bg-green-100 hover:text-green-700"
                                   title="Mark as implemented"
@@ -517,7 +531,9 @@ export default function SuggestionsPage() {
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handleAdminAction('delete', suggestion.id)
+                                    if (suggestion.id) {
+                                      handleAdminAction('delete', suggestion.id)
+                                    }
                                   }}
                                   className="w-8 h-8 p-0 hover:bg-red-100 hover:text-red-700"
                                   title="Delete suggestion"
@@ -585,7 +601,9 @@ export default function SuggestionsPage() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleUpvote(suggestion.id)
+                              if (suggestion.id) {
+                                handleUpvote(suggestion.id)
+                              }
                             }}
                             className="w-12 h-12 p-0 hover:bg-accent transition-all duration-300"
                           >
@@ -605,7 +623,9 @@ export default function SuggestionsPage() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleDownvote(suggestion.id)
+                              if (suggestion.id) {
+                                handleDownvote(suggestion.id)
+                              }
                             }}
                             className="w-12 h-12 p-0 hover:bg-accent transition-all duration-300"
                           >
@@ -633,7 +653,9 @@ export default function SuggestionsPage() {
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handleAdminAction('mark-done', suggestion.id)
+                                    if (suggestion.id) {
+                                      handleAdminAction('mark-done', suggestion.id)
+                                    }
                                   }}
                                   className="w-8 h-8 p-0 hover:bg-green-100 hover:text-green-700"
                                   title="Mark as implemented"
@@ -645,7 +667,9 @@ export default function SuggestionsPage() {
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    handleAdminAction('delete', suggestion.id)
+                                    if (suggestion.id) {
+                                      handleAdminAction('delete', suggestion.id)
+                                    }
                                   }}
                                   className="w-8 h-8 p-0 hover:bg-red-100 hover:text-red-700"
                                   title="Delete suggestion"
@@ -676,13 +700,13 @@ export default function SuggestionsPage() {
                             <Badge className={cn(
                               suggestionTypes.find(t => t.value === suggestion.complexity)?.color
                             )}>
-                              {suggestionTypes.find(t => t.value === suggestion.complexity)?.label}
+                              {getTypeLabel(suggestion.complexity, t)}
                             </Badge>
                             
                             <Badge className={cn(
                               statusConfig[suggestion.status].color
                             )}>
-                              {statusConfig[suggestion.status].label}
+                              {getStatusLabel(suggestion.status, t)}
                             </Badge>
                           </div>
                         </div>

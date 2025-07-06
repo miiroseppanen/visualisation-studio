@@ -126,7 +126,7 @@ export class SQLiteProvider {
           const tagIndex = tagsStore.index('name')
           const existingTag = await this.promisifyRequest(tagIndex.get(tagName))
           
-          if (existingTag) {
+          if (existingTag && existingTag.id) {
             tagId = existingTag.id
           } else {
             // Create new tag
@@ -183,8 +183,8 @@ export class SQLiteProvider {
       return {
         ...suggestion,
         tags,
-        implementation: implementation || undefined,
-        comments: comments || []
+        implementation: implementation && typeof implementation === 'object' && 'type' in implementation ? implementation as any : undefined,
+        comments: Array.isArray(comments) ? comments : []
       }
     } catch (error) {
       console.error('Failed to get suggestion:', error)
@@ -198,7 +198,7 @@ export class SQLiteProvider {
     
     try {
       const suggestionsStore = transaction.objectStore('suggestions')
-      let suggestions = await this.promisifyRequest(suggestionsStore.getAll())
+      let suggestions = await this.promisifyRequest(suggestionsStore.getAll()) as VisualizationSuggestion[]
 
       // Apply filters
       if (filters) {
@@ -375,7 +375,7 @@ export class SQLiteProvider {
     return tagNames
   }
 
-  private applyFilters(suggestions: any[], filters: SuggestionFilters): any[] {
+  private applyFilters(suggestions: VisualizationSuggestion[], filters: SuggestionFilters): VisualizationSuggestion[] {
     return suggestions.filter(s => {
       if (filters.category && s.category !== filters.category) return false
       if (filters.complexity && s.complexity !== filters.complexity) return false
