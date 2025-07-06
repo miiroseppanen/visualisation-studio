@@ -319,19 +319,15 @@ export default function WaveInterferencePage() {
       
 
     
-    // Draw interference lines instead of circles
+    // Draw interference lines in black and white only
     if (showInterference) {
       fields.forEach(field => {
         const intensity = Math.min(1, field.intensity / 50) // Higher threshold for stability
         const adjustedIntensity = intensity * interferenceContrast // Apply contrast control
         const alpha = 0.2 + adjustedIntensity * 0.4 // More stable alpha range
         
-        // More stable color calculation - less dependent on amplitude
-        const baseHue = (field.x / width * 360) % 360 // Only position-based hue
-        const saturation = 70 + adjustedIntensity * 20 // More stable saturation
-        const lightness = isDark ? 60 + adjustedIntensity * 30 : 40 + adjustedIntensity * 30 // More stable lightness
-        
-        ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha})`
+        // Black and white only - no colors
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines with alpha
         ctx.lineWidth = 0.8 + adjustedIntensity * 1.2 // More stable line width
         
         // Draw lines to represent interference patterns
@@ -351,7 +347,7 @@ export default function WaveInterferencePage() {
           const perpEndX = field.x + Math.cos(perpAngle) * perpLength
           const perpEndY = field.y + Math.sin(perpAngle) * perpLength
           
-          ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha * 0.6})`
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // White lines with reduced alpha
           ctx.lineWidth = 0.5 + adjustedIntensity * 0.3 // More stable perpendicular line width
           ctx.beginPath()
           ctx.moveTo(field.x, field.y)
@@ -383,7 +379,7 @@ export default function WaveInterferencePage() {
       })
     }
     
-    // Draw interference cross patterns at high amplitude points (performance optimized)
+    // Draw interference cross patterns at high amplitude points (black and white only)
     if (showInterference) {
       const highAmplitudeFields = fields.filter(f => Math.abs(f.amplitude) > 30) // Higher threshold for stability
       const maxCrosses = Math.min(12, highAmplitudeFields.length) // Fewer crosses for stability
@@ -392,12 +388,8 @@ export default function WaveInterferencePage() {
         const adjustedAmplitude = amplitude * interferenceContrast // Apply contrast control
         const alpha = Math.min(0.5, adjustedAmplitude / 150) // More stable alpha
         
-        // More stable color calculation - position-based only
-        const baseHue = (field.x / width * 360) % 360
-        const saturation = 75
-        const lightness = isDark ? 65 : 45
-        
-        ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha})`
+        // Black and white only - no colors
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines with alpha
         ctx.lineWidth = 1.2 * interferenceContrast // Apply contrast to line width
         
         // Draw interference cross patterns
@@ -418,7 +410,7 @@ export default function WaveInterferencePage() {
         // Diagonal lines for more detail
         if (adjustedAmplitude > 50) { // Higher threshold for diagonal lines
           ctx.lineWidth = 0.8 * interferenceContrast
-          ctx.strokeStyle = `hsla(${baseHue}, ${saturation}%, ${lightness}%, ${alpha * 0.6})`
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // White lines with reduced alpha
           
           // Diagonal line 1
           ctx.beginPath()
