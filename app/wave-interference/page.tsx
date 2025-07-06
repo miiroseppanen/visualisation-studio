@@ -440,13 +440,17 @@ export default function WaveInterferencePage() {
     // Draw particles with glow effects
     if (showParticles) {
       particles.forEach(particle => {
-        const alpha = particle.life
-        const size = particle.size * alpha
+        const alpha = Math.max(0, Math.min(1, particle.life))
+        const size = Math.max(0.1, particle.size * alpha)
+        
+        // Only draw if size is valid
+        if (size <= 0) return
         
         // Glow effect
+        const glowRadius = Math.max(0.1, size * 3)
         const glowGradient = ctx.createRadialGradient(
           particle.x, particle.y, 0,
-          particle.x, particle.y, size * 3
+          particle.x, particle.y, glowRadius
         )
         glowGradient.addColorStop(0, `${particle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`)
         glowGradient.addColorStop(0.5, `${particle.color}${Math.floor(alpha * 100).toString(16).padStart(2, '0')}`)
@@ -454,7 +458,7 @@ export default function WaveInterferencePage() {
         
         ctx.fillStyle = glowGradient
         ctx.beginPath()
-        ctx.arc(particle.x, particle.y, size * 3, 0, 2 * Math.PI)
+        ctx.arc(particle.x, particle.y, glowRadius, 0, 2 * Math.PI)
         ctx.fill()
         
         // Core particle
