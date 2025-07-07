@@ -80,6 +80,7 @@ export default function PageNavigation({
 
 function ThemeSwitcher() {
   const { theme, setTheme } = useTheme()
+  const { t } = useTranslation()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -93,16 +94,16 @@ function ThemeSwitcher() {
       <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuRadioGroup value={theme} onValueChange={v => setTheme(v as any)}>
           <DropdownMenuRadioItem value="light">
-            <Sun className="w-4 h-4 mr-2 inline" /> Light
+            <Sun className="w-4 h-4 mr-2 inline" /> {t('common.light')}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">
-            <Moon className="w-4 h-4 mr-2 inline" /> Dark
+            <Moon className="w-4 h-4 mr-2 inline" /> {t('common.dark')}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="pastel">
-            <Palette className="w-4 h-4 mr-2 inline" /> Pastel
+            <Palette className="w-4 h-4 mr-2 inline" /> {t('common.pastel')}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
-            <Laptop className="w-4 h-4 mr-2 inline" /> System
+            <Laptop className="w-4 h-4 mr-2 inline" /> {t('common.system')}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
@@ -209,7 +210,7 @@ export function SuggestionsMobileNavigation({
               <button
                 onClick={isAuthenticated ? onLogout : onAdminClick}
                 className="p-2 rounded-lg hover:bg-accent/40 transition-colors focus:outline-none"
-                title={isAuthenticated ? "Logout Admin" : "Admin Access"}
+                title={isAuthenticated ? t('suggestions.logoutAdmin') : t('suggestions.adminAccess')}
               >
                 {isAuthenticated ? (
                   <Unlock className="w-4 h-4 text-green-600" />
