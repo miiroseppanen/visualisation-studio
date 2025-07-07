@@ -49,7 +49,7 @@ export default function VisualizationLayout({
 
   return (
     <AppLayout showNavigation={false}>
-      <div className="h-screen w-screen flex flex-col bg-background relative bg-red-200/30">
+      <div className="h-screen w-screen flex flex-col">
         {/* Visualization Navigation */}
         {showVisualizationNav && (
           <div className={cn(
@@ -69,9 +69,9 @@ export default function VisualizationLayout({
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col relative w-full h-full bg-green-200/30">
+        <main className="flex-1 flex flex-col relative w-full h-full">
           <div 
-            className="flex-1 w-full h-full relative cursor-pointer bg-blue-200/30"
+            className="flex-1 w-full h-full relative cursor-pointer"
             style={{ minHeight: '0', minWidth: '0' }}
             onClick={handleCanvasClick}
           >

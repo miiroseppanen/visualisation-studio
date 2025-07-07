@@ -16,8 +16,12 @@ interface WaveSettingsProps {
   onShowCollapseChange: (value: boolean) => void
   fieldDensity: number
   onFieldDensityChange: (value: number) => void
-  interferenceStrength: number
-  onInterferenceStrengthChange: (value: number) => void
+  interferenceContrast: number
+  onInterferenceContrastChange: (value: number) => void
+  resolution: number
+  onSetResolution: (value: number) => void
+  lineDensity: number
+  onSetLineDensity: (value: number) => void
   expanded: boolean
   onToggleExpanded: () => void
 }
@@ -31,8 +35,12 @@ export default function WaveSettings({
   onShowCollapseChange,
   fieldDensity,
   onFieldDensityChange,
-  interferenceStrength,
-  onInterferenceStrengthChange,
+  interferenceContrast,
+  onInterferenceContrastChange,
+  resolution,
+  onSetResolution,
+  lineDensity,
+  onSetLineDensity,
   expanded,
   onToggleExpanded
 }: WaveSettingsProps) {
@@ -58,16 +66,44 @@ export default function WaveSettings({
           />
         </div>
 
-        {/* Interference Strength */}
+        {/* Interference Contrast */}
         <div className="space-y-2">
-          <Label htmlFor="interference-strength">{t('visualizationSettings.interferenceStrength')}: {interferenceStrength.toFixed(2)}</Label>
+          <Label htmlFor="interference-contrast">{t('visualizationSettings.interferenceContrast')}: {interferenceContrast.toFixed(2)}</Label>
           <Slider
-            id="interference-strength"
+            id="interference-contrast"
             min={0}
             max={2}
             step={0.01}
-            value={[interferenceStrength]}
-            onValueChange={(value) => onInterferenceStrengthChange(value[0])}
+            value={[interferenceContrast]}
+            onValueChange={(value) => onInterferenceContrastChange(value[0])}
+            className="w-full"
+          />
+        </div>
+
+        {/* Resolution */}
+        <div className="space-y-2">
+          <Label htmlFor="resolution">Resolution: {resolution}</Label>
+          <Slider
+            id="resolution"
+            min={4}
+            max={20}
+            step={1}
+            value={[resolution]}
+            onValueChange={(value) => onSetResolution(value[0])}
+            className="w-full"
+          />
+        </div>
+
+        {/* Line Density */}
+        <div className="space-y-2">
+          <Label htmlFor="line-density">Line Density: {lineDensity}</Label>
+          <Slider
+            id="line-density"
+            min={4}
+            max={16}
+            step={1}
+            value={[lineDensity]}
+            onValueChange={(value) => onSetLineDensity(value[0])}
             className="w-full"
           />
         </div>

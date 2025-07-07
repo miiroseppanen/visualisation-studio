@@ -54,9 +54,9 @@ export default function SoundWavePage() {
   // Animation settings
   const [animationSettings, setAnimationSettings] = useState<SoundWaveAnimationSettings>({
     isAnimating: true,
-    frequency: 440,
-    amplitude: 1.0,
-    waveSpeed: 1.0,
+    frequency: 1.0,
+    amplitude: 50,
+    waveSpeed: 2.0,
     time: 0
   })
 
@@ -270,7 +270,7 @@ export default function SoundWavePage() {
 
     // Draw waveform
     if (showWaveform && wavePoints.length > 0) {
-      ctx.strokeStyle = isDark ? '#3b82f6' : '#1d4ed8'
+      ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
       ctx.lineWidth = 2
 
       if (waveformStyle === 'line') {
@@ -286,12 +286,12 @@ export default function SoundWavePage() {
       } else if (waveformStyle === 'bars') {
         wavePoints.forEach(point => {
           const barHeight = Math.abs(point.y - canvas.height / window.devicePixelRatio / 2)
-          ctx.fillStyle = isDark ? '#3b82f6' : '#1d4ed8'
+          ctx.fillStyle = isDark ? '#ffffff' : '#000000'
           ctx.fillRect(point.x, canvas.height / window.devicePixelRatio / 2, 2, barHeight)
         })
       } else if (waveformStyle === 'circles') {
         wavePoints.forEach(point => {
-          ctx.fillStyle = isDark ? '#3b82f6' : '#1d4ed8'
+          ctx.fillStyle = isDark ? '#ffffff' : '#000000'
           ctx.beginPath()
           ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI)
           ctx.fill()
@@ -310,14 +310,14 @@ export default function SoundWavePage() {
         const x = index * binWidth
         const y = canvas.height / window.devicePixelRatio - barHeight
 
-        ctx.fillStyle = isDark ? '#10b981' : '#059669'
+        ctx.fillStyle = isDark ? '#ffffff' : '#000000'
         ctx.fillRect(x, y, binWidth - 1, barHeight)
       })
     }
 
     // Draw harmonics
     if (showHarmonics) {
-      ctx.strokeStyle = isDark ? 'rgba(239, 68, 68, 0.5)' : 'rgba(220, 38, 38, 0.5)'
+      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
       ctx.lineWidth = 1
 
       for (let h = 2; h <= harmonics; h++) {
@@ -370,7 +370,7 @@ export default function SoundWavePage() {
       <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="white"/>
         ${wavePoints.map(point => `
-          <circle cx="${point.x}" cy="${point.y}" r="2" fill="#3b82f6"/>
+          <circle cx="${point.x}" cy="${point.y}" r="2" fill="black"/>
         `).join('')}
       </svg>
     `
@@ -388,9 +388,9 @@ export default function SoundWavePage() {
   const resetToDefaults = useCallback(() => {
     setAnimationSettings({
       isAnimating: true,
-      frequency: 440,
-      amplitude: 1.0,
-      waveSpeed: 1.0,
+      frequency: 1.0,
+      amplitude: 50,
+      waveSpeed: 2.0,
       time: 0
     })
     setWaveType('sine')

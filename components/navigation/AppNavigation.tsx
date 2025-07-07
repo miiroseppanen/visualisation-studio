@@ -82,7 +82,7 @@ export default function AppNavigation({
   const pathname = usePathname()
   const { navigateToPath, navigateHome } = useNavigation()
   const { theme, setTheme } = useTheme()
-  const { currentVisualization, allVisualizations, navigateToVisualization } = useVisualizationNavigation()
+  const { currentVisualization, allVisualizations, verifiedVisualizations, inProgressVisualizations, navigateToVisualization } = useVisualizationNavigation()
   const { t } = useTranslation()
 
   const handleNavigationClick = (path: string) => {
@@ -181,6 +181,8 @@ export default function AppNavigation({
               <VisualizationDropdown
                 currentVisualization={currentVisualization}
                 allVisualizations={allVisualizations}
+                verifiedVisualizations={verifiedVisualizations}
+                inProgressVisualizations={inProgressVisualizations}
                 onVisualizationSelect={navigateToVisualization}
                 className="text-sm"
               />

@@ -602,7 +602,7 @@ export default function WaveInterference2Page() {
   }, [])
 
   if (!isClient) {
-    return <div>Loading...</div>
+    return <FullScreenLoader variant="dots" text={t('common.preparing')} />
   }
 
   return (

@@ -1,12 +1,14 @@
 'use client'
 
 import React from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, CheckCircle, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { type VisualizationOption } from '@/lib/navigation-config'
@@ -15,6 +17,8 @@ import { useTranslation } from 'react-i18next'
 interface VisualizationDropdownProps {
   currentVisualization: VisualizationOption | null
   allVisualizations: VisualizationOption[]
+  verifiedVisualizations: VisualizationOption[]
+  inProgressVisualizations: VisualizationOption[]
   onVisualizationSelect: (id: string) => void
   className?: string
   hideNonEssential?: boolean
@@ -23,6 +27,8 @@ interface VisualizationDropdownProps {
 export default function VisualizationDropdown({
   currentVisualization,
   allVisualizations,
+  verifiedVisualizations,
+  inProgressVisualizations,
   onVisualizationSelect,
   className = '',
   hideNonEssential = false
@@ -75,27 +81,70 @@ export default function VisualizationDropdown({
         className="w-64 sm:w-72 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto"
         sideOffset={4}
       >
-        {allVisualizations.map((visualization) => (
-          <DropdownMenuItem 
-            key={visualization.id}
-            onClick={() => handleVisualizationClick(visualization.id)}
-            className="cursor-pointer focus:bg-accent focus:text-accent-foreground p-0"
-          >
-            <div className="flex items-start space-x-3 p-3 sm:p-4 w-full touch-manipulation">
-              <div className="flex-shrink-0 mt-0.5">
-                <visualization.icon className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-normal text-sm sm:text-base">
-                  {visualization.name}
+        {/* Verified Section */}
+        {verifiedVisualizations.length > 0 && (
+          <>
+            <DropdownMenuLabel className="flex items-center space-x-2 px-3 py-2 text-xs font-medium text-muted-foreground">
+              <CheckCircle className="w-3 h-3 text-green-600" />
+              <span>Verified</span>
+            </DropdownMenuLabel>
+            {verifiedVisualizations.map((visualization) => (
+              <DropdownMenuItem 
+                key={visualization.id}
+                onClick={() => handleVisualizationClick(visualization.id)}
+                className="cursor-pointer focus:bg-accent focus:text-accent-foreground p-0"
+              >
+                <div className="flex items-start space-x-3 p-3 sm:p-4 w-full touch-manipulation">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <visualization.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-normal text-sm sm:text-base">
+                      {visualization.name}
+                    </div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {t(`visualization.descriptions.${kebabToCamel(visualization.id)}`)}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
-                  {t(`visualization.descriptions.${kebabToCamel(visualization.id)}`)}
+              </DropdownMenuItem>
+            ))}
+          </>
+        )}
+
+        {/* In Progress Section */}
+        {inProgressVisualizations.length > 0 && (
+          <>
+            {verifiedVisualizations.length > 0 && (
+              <DropdownMenuSeparator />
+            )}
+            <DropdownMenuLabel className="flex items-center space-x-2 px-3 py-2 text-xs font-medium text-muted-foreground">
+              <Clock className="w-3 h-3 text-amber-600" />
+              <span>In Progress</span>
+            </DropdownMenuLabel>
+            {inProgressVisualizations.map((visualization) => (
+              <DropdownMenuItem 
+                key={visualization.id}
+                onClick={() => handleVisualizationClick(visualization.id)}
+                className="cursor-pointer focus:bg-accent focus:text-accent-foreground p-0 opacity-80"
+              >
+                <div className="flex items-start space-x-3 p-3 sm:p-4 w-full touch-manipulation">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <visualization.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-normal text-sm sm:text-base">
+                      {visualization.name}
+                    </div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {t(`visualization.descriptions.${kebabToCamel(visualization.id)}`)}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </DropdownMenuItem>
-        ))}
+              </DropdownMenuItem>
+            ))}
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

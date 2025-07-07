@@ -13,29 +13,31 @@ import { AnimationControls } from '@/components/circular-field/AnimationControls
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
 import { useTouchEvents } from '@/lib/hooks/useTouchEvents'
 import { useMobileDetection } from '@/lib/hooks/useMobileDetection'
+import { useTheme } from '@/components/ui/ThemeProvider'
 
 export default function CircularFieldPage() {
   const rendererRef = useRef<CircularFieldRenderer | null>(null)
   const [zoomLevel, setZoomLevel] = useState(1)
   const { isMobile } = useMobileDetection()
+  const { theme } = useTheme()
 
   const {
     canvasRef,
+    fieldLines,
     poles,
     fieldSettings,
     displaySettings,
     animationSettings,
     panelState,
-    fieldLines,
-    draggedPole,
-    updatePole,
-    removePole,
     updateFieldSettings,
     updateDisplaySettings,
     updateAnimationSettings,
     updatePanelState,
     setCanvasSize,
     resetVisualization,
+    draggedPole,
+    updatePole,
+    removePole,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
@@ -142,8 +144,8 @@ export default function CircularFieldPage() {
     const canvas = canvasRef.current
     if (!canvas || !rendererRef.current) return
 
-    rendererRef.current.renderCircularField(poles, fieldLines, displaySettings)
-  }, [poles, fieldLines, displaySettings])
+    rendererRef.current.renderCircularField(poles, fieldLines, displaySettings, theme)
+  }, [poles, fieldLines, displaySettings, theme])
 
   // Wheel event handler (direct DOM listener to avoid passive event issues)
   useEffect(() => {

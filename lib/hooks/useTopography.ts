@@ -32,7 +32,7 @@ const defaultSettings: TopographyVisualizationSettings = {
 }
 
 const defaultAnimationSettings: BaseTopographyAnimationSettings = {
-  isAnimating: false,
+  isAnimating: true,
   windSpeed: 1.0,
   windDirection: 0,
   contourPulse: false,
@@ -45,7 +45,7 @@ const defaultPanelState: BaseTopographyPanelState = {
   elevationPointsExpanded: true,
   contourSettingsExpanded: false,
   displaySettingsExpanded: false,
-  animationExpanded: false,
+  animationExpanded: true,
 }
 
 // Initial elevation points

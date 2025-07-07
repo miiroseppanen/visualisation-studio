@@ -81,7 +81,7 @@ export default function TurbulencePage() {
     sourcesExpanded: true,
     flowSettingsExpanded: false,
     noiseExpanded: false,
-    animationExpanded: false
+    animationExpanded: true
   })
   const [expandedSections, setExpandedSections] = useState({
     fieldSettings: true,

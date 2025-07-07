@@ -1,20 +1,19 @@
 import { usePathname } from 'next/navigation'
 import { useMemo, useCallback } from 'react'
-import { visualizationOptions, getVisualizationByPath, type VisualizationOption } from '../navigation-config'
+import { getVisualizationsForNavigation, getVisualizationByPath, getVerifiedVisualizations, getInProgressVisualizations, type VisualizationOption } from '../navigation-config'
 import { useNavigation } from './useNavigation'
 import { pauseAllAnimations } from '../utils'
 
 interface VisualizationNavigationState {
   currentVisualization: VisualizationOption | null
   allVisualizations: VisualizationOption[]
+  verifiedVisualizations: VisualizationOption[]
+  inProgressVisualizations: VisualizationOption[]
 }
 
-interface VisualizationNavigationActions {
+interface UseVisualizationNavigationReturn extends VisualizationNavigationState {
   navigateToVisualization: (id: string) => void
 }
-
-export interface UseVisualizationNavigationReturn 
-  extends VisualizationNavigationState, VisualizationNavigationActions {}
 
 /**
  * Visualization-specific navigation hook
@@ -28,21 +27,35 @@ export function useVisualizationNavigation(): UseVisualizationNavigationReturn {
     return getVisualizationByPath(pathname) || null
   }, [pathname])
 
+  const allVisualizations = useMemo(() => {
+    return getVisualizationsForNavigation()
+  }, [])
+
+  const verifiedVisualizations = useMemo(() => {
+    return getVerifiedVisualizations()
+  }, [])
+
+  const inProgressVisualizations = useMemo(() => {
+    return getInProgressVisualizations()
+  }, [])
+
   const navigateToVisualization = useCallback((id: string) => {
     // Pause all animations before navigating to prevent interference
     pauseAllAnimations()
     
-    const visualization = visualizationOptions.find(viz => viz.id === id)
+    const visualization = allVisualizations.find(viz => viz.id === id)
     if (visualization) {
       navigateToPath(visualization.path)
     } else {
       console.warn(`No visualization found with id: ${id}`)
     }
-  }, [navigateToPath])
+  }, [navigateToPath, allVisualizations])
 
   return {
     currentVisualization,
-    allVisualizations: visualizationOptions,
+    allVisualizations,
+    verifiedVisualizations,
+    inProgressVisualizations,
     navigateToVisualization,
   }
 } 

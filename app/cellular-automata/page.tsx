@@ -54,8 +54,8 @@ export default function CellularAutomataPage() {
 
   // Animation settings
   const [animationSettings, setAnimationSettings] = useState<CellularAutomataAnimationSettings>({
-    isAnimating: false,
-    speed: 10,
+    isAnimating: true,
+    speed: 1.0,
     cellSize: 8,
     time: 0
   })
@@ -380,8 +380,8 @@ export default function CellularAutomataPage() {
   // Reset to defaults
   const resetToDefaults = useCallback(() => {
     setAnimationSettings({
-      isAnimating: false,
-      speed: 10,
+      isAnimating: true,
+      speed: 1.0,
       cellSize: 8,
       time: 0
     })

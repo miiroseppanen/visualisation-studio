@@ -21,24 +21,29 @@ export class CircularFieldRenderer extends BaseRenderer {
   renderCircularField(
     poles: Pole[],
     fieldLines: CircularFieldLine[],
-    displaySettings: CircularFieldDisplaySettings
+    displaySettings: CircularFieldDisplaySettings,
+    theme: 'light' | 'dark' | 'system' = 'light'
   ): void {
     this.clear()
 
+    // Determine if dark theme is active
+    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+
     // Render field lines first (so poles appear on top)
     if (displaySettings.showFieldLines) {
-      this.renderFieldLines(fieldLines, displaySettings)
+      this.renderFieldLines(fieldLines, displaySettings, isDark)
     }
 
     // Render poles using unified utilities
     if (displaySettings.showPoles) {
-      this.renderPoles(poles, displaySettings)
+      this.renderPoles(poles, displaySettings, isDark)
     }
   }
 
   private renderFieldLines(
     fieldLines: CircularFieldLine[],
-    displaySettings: CircularFieldDisplaySettings
+    displaySettings: CircularFieldDisplaySettings,
+    isDark: boolean
   ): void {
     fieldLines.forEach(line => {
       if (line.points.length < 2) return
@@ -54,8 +59,8 @@ export class CircularFieldRenderer extends BaseRenderer {
       const lineWidth = baseLineWidth * intensityFactor
       const opacity = baseOpacity * intensityFactor
       
-      // Set line style
-      this.ctx.strokeStyle = '#000000'
+      // Set line style with theme-aware colors
+      this.ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
       this.ctx.lineWidth = lineWidth
       this.ctx.globalAlpha = opacity
       this.ctx.lineCap = 'round'
@@ -92,7 +97,8 @@ export class CircularFieldRenderer extends BaseRenderer {
 
   private renderPoles(
     poles: Pole[],
-    displaySettings: CircularFieldDisplaySettings
+    displaySettings: CircularFieldDisplaySettings,
+    isDark: boolean
   ): void {
     poles.forEach((pole, index) => {
       // Use unified pole rendering
@@ -101,7 +107,7 @@ export class CircularFieldRenderer extends BaseRenderer {
       // Add pole label if enabled (specific to circular field)
       if (displaySettings.showPoleLabels) {
         this.ctx.save()
-        this.ctx.fillStyle = '#000000'
+        this.ctx.fillStyle = isDark ? '#ffffff' : '#000000'
         this.ctx.font = '12px sans-serif'
         this.ctx.textAlign = 'center'
         this.ctx.fillText(
@@ -112,7 +118,7 @@ export class CircularFieldRenderer extends BaseRenderer {
         
         // Show strength
         this.ctx.font = '10px sans-serif'
-        this.ctx.fillStyle = '#666666'
+        this.ctx.fillStyle = isDark ? '#cccccc' : '#666666'
         this.ctx.fillText(
           `${pole.strength.toFixed(1)}`,
           pole.x,

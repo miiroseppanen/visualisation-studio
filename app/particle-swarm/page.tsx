@@ -11,6 +11,8 @@ import type { ParticleSwarmAnimationSettings, ParticleSwarmPanelState } from '@/
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
+import { FullScreenLoader } from '@/components/ui/loader'
+import { useTranslation } from 'react-i18next'
 
 interface Particle {
   id: string
@@ -41,6 +43,7 @@ export default function ParticleSwarmPage() {
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const { theme } = useTheme()
+  const { t } = useTranslation()
 
   // Particle system state
   const [particles, setParticles] = useState<Particle[]>([])
@@ -76,7 +79,7 @@ export default function ParticleSwarmPage() {
     isOpen: true,
     swarmSettingsExpanded: true,
     behaviorSettingsExpanded: true,
-    animationExpanded: false
+    animationExpanded: true
   })
 
   // Canvas size state
@@ -103,19 +106,6 @@ export default function ParticleSwarmPage() {
       canvas.style.width = width + 'px';
       canvas.style.height = height + 'px';
       setCanvasSize({ width, height });
-
-      // Debug: log sizes
-      const parent = canvas.parentElement;
-      const grandparent = parent ? parent.parentElement : null;
-      console.log('Canvas size:', width, height);
-      if (parent) {
-        const prect = parent.getBoundingClientRect();
-        console.log('Parent size:', prect.width, prect.height);
-      }
-      if (grandparent) {
-        const grect = grandparent.getBoundingClientRect();
-        console.log('Grandparent size:', grect.width, grect.height);
-      }
     }
 
     resizeCanvas()
@@ -429,7 +419,7 @@ export default function ParticleSwarmPage() {
   }, []);
 
   if (!isClient) {
-    return <div>Loading...</div>
+    return <FullScreenLoader variant="wave" text={t('common.preparing')} />
   }
 
   return (

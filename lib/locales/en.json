@@ -1,6 +1,7 @@
 {
   "common": {
     "loading": "Loading...",
+    "preparing": "Preparing visualization...",
     "error": "Error",
     "tryAgain": "Try again",
     "close": "Close",

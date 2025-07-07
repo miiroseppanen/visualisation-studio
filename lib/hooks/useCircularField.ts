@@ -45,9 +45,9 @@ export function useCircularField() {
       }
     },
     initialAnimationSettings: {
-      isAnimating: false,
+      isAnimating: true,
       rotationSpeed: 50,
-      pulseEffect: false,
+      pulseEffect: true,
       time: 0
     },
     initialPanelState: {
@@ -55,7 +55,7 @@ export function useCircularField() {
       fieldSettingsExpanded: true,
       polesExpanded: true,
       displaySettingsExpanded: true,
-      animationExpanded: false
+      animationExpanded: true
     },
     initialPoles: [
       { id: '1', x: 300, y: 200, strength: 12, isPositive: true, name: 'North 1' },
@@ -79,9 +79,9 @@ export function useCircularField() {
         }
       },
       animationSettings: {
-        isAnimating: false,
+        isAnimating: true,
         rotationSpeed: 50,
-        pulseEffect: false,
+        pulseEffect: true,
         time: 0
       },
       panelState: {
@@ -89,7 +89,7 @@ export function useCircularField() {
         fieldSettingsExpanded: true,
         polesExpanded: true,
         displaySettingsExpanded: true,
-        animationExpanded: false
+        animationExpanded: true
       },
       poles: [
         { id: '1', x: 300, y: 200, strength: 12, isPositive: true, name: 'North 1' },

@@ -20,6 +20,8 @@ export default function VisualizationSwitcher({
   const {
     currentVisualization,
     allVisualizations,
+    verifiedVisualizations,
+    inProgressVisualizations,
     navigateToVisualization
   } = useVisualizationNavigation()
 
@@ -27,6 +29,8 @@ export default function VisualizationSwitcher({
     <VisualizationDropdown 
       currentVisualization={currentVisualization}
       allVisualizations={allVisualizations}
+      verifiedVisualizations={verifiedVisualizations}
+      inProgressVisualizations={inProgressVisualizations}
       onVisualizationSelect={navigateToVisualization}
       className={className}
       hideNonEssential={hideNonEssential}

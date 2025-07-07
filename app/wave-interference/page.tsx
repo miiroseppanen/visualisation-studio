@@ -11,6 +11,8 @@ import type { WaveInterferenceAnimationSettings, WaveInterferencePanelState } fr
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
+import { FullScreenLoader } from '@/components/ui/loader'
+import { useTranslation } from 'react-i18next'
 
 interface WaveSource {
   id: string
@@ -54,6 +56,7 @@ export default function WaveInterferencePage() {
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const { theme } = useTheme()
+  const { t } = useTranslation()
 
   // Performance optimization: Cache for wave calculations
   const waveCacheRef = useRef<WaveCache>({
@@ -102,7 +105,7 @@ export default function WaveInterferencePage() {
     isOpen: true,
     waveSourcesExpanded: true,
     waveSettingsExpanded: true,
-    animationExpanded: false
+    animationExpanded: true
   })
 
   // Drag state
@@ -750,7 +753,7 @@ export default function WaveInterferencePage() {
   }, [])
 
   if (!isClient) {
-    return <div>Loading...</div>
+    return <FullScreenLoader variant="wave" text={t('common.preparing')} />
   }
 
   return (

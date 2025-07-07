@@ -86,9 +86,9 @@ export default function FlowFieldPage() {
   // Animation settings
   const [animationSettings, setAnimationSettings] = useState<FlowFieldAnimationSettings>({
     isAnimating: true,
-    particleSpeed: 1.5,
-    particleLife: 120,
-    flowIntensity: 1.2,
+    particleSpeed: 1.0,
+    particleLife: 100,
+    flowIntensity: 1.0,
     time: 0
   })
 
@@ -269,8 +269,9 @@ export default function FlowFieldPage() {
     let frameId: number | null = null
 
     const animate = () => {
-      setParticles(prevParticles => 
-        prevParticles.map(particle => {
+      setParticles(prevParticles => {
+        // Update existing particles
+        const updatedParticles = prevParticles.map(particle => {
           // Calculate quantum field at particle position
           const field = calculateQuantumField(particle.x, particle.y, animationSettings.time)
           
@@ -369,7 +370,38 @@ export default function FlowFieldPage() {
             age: particle.age + 1
           }
         }).filter(particle => particle.life > 0)
-      )
+
+        // Generate new particles to maintain count
+        const canvas = canvasRef.current
+        const width = canvas ? canvas.width / window.devicePixelRatio : 800
+        const height = canvas ? canvas.height / window.devicePixelRatio : 600
+        
+        const particlesToAdd = Math.max(0, particleCount - updatedParticles.length)
+        
+        for (let i = 0; i < particlesToAdd; i++) {
+          const newParticle: QuantumParticle = {
+            id: `particle-${Date.now()}-${Math.random()}`,
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2,
+            life: animationSettings.particleLife,
+            maxLife: animationSettings.particleLife,
+            trail: [],
+            maxTrailLength: 50,
+            age: 0,
+            state: ['particle', 'wave', 'superposition'][Math.floor(Math.random() * 3)] as any,
+            phase: Math.random() * Math.PI * 2,
+            amplitude: Math.random() * 0.5 + 0.5,
+            wavelength: Math.random() * 20 + 10,
+            tunnelingProbability: Math.random() * 0.1,
+            entangledWith: null
+          }
+          updatedParticles.push(newParticle)
+        }
+
+        return updatedParticles
+      })
 
       // Update wave functions more efficiently
       setWaveFunctions(prevWaves => 
@@ -540,26 +572,10 @@ export default function FlowFieldPage() {
           const point = particle.trail[i]
           const alpha = point.life * 0.8
           
-          let color: string
-          switch (particle.state) {
-            case 'particle':
-              color = isDark 
-                ? `rgba(255, 255, 255, ${alpha})`
-                : `rgba(0, 0, 0, ${alpha})`
-              break
-            case 'wave':
-              const waveHue = (point.phase * 180 / Math.PI + 180) % 360
-              color = `hsla(${waveHue}, 70%, 60%, ${alpha})`
-              break
-            case 'superposition':
-              const superHue = (point.phase * 180 / Math.PI + 90) % 360
-              color = `hsla(${superHue}, 80%, 70%, ${alpha})`
-              break
-            default:
-              color = isDark 
-                ? `rgba(255, 255, 255, ${alpha})`
-                : `rgba(0, 0, 0, ${alpha})`
-          }
+          // Black and white trails for all particle states
+          const color = isDark 
+            ? `rgba(255, 255, 255, ${alpha})`
+            : `rgba(0, 0, 0, ${alpha})`
           
           ctx.strokeStyle = color
           ctx.lineWidth = particle.state === 'wave' ? 2 : 1
@@ -574,22 +590,8 @@ export default function FlowFieldPage() {
       const lifeRatio = particle.life / particle.maxLife
       const size = particle.state === 'wave' ? 4 : particle.state === 'superposition' ? 6 : 3
       
-      let color: string
-      switch (particle.state) {
-        case 'particle':
-          color = isDark ? '#ffffff' : '#000000'
-          break
-        case 'wave':
-          const waveHue = (particle.phase * 180 / Math.PI + 180) % 360
-          color = `hsl(${waveHue}, 70%, 60%)`
-          break
-        case 'superposition':
-          const superHue = (particle.phase * 180 / Math.PI + 90) % 360
-          color = `hsl(${superHue}, 80%, 70%)`
-          break
-        default:
-          color = isDark ? '#ffffff' : '#000000'
-      }
+      // Black and white particles for all states
+      const color = isDark ? '#ffffff' : '#000000'
 
       ctx.fillStyle = color
       ctx.beginPath()
@@ -605,7 +607,7 @@ export default function FlowFieldPage() {
             Math.pow(particle.y - entangledParticle.y, 2)
           )
           if (distance < 200) {
-            ctx.strokeStyle = isDark ? 'rgba(255, 100, 255, 0.3)' : 'rgba(200, 50, 200, 0.3)'
+            ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
             ctx.lineWidth = 1
             ctx.setLineDash([5, 5])
             ctx.beginPath()
@@ -807,9 +809,9 @@ export default function FlowFieldPage() {
     ])
     setAnimationSettings({
       isAnimating: true,
-      particleSpeed: 1.5,
-      particleLife: 120,
-      flowIntensity: 1.2,
+      particleSpeed: 1.0,
+      particleLife: 100,
+      flowIntensity: 1.0,
       time: 0
     })
     setShowPoles(true)

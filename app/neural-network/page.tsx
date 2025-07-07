@@ -22,10 +22,14 @@ interface NeuralNode {
     targetId: string
     weight: number
     isActive: boolean
+    weightChange: number
+    learningPulse: number
   }>
   isInput: boolean
   isOutput: boolean
   pulse: number
+  error: number
+  targetActivation: number
 }
 
 interface TrainingData {
@@ -47,13 +51,17 @@ export default function NeuralNetworkPage() {
   const [trainingData, setTrainingData] = useState<TrainingData[]>([])
   const [currentEpoch, setCurrentEpoch] = useState(0)
   const [learningRate, setLearningRate] = useState(0.1)
+  const [currentTrainingIndex, setCurrentTrainingIndex] = useState(0)
+  const [trainingError, setTrainingError] = useState(0)
+  const [isLearning, setIsLearning] = useState(false)
 
   // Display settings
-  const [showWeights, setShowWeights] = useState(true)
-  const [showActivations, setShowActivations] = useState(true)
+  const [showWeights, setShowWeights] = useState(false)
+  const [showActivations, setShowActivations] = useState(false)
   const [showPulses, setShowPulses] = useState(true)
-  const [nodeSize, setNodeSize] = useState(20)
-  const [connectionOpacity, setConnectionOpacity] = useState(0.6)
+  const [nodeSize, setNodeSize] = useState(16)
+  const [connectionOpacity, setConnectionOpacity] = useState(0.7)
+  const [showErrors, setShowErrors] = useState(true)
 
   // Animation settings
   const [animationSettings, setAnimationSettings] = useState<NeuralNetworkAnimationSettings>({
@@ -131,7 +139,9 @@ export default function NeuralNetworkPage() {
           connections: [],
           isInput,
           isOutput,
-          pulse: 0
+          pulse: 0,
+          error: 0,
+          targetActivation: 0
         })
         nodeId++
       }
@@ -145,7 +155,9 @@ export default function NeuralNetworkPage() {
           node.connections.push({
             targetId: targetNode.id,
             weight: (Math.random() - 0.5) * 2,
-            isActive: false
+            isActive: false,
+            weightChange: 0,
+            learningPulse: 0
           })
         })
       }
@@ -170,8 +182,8 @@ export default function NeuralNetworkPage() {
     setTrainingData(data)
   }, [isClient, generateNetwork])
 
-  // Memoized forward propagation
-  const forwardPropagate = useCallback((inputs: number[]) => {
+  // Memoized forward propagation with enhanced visual feedback
+  const forwardPropagate = useCallback((inputs: number[], targets?: number[]) => {
     const newNodes = [...nodes]
     
     // Set input activations
@@ -179,7 +191,16 @@ export default function NeuralNetworkPage() {
     inputNodes.forEach((node, i) => {
       node.activation = inputs[i] || 0
       node.pulse = 1
+      node.targetActivation = inputs[i] || 0
     })
+
+    // Set target activations for output nodes
+    if (targets) {
+      const outputNodes = newNodes.filter(n => n.isOutput)
+      outputNodes.forEach((node, i) => {
+        node.targetActivation = targets[i] || 0
+      })
+    }
 
     // Propagate through layers
     for (let layer = 1; layer < layers.length; layer++) {
@@ -194,6 +215,7 @@ export default function NeuralNetworkPage() {
           if (connection) {
             sum += prevNode.activation * connection.weight
             connection.isActive = true
+            connection.learningPulse = 1 // Visual feedback for active connections
           }
         })
         
@@ -202,29 +224,100 @@ export default function NeuralNetworkPage() {
         node.pulse = 1
       })
     }
+
+    // Calculate errors for output nodes
+    if (targets) {
+      const outputNodes = newNodes.filter(n => n.isOutput)
+      outputNodes.forEach((node, i) => {
+        node.error = targets[i] - node.activation
+      })
+    }
     
     setNodes(newNodes)
     return newNodes.filter(n => n.isOutput).map(n => n.activation)
   }, [nodes, layers])
 
-  // Training loop
+  // Enhanced training with backpropagation and visual feedback
+  const trainNetwork = useCallback(() => {
+    if (!trainingData.length) return
+
+    const currentData = trainingData[currentTrainingIndex]
+    if (!currentData) return
+
+    setIsLearning(true)
+
+    // Forward pass
+    const outputs = forwardPropagate(currentData.inputs, currentData.outputs)
+    
+    // Calculate total error
+    const totalError = currentData.outputs.reduce((sum, target, i) => {
+      return sum + Math.pow(target - outputs[i], 2) / 2
+    }, 0)
+    setTrainingError(totalError)
+
+    // Backpropagation with visual weight updates
+    setNodes(prevNodes => {
+      const newNodes = [...prevNodes]
+      
+      // Calculate gradients for output layer
+      const outputNodes = newNodes.filter(n => n.isOutput)
+      outputNodes.forEach((node, i) => {
+        const target = currentData.outputs[i]
+        const error = target - node.activation
+        node.error = error
+        node.pulse = Math.abs(error) * 2 // Visual error feedback
+      })
+
+      // Backpropagate through hidden layers
+      for (let layer = layers.length - 2; layer >= 0; layer--) {
+        const layerNodes = newNodes.filter(n => n.layer === layer)
+        const nextLayerNodes = newNodes.filter(n => n.layer === layer + 1)
+        
+        layerNodes.forEach(node => {
+          let errorSum = 0
+          
+          nextLayerNodes.forEach(nextNode => {
+            const connection = node.connections.find(c => c.targetId === nextNode.id)
+            if (connection) {
+              errorSum += nextNode.error * connection.weight
+              
+              // Update weight with visual feedback
+              const weightGradient = nextNode.error * node.activation
+              const weightChange = learningRate * weightGradient
+              connection.weight += weightChange
+              connection.weightChange = weightChange
+              connection.learningPulse = Math.abs(weightChange) * 3 // Visual learning feedback
+            }
+          })
+          
+          node.error = errorSum * node.activation * (1 - node.activation)
+          node.pulse = Math.abs(node.error) * 2
+        })
+      }
+
+      return newNodes
+    })
+
+    // Move to next training example
+    setTimeout(() => {
+      setCurrentTrainingIndex(prev => (prev + 1) % trainingData.length)
+      setIsLearning(false)
+    }, 500) // Visual delay to see the learning process
+  }, [trainingData, currentTrainingIndex, forwardPropagate, layers, learningRate])
+
+  // Training loop with enhanced visual feedback
   useEffect(() => {
     if (!isTraining || !isClient) return
 
-    const train = () => {
-      trainingData.forEach((data, index) => {
-        setTimeout(() => {
-          const outputs = forwardPropagate(data.inputs)
-          setCurrentEpoch(prev => prev + 1)
-        }, index * 100)
-      })
-    }
+    const interval = setInterval(() => {
+      trainNetwork()
+      setCurrentEpoch(prev => prev + 1)
+    }, 1000) // Slower training for better visual feedback
 
-    const interval = setInterval(train, trainingData.length * 100 + 500)
     return () => clearInterval(interval)
-  }, [isTraining, trainingData, isClient, forwardPropagate])
+  }, [isTraining, isClient, trainNetwork])
 
-  // Animation loop
+  // Animation loop with enhanced learning effects
   useEffect(() => {
     if (!animationSettings.isAnimating || !isClient) return
 
@@ -237,7 +330,9 @@ export default function NeuralNetworkPage() {
           pulse: Math.max(0, node.pulse - 0.02 * animationSettings.pulseSpeed),
           connections: node.connections.map(conn => ({
             ...conn,
-            isActive: conn.isActive ? Math.random() > 0.95 : false
+            isActive: conn.isActive ? Math.random() > 0.95 : false,
+            learningPulse: Math.max(0, conn.learningPulse - 0.05 * animationSettings.learningSpeed),
+            weightChange: conn.weightChange * 0.95 // Decay weight changes
           }))
         }))
       )
@@ -264,7 +359,7 @@ export default function NeuralNetworkPage() {
         animationRef.current = undefined
       }
     }
-  }, [animationSettings.isAnimating, animationSettings.pulseSpeed, isClient])
+  }, [animationSettings.isAnimating, animationSettings.pulseSpeed, animationSettings.learningSpeed, isClient])
 
   // Handle pause all animations
   useEffect(() => {
@@ -308,13 +403,13 @@ export default function NeuralNetworkPage() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Clear canvas
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+    // Clear canvas with subtle background
+    ctx.fillStyle = theme === 'dark' ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)'
     ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio)
 
     const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
-    // Draw connections
+    // Draw connections with improved black and white styling and learning effects
     nodes.forEach(node => {
       node.connections.forEach(connection => {
         const targetNode = nodes.find(n => n.id === connection.targetId)
@@ -322,89 +417,231 @@ export default function NeuralNetworkPage() {
 
         const weight = connection.weight
         const isActive = connection.isActive
+        const learningPulse = connection.learningPulse
+        const weightChange = connection.weightChange
         
-        // Color based on weight
+        // Enhanced visual effects for learning
+        const baseOpacity = connectionOpacity * (isActive ? 0.8 : 0.3)
+        const weightIntensity = Math.abs(weight)
+        const learningEffect = learningPulse > 0 ? learningPulse * 0.5 : 0
+        
+        // Use grayscale for connections with learning highlights
+        const intensity = Math.floor(weightIntensity * 255)
         let color: string
-        if (weight > 0) {
-          color = isDark ? `rgba(34, 197, 94, ${connectionOpacity * (isActive ? 1 : 0.3)})` : `rgba(22, 163, 74, ${connectionOpacity * (isActive ? 1 : 0.3)})`
+        
+        if (learningPulse > 0) {
+          // Learning pulse effect - bright white flash
+          const pulseIntensity = Math.floor(learningPulse * 255)
+          color = isDark 
+            ? `rgba(${pulseIntensity}, ${pulseIntensity}, ${pulseIntensity}, ${baseOpacity + learningEffect})`
+            : `rgba(${255 - pulseIntensity}, ${255 - pulseIntensity}, ${255 - pulseIntensity}, ${baseOpacity + learningEffect})`
         } else {
-          color = isDark ? `rgba(239, 68, 68, ${connectionOpacity * (isActive ? 1 : 0.3)})` : `rgba(220, 38, 38, ${connectionOpacity * (isActive ? 1 : 0.3)})`
+          color = isDark 
+            ? `rgba(${255 - intensity}, ${255 - intensity}, ${255 - intensity}, ${baseOpacity})`
+            : `rgba(${intensity}, ${intensity}, ${intensity}, ${baseOpacity})`
         }
 
         ctx.strokeStyle = color
-        ctx.lineWidth = Math.abs(weight) * 3 + 1
+        const lineWidth = Math.max(0.5, weightIntensity * 4 + 0.5 + learningPulse * 8)
+        ctx.lineWidth = lineWidth
+        ctx.lineCap = 'round'
         ctx.beginPath()
         ctx.moveTo(node.x, node.y)
         ctx.lineTo(targetNode.x, targetNode.y)
         ctx.stroke()
 
-        // Draw weight value
+        // Draw weight change indicator
+        if (Math.abs(weightChange) > 0.01) {
+          const midX = (node.x + targetNode.x) / 2
+          const midY = (node.y + targetNode.y) / 2
+          
+          // Weight change indicator circle
+          const changeSize = Math.abs(weightChange) * 20
+          ctx.fillStyle = weightChange > 0 
+            ? (isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)')
+            : (isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)')
+          ctx.beginPath()
+          ctx.arc(midX, midY, changeSize, 0, 2 * Math.PI)
+          ctx.fill()
+        }
+
+        // Draw weight value with improved styling
         if (showWeights) {
           const midX = (node.x + targetNode.x) / 2
           const midY = (node.y + targetNode.y) / 2
+          
+          // Background for text
+          const text = weight.toFixed(2)
+          ctx.font = 'bold 10px sans-serif'
+          const textMetrics = ctx.measureText(text)
+          const padding = 4
+          
+          ctx.fillStyle = isDark ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)'
+          ctx.fillRect(
+            midX - textMetrics.width / 2 - padding,
+            midY - 6 - padding,
+            textMetrics.width + padding * 2,
+            12 + padding * 2
+          )
+          
+          // Text
           ctx.fillStyle = isDark ? '#ffffff' : '#000000'
-          ctx.font = '10px sans-serif'
           ctx.textAlign = 'center'
-          ctx.fillText(weight.toFixed(2), midX, midY)
+          ctx.fillText(text, midX, midY)
         }
       })
     })
 
-    // Draw nodes
+    // Draw nodes with improved black and white design and learning effects
     nodes.forEach(node => {
       const activation = node.activation
       const pulse = node.pulse
+      const error = node.error
+      const nodeIsLearning = isLearning && (node.isInput || node.isOutput)
       
-      // Node color based on activation
-      let color: string
-      if (node.isInput) {
-        color = isDark ? '#3b82f6' : '#1d4ed8'
+      // Node styling based on type, activation, and learning state
+      let fillColor: string
+      let borderColor: string
+      let borderWidth: number
+      
+      if (nodeIsLearning) {
+        // Learning state - bright white flash
+        fillColor = isDark ? '#ffffff' : '#000000'
+        borderColor = isDark ? '#ffffff' : '#000000'
+        borderWidth = 4
+      } else if (node.isInput) {
+        fillColor = isDark ? '#ffffff' : '#000000'
+        borderColor = isDark ? '#ffffff' : '#000000'
+        borderWidth = 3
       } else if (node.isOutput) {
-        color = isDark ? '#10b981' : '#059669'
+        fillColor = isDark ? '#ffffff' : '#000000'
+        borderColor = isDark ? '#ffffff' : '#000000'
+        borderWidth = 3
       } else {
+        // Hidden layer nodes with activation-based intensity
         const intensity = Math.floor(activation * 255)
-        color = isDark ? `rgb(${intensity}, ${intensity}, 255)` : `rgb(0, 0, ${intensity})`
+        fillColor = isDark 
+          ? `rgb(${255 - intensity}, ${255 - intensity}, ${255 - intensity})`
+          : `rgb(${intensity}, ${intensity}, ${intensity})`
+        borderColor = isDark ? '#ffffff' : '#000000'
+        borderWidth = 2
       }
 
+      // Error indicator
+      if (showErrors && Math.abs(error) > 0.01) {
+        const errorSize = Math.abs(error) * 15
+        ctx.fillStyle = error > 0 
+          ? (isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)')
+          : (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')
+        ctx.beginPath()
+        ctx.arc(node.x, node.y, nodeSize + errorSize, 0, 2 * Math.PI)
+        ctx.fill()
+      }
+
+      // Draw node shadow for depth
+      ctx.shadowColor = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)'
+      ctx.shadowBlur = 8
+      ctx.shadowOffsetX = 2
+      ctx.shadowOffsetY = 2
+      
       // Draw node
-      ctx.fillStyle = color
+      ctx.fillStyle = fillColor
       ctx.beginPath()
-      ctx.arc(node.x, node.y, nodeSize + pulse * 5, 0, 2 * Math.PI)
+      ctx.arc(node.x, node.y, nodeSize + pulse * 3, 0, 2 * Math.PI)
       ctx.fill()
 
+      // Reset shadow for border
+      ctx.shadowColor = 'transparent'
+      ctx.shadowBlur = 0
+      ctx.shadowOffsetX = 0
+      ctx.shadowOffsetY = 0
+
       // Draw node border
-      ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
-      ctx.lineWidth = 2
+      ctx.strokeStyle = borderColor
+      ctx.lineWidth = borderWidth
+      ctx.lineCap = 'round'
       ctx.stroke()
 
-      // Draw activation value
+      // Draw activation value with improved styling
       if (showActivations) {
+        const text = activation.toFixed(2)
+        ctx.font = 'bold 11px sans-serif'
+        const textMetrics = ctx.measureText(text)
+        const padding = 3
+        
+        // Background for text
+        ctx.fillStyle = isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)'
+        ctx.fillRect(
+          node.x - textMetrics.width / 2 - padding,
+          node.y + nodeSize + 8 - padding,
+          textMetrics.width + padding * 2,
+          14 + padding * 2
+        )
+        
+        // Text
         ctx.fillStyle = isDark ? '#ffffff' : '#000000'
-        ctx.font = '12px sans-serif'
         ctx.textAlign = 'center'
-        ctx.fillText(activation.toFixed(2), node.x, node.y + 4)
+        ctx.fillText(text, node.x, node.y + nodeSize + 18)
       }
 
-      // Draw pulse effect
+      // Draw error value if significant
+      if (showErrors && Math.abs(error) > 0.01) {
+        const text = error.toFixed(3)
+        ctx.font = 'bold 10px sans-serif'
+        const textMetrics = ctx.measureText(text)
+        const padding = 2
+        
+        // Background for text
+        ctx.fillStyle = isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)'
+        ctx.fillRect(
+          node.x - textMetrics.width / 2 - padding,
+          node.y - nodeSize - 20 - padding,
+          textMetrics.width + padding * 2,
+          12 + padding * 2
+        )
+        
+        // Text
+        ctx.fillStyle = isDark ? '#ffffff' : '#000000'
+        ctx.textAlign = 'center'
+        ctx.fillText(text, node.x, node.y - nodeSize - 12)
+      }
+
+      // Draw pulse effect with improved styling
       if (showPulses && pulse > 0) {
-        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
-        ctx.lineWidth = 1
+        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'
+        ctx.lineWidth = 1.5
+        ctx.lineCap = 'round'
+        ctx.setLineDash([5, 5])
         ctx.beginPath()
-        ctx.arc(node.x, node.y, nodeSize + pulse * 15, 0, 2 * Math.PI)
+        ctx.arc(node.x, node.y, nodeSize + pulse * 12, 0, 2 * Math.PI)
         ctx.stroke()
+        ctx.setLineDash([])
       }
     })
 
-    // Draw layer labels
+    // Draw layer labels with improved styling
     const layerSpacing = (canvas.width / window.devicePixelRatio) / (layers.length + 1)
     layers.forEach((layerSize, layerIndex) => {
       const layerX = layerSpacing * (layerIndex + 1)
       const label = layerIndex === 0 ? 'Input' : layerIndex === layers.length - 1 ? 'Output' : `Hidden ${layerIndex}`
       
-      ctx.fillStyle = isDark ? '#ffffff' : '#000000'
+      // Label background
       ctx.font = 'bold 14px sans-serif'
+      const textMetrics = ctx.measureText(label)
+      const padding = 6
+      
+      ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+      ctx.fillRect(
+        layerX - textMetrics.width / 2 - padding,
+        20 - padding,
+        textMetrics.width + padding * 2,
+        20 + padding * 2
+      )
+      
+      // Label text
+      ctx.fillStyle = isDark ? '#ffffff' : '#000000'
       ctx.textAlign = 'center'
-      ctx.fillText(label, layerX, 30)
+      ctx.fillText(label, layerX, 35)
     })
   }, [nodes, showWeights, showActivations, showPulses, nodeSize, connectionOpacity, layers, theme])
 
@@ -464,21 +701,24 @@ export default function NeuralNetworkPage() {
       learningSpeed: 1,
       time: 0
     })
-    setShowWeights(true)
-    setShowActivations(true)
+    setShowWeights(false)
+    setShowActivations(false)
     setShowPulses(true)
-    setNodeSize(20)
-    setConnectionOpacity(0.6)
+    setShowErrors(true)
+    setNodeSize(16)
+    setConnectionOpacity(0.7)
     setLearningRate(0.1)
     setIsTraining(false)
     setCurrentEpoch(0)
+    setCurrentTrainingIndex(0)
+    setTrainingError(0)
+    setIsLearning(false)
   }, [])
 
   // Test network
   const testNetwork = useCallback(() => {
     const testInputs = [0.5, 0.3, 0.8]
     const outputs = forwardPropagate(testInputs)
-    console.log('Network outputs:', outputs)
   }, [forwardPropagate])
 
   if (!isClient) {
@@ -499,7 +739,9 @@ export default function NeuralNetworkPage() {
           Nodes: {nodes.length} | 
           Connections: {nodes.reduce((sum, node) => sum + node.connections.length, 0)} | 
           Epoch: {currentEpoch} | 
-          Training: {isTraining ? 'On' : 'Off'}
+          Training: {isTraining ? 'On' : 'Off'} | 
+          Error: {trainingError.toFixed(4)} | 
+          Example: {currentTrainingIndex + 1}/{trainingData.length}
         </>
       }
       helpText="Watch the neural network learn and propagate signals through layers"
