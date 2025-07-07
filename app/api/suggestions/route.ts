@@ -13,11 +13,19 @@ async function getCollection() {
 
 export async function GET() {
   try {
+    console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not set')
+    console.log('MongoDB DB:', process.env.MONGODB_DB || 'visualisation-waves')
+    
     const collection = await getCollection()
     const suggestions = await collection.find({}).sort({ timestamp: -1 }).toArray()
     return NextResponse.json(suggestions)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch suggestions', details: error }, { status: 500 })
+    console.error('MongoDB connection error:', error)
+    return NextResponse.json({ 
+      error: 'Failed to fetch suggestions', 
+      details: error instanceof Error ? error.message : String(error),
+      uri: process.env.MONGODB_URI ? 'Set' : 'Not set'
+    }, { status: 500 })
   }
 }
 
@@ -36,6 +44,11 @@ export async function POST(req: NextRequest) {
     const result = await collection.insertOne(suggestion)
     return NextResponse.json({ ...suggestion, _id: result.insertedId })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create suggestion', details: error }, { status: 500 })
+    console.error('MongoDB POST error:', error)
+    return NextResponse.json({ 
+      error: 'Failed to create suggestion', 
+      details: error instanceof Error ? error.message : String(error),
+      uri: process.env.MONGODB_URI ? 'Set' : 'Not set'
+    }, { status: 500 })
   }
 } 
