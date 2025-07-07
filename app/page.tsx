@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Sparkles, Play, Lightbulb, CheckCircle, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -322,6 +322,7 @@ export default function HomePage() {
   const { allVisualizations, verifiedVisualizations, inProgressVisualizations } = useHomePageVisualizations()
   const [heroOpacity, setHeroOpacity] = React.useState(1)
   const heroRef = React.useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState(false);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -342,6 +343,10 @@ export default function HomePage() {
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    setIsMobile(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+  }, []);
 
   return (
     <div>
@@ -569,7 +574,7 @@ export default function HomePage() {
       </AppLayout>
       
       {/* PWA Install Toast */}
-      <PWAInstallToast />
+      {isMobile && <PWAInstallToast />}
     </div>
   )
 } 
