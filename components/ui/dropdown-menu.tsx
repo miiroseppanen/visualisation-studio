@@ -181,10 +181,34 @@ const DropdownMenuShortcut = ({
 }
 DropdownMenuShortcut.displayName = "DropdownMenuShortcut"
 
+// Desktop dropdown style overrides
+if (typeof window !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @media (min-width: 768px) {
+      .desktop-dropdown-flat {
+        border-radius: 0 !important;
+        border-color: #333 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Wrapper components to add desktop-dropdown-flat class
+const DropdownMenuContentFlat = React.forwardRef(function DropdownMenuContentFlat(props: any, ref) {
+  return <DropdownMenuContent {...props} ref={ref} className={`${props.className || ''} desktop-dropdown-flat`} />;
+});
+
+const DropdownMenuSubContentFlat = React.forwardRef(function DropdownMenuSubContentFlat(props: any, ref) {
+  return <DropdownMenuSubContent {...props} ref={ref} className={`${props.className || ''} desktop-dropdown-flat`} />;
+});
+
 export {
   DropdownMenu,
   DropdownMenuTrigger,
-  DropdownMenuContent,
+  DropdownMenuContentFlat as DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuCheckboxItem,
   DropdownMenuRadioItem,
@@ -194,7 +218,7 @@ export {
   DropdownMenuGroup,
   DropdownMenuPortal,
   DropdownMenuSub,
-  DropdownMenuSubContent,
+  DropdownMenuSubContentFlat as DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
 } 

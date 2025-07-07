@@ -777,4 +777,10 @@ body {
 
 .dark.theme-pastel .focus\:ring-ring:focus {
   --tw-ring-color: hsl(200, 70%, 70%) !important;
+}
+
+@media (min-width: 768px) {
+  html, body {
+    overflow-y: scroll;
+  }
 } 
