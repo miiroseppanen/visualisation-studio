@@ -1,18 +1,98 @@
 {
   "name": "Visualization Studio",
   "short_name": "Viz Studio",
-  "description": "Professional pattern generation toolkit for creative branding and packaging design",
+  "description": "Professional pattern generation toolkit for creative branding and packaging design. Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
-  "orientation": "portrait-primary",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities", "design"],
   "icons": [
     {
       "src": "/h23-logo.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/h23-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/h23-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/h23-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/h23-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Circular Field",
+      "short_name": "Circular",
+      "description": "Create circular magnetic field patterns",
+      "url": "/circular-field",
+      "icons": [
+        {
+          "src": "/h23-logo.svg",
+          "sizes": "any"
+        }
+      ]
+    },
+    {
+      "name": "Grid Field",
+      "short_name": "Grid",
+      "description": "Create grid-based field patterns",
+      "url": "/grid-field",
+      "icons": [
+        {
+          "src": "/h23-logo.svg",
+          "sizes": "any"
+        }
+      ]
+    },
+    {
+      "name": "Wave Interference",
+      "short_name": "Waves",
+      "description": "Create wave interference patterns",
+      "url": "/wave-interference",
+      "icons": [
+        {
+          "src": "/h23-logo.svg",
+          "sizes": "any"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 } 
