@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { H23Logo } from '@/components/ui/h23-logo'
 

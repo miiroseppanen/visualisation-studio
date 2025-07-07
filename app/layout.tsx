@@ -6,6 +6,7 @@ import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import { I18nProvider } from '@/components/I18nProvider'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://visualization-studio.com'),
   title: 'Visualization Studio',
   description: 'Professional pattern generation toolkit for creative branding and packaging design. Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.',
   keywords: ['visualization', 'patterns', 'design', 'generative', 'creative', 'magnetic fields', 'waves', 'topography'],
