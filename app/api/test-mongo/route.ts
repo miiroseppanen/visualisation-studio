@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { MongoClient } from 'mongodb'
 
 const uri = process.env.MONGODB_URI || ''
-const dbName = process.env.MONGODB_DB || 'visualisation-waves'
+const dbName = process.env.MONGODB_DB || 'visualisation-studio'
 
 export async function GET() {
   try {

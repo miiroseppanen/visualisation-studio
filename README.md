@@ -30,7 +30,7 @@ A modern, interactive web application for creating and visualizing magnetic fiel
 1. Clone the repository:
 ```bash
 git clone <your-repo-url>
-cd visualisation-waves
+cd visualisation-studio
 ```
 
 2. Install dependencies:
@@ -48,7 +48,7 @@ npm run dev
 ## Project Structure
 
 ```
-visualisation-waves/
+visualisation-studio/
 ├── app/                    # Next.js app directory
 │   ├── globals.css        # Global styles
 │   ├── layout.tsx         # Root layout

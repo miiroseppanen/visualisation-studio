@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { MongoClient, ObjectId } from 'mongodb'
 
 const uri = process.env.MONGODB_URI || ''
-const dbName = process.env.MONGODB_DB || 'visualisation-waves'
+const dbName = process.env.MONGODB_DB || 'visualisation-studio'
 
 async function getCollection() {
   const client = new MongoClient(uri)
@@ -16,7 +16,7 @@ export async function GET() {
     console.log('=== MongoDB Debug Info ===')
     console.log('MongoDB URI exists:', !!process.env.MONGODB_URI)
     console.log('MongoDB URI starts with:', process.env.MONGODB_URI?.substring(0, 20) + '...')
-    console.log('MongoDB DB:', process.env.MONGODB_DB || 'visualisation-waves')
+    console.log('MongoDB DB:', process.env.MONGODB_DB || 'visualisation-studio')
     console.log('Environment variables:', Object.keys(process.env).filter(key => key.includes('MONGODB')))
     
     const collection = await getCollection()
