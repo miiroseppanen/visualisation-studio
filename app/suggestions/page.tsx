@@ -14,6 +14,7 @@ import { SuggestionsNavigation, SuggestionsMobileNavigation } from '@/components
 import { useSuggestions } from '@/lib/hooks/useSuggestions'
 import { useTranslation } from 'react-i18next'
 import Link from 'next/link'
+import LanguageSelector from '@/components/ui/LanguageSelector'
 
 const categories = [
   'fieldVisualizations', 'flowPatterns', 'particleSystems', 'fractalGeometry', 'neuralNetworks', 'wavePhysics', 'cellularAutomata', 'audioVisualization', 'dataVisualization', 'interactiveArt'
@@ -256,7 +257,7 @@ export default function SuggestionsPage() {
                 variant="outline"
               >
                 <Plus className="w-5 h-5 mr-3 text-muted-foreground group-hover:text-foreground" />
-                {t('shareNewVisualizationIdea')}
+                {t('suggestions.shareNewVisualisationIdea')}
               </Button>
             </Link>
           </div>
@@ -720,7 +721,7 @@ export default function SuggestionsPage() {
             {filteredSuggestions.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-gray-500 dark:text-gray-400">
-                  {t('noIdeasFound')}
+                  {t('suggestions.noIdeasFound')}
                 </p>
               </div>
             )}

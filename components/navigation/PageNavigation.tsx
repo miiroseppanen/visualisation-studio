@@ -15,6 +15,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import LanguageSelector from '@/components/ui/LanguageSelector'
 
 interface PageNavigationProps {
   showBackButton?: boolean
@@ -123,16 +124,16 @@ export function SuggestionsNavigation({
   return (
     <PageNavigation
       showBackButton={true}
-      backButtonText="Home"
+      backButtonText={t('navigation.home')}
       backButtonPath="/"
-      title={t('suggestions.visualizationIdeas')}
+      title={t('suggestions.visualisationIdeas')}
       subtitle={t('suggestions.shareCreativeConcepts')}
       rightContent={
         <div className="flex items-center space-x-2">
           <Link href="/suggestions/new">
             <Button size="sm" className="flex items-center space-x-2">
               <Plus className="w-4 h-4" />
-                              <span>{t('suggestions.newIdea')}</span>
+              <span>{t('suggestions.newIdea')}</span>
             </Button>
           </Link>
           {onAdminClick && (
@@ -141,21 +142,22 @@ export function SuggestionsNavigation({
               size="sm"
               onClick={isAuthenticated ? onLogout : onAdminClick}
               className="flex items-center space-x-2"
-              title={isAuthenticated ? "Logout Admin" : "Admin Access"}
+              title={isAuthenticated ? t('suggestions.logoutAdmin') : t('suggestions.adminAccess')}
             >
               {isAuthenticated ? (
                 <>
                   <Unlock className="w-4 h-4 text-green-600" />
-                  <span className="text-green-600">Admin</span>
+                  <span className="text-green-600">{t('suggestions.admin')}</span>
                 </>
               ) : (
                 <>
                   <Lock className="w-4 h-4" />
-                  <span>Admin</span>
+                  <span>{t('suggestions.admin')}</span>
                 </>
               )}
             </Button>
           )}
+          <LanguageSelector />
         </div>
       }
     />

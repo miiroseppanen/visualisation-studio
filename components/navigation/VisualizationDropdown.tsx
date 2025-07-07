@@ -52,7 +52,7 @@ export default function VisualizationDropdown({
           <currentVisualization.icon className="w-4 h-4 flex-shrink-0" />
         )}
         <span className="text-base sm:text-lg font-normal truncate">
-          {currentVisualization?.name || t('visualization.selectVisualization')}
+          {currentVisualization?.name || t('visualisation.selectVisualisation')}
         </span>
       </div>
     )
@@ -63,14 +63,14 @@ export default function VisualizationDropdown({
       <DropdownMenuTrigger asChild>
         <Button 
           variant="ghost" 
-          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 h-auto min-w-0 touch-manipulation ${className}`}
+          className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 h-12 min-w-0 touch-manipulation ${className}`}
         >
           <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
             {currentVisualization?.icon && (
               <currentVisualization.icon className="w-4 h-4 flex-shrink-0" />
             )}
             <span className="text-base sm:text-lg font-normal truncate">
-              {currentVisualization?.name || t('visualization.selectVisualization')}
+              {currentVisualization?.name || t('visualisation.selectVisualisation')}
             </span>
           </div>
           <ChevronDown className="w-4 h-4 ml-1 flex-shrink-0" />

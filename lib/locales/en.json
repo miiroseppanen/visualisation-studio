@@ -219,7 +219,8 @@
     "markAsImplemented": "Mark as implemented",
     "deleteSuggestion": "Delete suggestion",
     "authenticate": "Authenticate",
-    "adminAuthentication": "Admin Authentication"
+    "adminAuthentication": "Admin Authentication",
+    "admin": "Admin"
   },
   "visualisationSettings": {
     "controls": "Controls",

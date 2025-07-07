@@ -140,7 +140,7 @@ export default function AppNavigation({
           className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
         >
           <H23Logo size="md" />
-          <span className="text-lg font-normal">Visualization Studio</span>
+          <span className="text-lg font-normal">Visualisation Studio</span>
         </button>
       </div>
     )
@@ -156,7 +156,7 @@ export default function AppNavigation({
           >
             <H23Logo size="lg" />
             <div className="text-left">
-              <h1 className="text-lg lg:text-xl font-normal leading-tight">Visualization Studio</h1>
+              <h1 className="text-lg lg:text-xl font-normal leading-tight">Visualisation Studio</h1>
             </div>
           </button>
           

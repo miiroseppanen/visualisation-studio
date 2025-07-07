@@ -7,12 +7,12 @@ import { I18nProvider } from '@/components/I18nProvider'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://visualization-studio.com'),
-  title: 'Visualization Studio',
+  title: 'Visualisation Studio',
   description: 'Professional pattern generation toolkit for creative branding and packaging design. Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.',
   keywords: ['visualization', 'patterns', 'design', 'generative', 'creative', 'magnetic fields', 'waves', 'topography'],
-  authors: [{ name: 'Visualization Studio' }],
-  creator: 'Visualization Studio',
-  publisher: 'Visualization Studio',
+  authors: [{ name: 'Visualisation Studio' }],
+  creator: 'Visualisation Studio',
+  publisher: 'Visualisation Studio',
   formatDetection: {
     email: false,
     address: false,
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Visualization Studio',
+    title: 'Visualisation Studio',
     startupImage: [
       {
         url: '/h23-logo.png',
@@ -51,16 +51,16 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   openGraph: {
-    title: 'Visualization Studio',
+    title: 'Visualisation Studio',
     description: 'Professional pattern generation toolkit for creative branding and packaging design',
     url: 'https://visualization-studio.com',
-    siteName: 'Visualization Studio',
+    siteName: 'Visualisation Studio',
     images: [
       {
         url: '/h23-logo.png',
         width: 512,
         height: 512,
-        alt: 'Visualization Studio'
+        alt: 'Visualisation Studio'
       }
     ],
     locale: 'en_US',
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Visualization Studio',
+    title: 'Visualisation Studio',
     description: 'Professional pattern generation toolkit for creative branding and packaging design',
     images: ['/h23-logo.png'],
   },
@@ -107,7 +107,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Visualization Studio" />
+        <meta name="apple-mobile-web-app-title" content="Visualisation Studio" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
