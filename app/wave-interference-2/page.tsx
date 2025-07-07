@@ -12,6 +12,8 @@ import type { WaveInterferenceAnimationSettings, WaveInterferencePanelState } fr
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
+import { FullScreenLoader } from '@/components/ui/loader'
+import { useTranslation } from 'react-i18next'
 
 interface QuantumParticle {
   id: string
@@ -73,6 +75,7 @@ export default function WaveInterference2Page() {
   const [isClient, setIsClient] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const { theme } = useTheme()
+  const { t } = useTranslation()
 
   // Canvas size state
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
@@ -602,7 +605,7 @@ export default function WaveInterference2Page() {
   }, [])
 
   if (!isClient) {
-    return <FullScreenLoader variant="dots" text={t('common.preparing')} />
+    return <FullScreenLoader variant="line" text={t('common.preparing')} />
   }
 
   return (

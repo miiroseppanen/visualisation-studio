@@ -419,7 +419,7 @@ export default function ParticleSwarmPage() {
   }, []);
 
   if (!isClient) {
-    return <FullScreenLoader variant="wave" text={t('common.preparing')} />
+    return <FullScreenLoader variant="line" text={t('common.preparing')} />
   }
 
   return (

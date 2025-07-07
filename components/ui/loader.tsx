@@ -4,11 +4,36 @@ import { useTheme } from '@/components/ui/ThemeProvider'
 import { useTranslation } from 'react-i18next'
 
 interface LoaderProps {
-  variant?: 'dots' | 'geometric' | 'wave' | 'simple'
+  variant?: 'dots' | 'geometric' | 'wave' | 'simple' | 'line'
   size?: 'sm' | 'md' | 'lg'
   showText?: boolean
   text?: string
   className?: string
+}
+
+// Unified line loader - horizontal line moving from bottom to top
+const LineLoader = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  
+  const lineHeight = size === 'sm' ? 'h-0.5' : size === 'lg' ? 'h-1' : 'h-0.5'
+  const containerHeight = size === 'sm' ? 'h-8' : size === 'lg' ? 'h-16' : 'h-12'
+  
+  return (
+    <div className={`relative ${containerHeight} w-full overflow-hidden`}>
+      <div 
+        className={`absolute ${lineHeight} w-full ${
+          isDark ? 'bg-white' : 'bg-black'
+        } animate-line-sweep`}
+        style={{
+          bottom: '0',
+          animationDuration: '2s',
+          animationTimingFunction: 'ease-in-out',
+          animationIterationCount: 'infinite'
+        }}
+      />
+    </div>
+  )
 }
 
 // Simple dots component
@@ -99,7 +124,7 @@ const SimpleSpinner = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
 }
 
 export function Loader({ 
-  variant = 'simple', 
+  variant = 'line', 
   size = 'md', 
   showText = false, 
   text,
@@ -115,6 +140,8 @@ export function Loader({
         return <WaveLoader size={size} />
       case 'geometric':
         return <GeometricLoader size={size} />
+      case 'line':
+        return <LineLoader size={size} />
       case 'simple':
       default:
         return <SimpleSpinner size={size} />
@@ -141,10 +168,10 @@ export function Loader({
 
 // Full screen loader component
 export function FullScreenLoader({ 
-  variant = 'simple',
+  variant = 'line',
   text 
 }: { 
-  variant?: 'dots' | 'geometric' | 'wave' | 'simple'
+  variant?: 'dots' | 'geometric' | 'wave' | 'simple' | 'line'
   text?: string 
 }) {
   const { t } = useTranslation()

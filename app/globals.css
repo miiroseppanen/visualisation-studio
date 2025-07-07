@@ -493,6 +493,26 @@ canvas {
   to { transform: translateX(0); }
 }
 
+/* Line sweep animation for unified loader */
+@keyframes line-sweep {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-100%);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-200%);
+    opacity: 0;
+  }
+}
+
+.animate-line-sweep {
+  animation: line-sweep 2s ease-in-out infinite;
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
