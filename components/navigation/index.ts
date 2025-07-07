@@ -9,4 +9,7 @@ export { default as NavigationBar } from './NavigationBar'
 export { default as VisualizationSwitcher } from './VisualizationSwitcher'
 export { default as DesktopNavigation } from './DesktopNavigation'
 export { default as MobileNavigation } from './MobileNavigation'
-export { default as SimpleNavigation } from './SimpleNavigation' 
+export { default as SimpleNavigation } from './SimpleNavigation'
+
+// Enhanced navigation system
+export { default as EnhancedNavigation } from './EnhancedNavigation' 

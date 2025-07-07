@@ -447,6 +447,8 @@
   },
   "visualization": {
     "selectVisualization": "Valitse Visualisointi",
+    "verified": "Vahvistettu",
+    "inProgress": "Kesken",
     "descriptions": {
       "gridField": "Luo viivakenttä, joka reagoi magneettisiin napoihin",
       "flowField": "Suunnittele magneettikentän kuvituksia mukautettavilla navoilla",

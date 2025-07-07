@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import VisualizationLayout from '@/components/layout/VisualizationLayout'
+import EnhancedVisualizationLayout from '@/components/layout/EnhancedVisualizationLayout'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { TopographySettings } from '@/components/topography/TopographySettings'
 import { ElevationPointControls } from '@/components/topography/ElevationPointControls'
@@ -151,7 +151,7 @@ export default function TopographyPage() {
   }
 
   return (
-    <VisualizationLayout
+    <EnhancedVisualizationLayout
       onReset={handleReset}
       onExportSVG={exportSVG}
       statusContent={
@@ -211,6 +211,6 @@ export default function TopographyPage() {
         onMouseUp={handleCanvasMouseUp}
         onMouseLeave={handleCanvasMouseUp}
       />
-    </VisualizationLayout>
+    </EnhancedVisualizationLayout>
   )
 } 

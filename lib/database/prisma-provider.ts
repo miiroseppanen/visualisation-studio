@@ -20,6 +20,45 @@ export class PrismaProvider {
     this.prisma = getPrismaClient()
   }
 
+  // Mapping functions to convert frontend values to database enum values
+  private mapStatus(status: string): 'PENDING' | 'APPROVED' | 'IMPLEMENTED' | 'REJECTED' {
+    switch (status) {
+      case 'pending': return 'PENDING'
+      case 'approved': return 'APPROVED'
+      case 'implemented': return 'IMPLEMENTED'
+      case 'rejected': return 'REJECTED'
+      default: return 'PENDING'
+    }
+  }
+
+  private mapComplexity(complexity: string): 'LOW' | 'MEDIUM' | 'HIGH' {
+    switch (complexity) {
+      case 'new-visual':
+      case 'bug':
+      case 'low': return 'LOW'
+      case 'improvement':
+      case 'enhancement':
+      case 'medium': return 'MEDIUM'
+      case 'feature':
+      case 'high': return 'HIGH'
+      default: return 'MEDIUM'
+    }
+  }
+
+  private mapDifficulty(difficulty: string): 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' {
+    switch (difficulty) {
+      case 'new-visual':
+      case 'bug':
+      case 'beginner': return 'BEGINNER'
+      case 'improvement':
+      case 'enhancement':
+      case 'intermediate': return 'INTERMEDIATE'
+      case 'feature':
+      case 'advanced': return 'ADVANCED'
+      default: return 'INTERMEDIATE'
+    }
+  }
+
   // Initialize database connection
   async init(): Promise<void> {
     try {
@@ -50,10 +89,10 @@ export class PrismaProvider {
           lastModified: suggestion.lastModified,
           upvotes: suggestion.upvotes,
           downvotes: suggestion.downvotes,
-          status: suggestion.status as SuggestionStatus,
+          status: this.mapStatus(suggestion.status),
           category: suggestion.category,
-          complexity: suggestion.complexity as Complexity,
-          difficulty: suggestion.difficulty as Difficulty,
+          complexity: this.mapComplexity(suggestion.complexity),
+          difficulty: this.mapDifficulty(suggestion.difficulty),
           estimatedDevTime: suggestion.estimatedDevTime,
           version: suggestion.version,
           createdBy: suggestion.createdBy,

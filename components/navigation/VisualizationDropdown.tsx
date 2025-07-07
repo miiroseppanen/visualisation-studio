@@ -79,20 +79,25 @@ export default function VisualizationDropdown({
       <DropdownMenuContent 
         align="start" 
         className="w-64 sm:w-72 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto"
-        sideOffset={4}
+        sideOffset={8}
+        avoidCollisions={true}
+        collisionPadding={16}
+        onOpenAutoFocus={(e: Event) => e.preventDefault()}
+        onCloseAutoFocus={(e: Event) => e.preventDefault()}
       >
         {/* Verified Section */}
         {verifiedVisualizations.length > 0 && (
           <>
-            <DropdownMenuLabel className="flex items-center space-x-2 px-3 py-2 text-xs font-medium text-muted-foreground">
+            <DropdownMenuLabel className="flex items-center space-x-2 px-3 py-2 text-xs font-medium text-muted-foreground sticky top-0 bg-popover/80 backdrop-blur-sm z-10">
               <CheckCircle className="w-3 h-3 text-green-600" />
-              <span>Verified</span>
+              <span>{t('visualisation.verified')}</span>
             </DropdownMenuLabel>
             {verifiedVisualizations.map((visualization) => (
               <DropdownMenuItem 
                 key={visualization.id}
                 onClick={() => handleVisualizationClick(visualization.id)}
                 className="cursor-pointer focus:bg-accent focus:text-accent-foreground p-0"
+                onSelect={(e: Event) => e.preventDefault()}
               >
                 <div className="flex items-start space-x-3 p-3 sm:p-4 w-full touch-manipulation">
                   <div className="flex-shrink-0 mt-0.5">
@@ -118,15 +123,16 @@ export default function VisualizationDropdown({
             {verifiedVisualizations.length > 0 && (
               <DropdownMenuSeparator />
             )}
-            <DropdownMenuLabel className="flex items-center space-x-2 px-3 py-2 text-xs font-medium text-muted-foreground">
+            <DropdownMenuLabel className="flex items-center space-x-2 px-3 py-2 text-xs font-medium text-muted-foreground sticky top-0 bg-popover/80 backdrop-blur-sm z-10">
               <Clock className="w-3 h-3 text-amber-600" />
-              <span>In Progress</span>
+              <span>{t('visualisation.inProgress')}</span>
             </DropdownMenuLabel>
             {inProgressVisualizations.map((visualization) => (
               <DropdownMenuItem 
                 key={visualization.id}
                 onClick={() => handleVisualizationClick(visualization.id)}
                 className="cursor-pointer focus:bg-accent focus:text-accent-foreground p-0 opacity-80"
+                onSelect={(e: Event) => e.preventDefault()}
               >
                 <div className="flex items-start space-x-3 p-3 sm:p-4 w-full touch-manipulation">
                   <div className="flex-shrink-0 mt-0.5">

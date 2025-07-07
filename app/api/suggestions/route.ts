@@ -3,6 +3,27 @@ import { PrismaProvider } from '@/lib/database/prisma-provider'
 
 const prismaProvider = new PrismaProvider()
 
+// Helper functions to map frontend values to database enums
+function mapComplexity(frontendValue: string): 'low' | 'medium' | 'high' | 'new-visual' | 'bug' | 'improvement' | 'feature' | 'enhancement' {
+  // The frontend value is already in the correct format for the VisualizationSuggestion type
+  return frontendValue as any
+}
+
+function mapDifficulty(frontendValue: string): 'beginner' | 'intermediate' | 'advanced' {
+  switch (frontendValue) {
+    case 'new-visual':
+    case 'bug':
+      return 'beginner'
+    case 'improvement':
+    case 'enhancement':
+      return 'intermediate'
+    case 'feature':
+      return 'advanced'
+    default:
+      return 'intermediate'
+  }
+}
+
 export async function GET() {
   try {
     console.log('=== Prisma Debug Info ===')
@@ -35,6 +56,8 @@ export async function POST(req: NextRequest) {
     await prismaProvider.init()
     
     const now = new Date()
+    
+    // Map frontend data to database schema
     const suggestion = {
       id: data.id || `suggestion-${Date.now()}`,
       title: data.title,
@@ -46,8 +69,8 @@ export async function POST(req: NextRequest) {
       downvotes: 0,
       status: 'pending' as const,
       category: data.category || 'general',
-      complexity: data.complexity || 'medium' as const,
-      difficulty: data.difficulty || 'intermediate' as const,
+      complexity: mapComplexity(data.complexity),
+      difficulty: mapDifficulty(data.complexity),
       estimatedDevTime: data.estimatedDevTime || 0,
       version: '1.0.0',
       createdBy: data.author,

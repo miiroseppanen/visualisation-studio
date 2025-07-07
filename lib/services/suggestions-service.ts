@@ -566,8 +566,16 @@ export async function fetchSuggestions(): Promise<Suggestion[]> {
   const res = await fetch(API_BASE)
   if (!res.ok) throw new Error('Failed to fetch suggestions')
   const data = await res.json()
-  // Map _id to id for compatibility
-  return data.map((s: any) => ({ ...s, id: s._id || s.id }))
+  
+  // Map database format to frontend format
+  return data.map((s: any) => ({
+    ...s,
+    id: s._id || s.id,
+    // Convert uppercase enum values to lowercase for frontend compatibility
+    status: s.status?.toLowerCase() || 'pending',
+    complexity: s.complexity?.toLowerCase() || 'medium',
+    difficulty: s.difficulty?.toLowerCase() || 'intermediate'
+  }))
 }
 
 export async function addSuggestion(suggestion: Omit<Suggestion, '_id' | 'id' | 'upvotes' | 'downvotes' | 'status' | 'timestamp'>): Promise<Suggestion> {
@@ -578,7 +586,16 @@ export async function addSuggestion(suggestion: Omit<Suggestion, '_id' | 'id' | 
   })
   if (!res.ok) throw new Error('Failed to add suggestion')
   const data = await res.json()
-  return { ...data, id: data._id || data.id }
+  
+  // Map database format to frontend format
+  return {
+    ...data,
+    id: data._id || data.id,
+    // Convert uppercase enum values to lowercase for frontend compatibility
+    status: data.status?.toLowerCase() || 'pending',
+    complexity: data.complexity?.toLowerCase() || 'medium',
+    difficulty: data.difficulty?.toLowerCase() || 'intermediate'
+  }
 }
 
 export async function updateSuggestion(id: string, update: Partial<Suggestion>): Promise<Suggestion> {
@@ -589,7 +606,16 @@ export async function updateSuggestion(id: string, update: Partial<Suggestion>):
   })
   if (!res.ok) throw new Error('Failed to update suggestion')
   const data = await res.json()
-  return { ...data, id: data._id || data.id }
+  
+  // Map database format to frontend format
+  return {
+    ...data,
+    id: data._id || data.id,
+    // Convert uppercase enum values to lowercase for frontend compatibility
+    status: data.status?.toLowerCase() || 'pending',
+    complexity: data.complexity?.toLowerCase() || 'medium',
+    difficulty: data.difficulty?.toLowerCase() || 'intermediate'
+  }
 }
 
 export async function deleteSuggestion(id: string): Promise<void> {

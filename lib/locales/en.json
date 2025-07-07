@@ -460,6 +460,8 @@
   },
   "visualisation": {
     "selectVisualisation": "Select Visualisation",
+    "verified": "Verified",
+    "inProgress": "In Progress",
     "descriptions": {
       "gridField": "Create a field of lines that respond to magnetic poles",
       "flowField": "Design magnetic field illustrations with custom poles",

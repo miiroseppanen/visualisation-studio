@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import AppLayout from '@/components/layout/AppLayout'
-import { SuggestionsNavigation, SuggestionsMobileNavigation } from '@/components/navigation/PageNavigation'
+import EnhancedNavigation from '@/components/navigation/EnhancedNavigation'
 import { useSuggestions } from '@/lib/hooks/useSuggestions'
 import { useTranslation } from 'react-i18next'
 import Link from 'next/link'
@@ -195,10 +195,19 @@ export default function SuggestionsPage() {
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     })
 
+  // Debug logging
+  console.log('All suggestions:', suggestions)
+  console.log('Filtered suggestions:', filteredSuggestions)
+  
   // Separate suggestions by status
-  const pendingSuggestions = filteredSuggestions.filter(s => s.status === 'pending')
+  const pendingSuggestions = filteredSuggestions.filter(s => {
+    console.log('Checking status:', s.status, 'for suggestion:', s.title)
+    return s.status === 'pending'
+  })
   const doneSuggestions = filteredSuggestions.filter(s => s.status === 'implemented')
   const approvedSuggestions = filteredSuggestions.filter(s => s.status === 'approved')
+  
+  console.log('Pending suggestions:', pendingSuggestions)
 
   if (loading) {
     return (
@@ -232,19 +241,13 @@ export default function SuggestionsPage() {
   return (
     <AppLayout showNavigation={false}>
       <div className="min-h-screen bg-background">
-        {/* Page Navigation */}
-        <SuggestionsMobileNavigation 
+        {/* Enhanced Page Navigation */}
+        <EnhancedNavigation 
+          pageType="suggestions"
           isAuthenticated={isAuthenticated}
           onAdminClick={() => setShowPinModal(true)}
           onLogout={handleLogout}
         />
-        <div className="hidden md:block">
-          <SuggestionsNavigation 
-            isAuthenticated={isAuthenticated}
-            onAdminClick={() => setShowPinModal(true)}
-            onLogout={handleLogout}
-          />
-        </div>
         
         {/* Main Content */}
         <div className="container mx-auto px-4 md:px-8 py-4 md:py-8">
