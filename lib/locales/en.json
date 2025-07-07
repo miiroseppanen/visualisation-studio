@@ -1,7 +1,7 @@
 {
   "common": {
     "loading": "Loading...",
-    "preparing": "Preparing visualization...",
+    "preparing": "Preparing visualisation...",
     "error": "Error",
     "tryAgain": "Try again",
     "close": "Close",
@@ -10,7 +10,10 @@
     "delete": "Delete",
     "edit": "Edit",
     "download": "Download",
-    "language": "Language"
+    "language": "Language",
+    "goHome": "Go to Home",
+    "goBackHome": "Go back home",
+    "later": "Later"
   },
   "navigation": {
     "home": "Home",
@@ -20,14 +23,14 @@
     "suggestions": "Suggestions"
   },
   "hero": {
-    "title": "Visualization",
+    "title": "Visualisation",
     "subtitle": "Studio",
     "description": "Professional pattern generation toolkit for creative branding and packaging design. Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.",
     "startCreating": "Start Creating",
     "exploreTools": "Explore Tools"
   },
   "tools": {
-    "title": "Visualization Tools",
+    "title": "Visualisation Tools",
     "description": "Comprehensive toolkit for creating sophisticated patterns and textures for professional design applications.",
     "tryNow": "Try Now",
     "gridField": {
@@ -63,7 +66,7 @@
       "features": {
         "contourLines": "Layered contour lines",
         "elevationPatterns": "Elevation-based patterns",
-        "depthVisualization": "Depth visualization"
+        "depthVisualisation": "Depth visualisation"
       }
     },
     "circularField": {
@@ -77,7 +80,7 @@
     },
     "waveInterference": {
       "title": "Wave Interference",
-      "description": "Explore wave interference patterns and harmonic interactions for scientific visualization.",
+      "description": "Explore wave interference patterns and harmonic interactions for scientific visualisation.",
       "features": {
         "waveSources": "Multiple wave sources",
         "interferencePatterns": "Interference patterns",
@@ -95,9 +98,9 @@
     },
     "particleSwarm": {
       "title": "Particle Swarm",
-      "description": "Simulate flocking behavior and collective intelligence with interactive particle systems.",
+      "description": "Simulate flocking behaviour and collective intelligence with interactive particle systems.",
       "features": {
-        "flockingBehavior": "Flocking behavior",
+        "flockingBehaviour": "Flocking behaviour",
         "collectiveIntelligence": "Collective intelligence",
         "dynamicAttractors": "Dynamic attractors"
       }
@@ -113,44 +116,44 @@
     },
     "neuralNetwork": {
       "title": "Neural Network",
-      "description": "Visualize artificial neural networks with dynamic activation patterns and learning.",
+      "description": "Visualise artificial neural networks with dynamic activation patterns and learning.",
       "features": {
-        "networkVisualization": "Network visualization",
+        "networkVisualisation": "Network visualisation",
         "activationPatterns": "Activation patterns",
         "learningSimulation": "Learning simulation"
       }
     },
     "cellularAutomata": {
       "title": "Cellular Automata",
-      "description": "Explore emergent behavior and complex patterns from simple rule-based systems.",
+      "description": "Explore emergent behaviour and complex patterns from simple rule-based systems.",
       "features": {
-        "emergentBehavior": "Emergent behavior",
+        "emergentBehaviour": "Emergent behaviour",
         "ruleBased": "Rule-based systems",
         "complexPatterns": "Complex patterns"
       }
     },
     "soundWave": {
       "title": "Sound Wave",
-      "description": "Analyze sound waves, harmonics, and frequency spectrums with interactive visualization.",
+      "description": "Analyse sound waves, harmonics, and frequency spectra with interactive visualisation.",
       "features": {
         "waveformAnalysis": "Waveform analysis",
-        "harmonicVisualization": "Harmonic visualization",
+        "harmonicVisualisation": "Harmonic visualisation",
         "frequencySpectrum": "Frequency spectrum"
       }
     }
   },
   "suggestions": {
     "title": "Community Ideas",
-    "description": "Share your ideas and feedback to help improve Visualization Studio. Vote on existing concepts and contribute your own creative suggestions for new features.",
+    "description": "Share your ideas and feedback to help improve Visualisation Studio. Vote on existing concepts and contribute your own creative suggestions for new features.",
     "viewSuggestions": "View Ideas",
     "submitIdea": "Submit New Idea",
-    "visualizationIdeas": "Visualization Ideas",
-    "newVisualizationIdea": "New Idea",
+    "visualisationIdeas": "Visualisation Ideas",
+    "newVisualisationIdea": "New Idea",
     "shareCreativeConcepts": "Share ideas and vote on new features",
     "shareCreativeConcept": "Share your creative idea",
     "ideas": "Ideas",
     "newIdea": "New Idea",
-    "shareNewVisualizationIdea": "Share New Visualization Idea",
+    "shareNewVisualisationIdea": "Share New Visualisation Idea",
     "formTitle": "Title",
     "yourName": "Your Name",
     "formDescription": "Description",
@@ -159,10 +162,10 @@
     "submit": "Submit",
     "cancel": "Cancel",
     "submitting": "Submitting...",
-    "shareVisualizationIdea": "Share Idea",
-    "enterVisualizationTitle": "Enter idea title",
+    "shareVisualisationIdea": "Share Idea",
+    "enterVisualisationTitle": "Enter idea title",
     "enterYourName": "Enter your name",
-    "describeVisualization": "Describe your visualization idea...",
+    "describeVisualisation": "Describe your visualisation idea...",
     "chooseCategory": "Choose category",
     "error": "Error",
     "loading": "Loading...",
@@ -188,21 +191,21 @@
     "logoutAdmin": "Logout Admin",
     "markAsImplemented": "Mark as implemented",
     "deleteSuggestion": "Delete suggestion",
-    "deleteVisualizationIdea": "Delete idea",
+    "deleteVisualisationIdea": "Delete idea",
     "newVisual": "New Visual",
     "bugFix": "Bug Fix",
     "improvement": "Improvement",
     "feature": "Feature",
     "enhancement": "Enhancement",
-    "fieldVisualizations": "Field Visualizations",
+    "fieldVisualisations": "Field Visualisations",
     "flowPatterns": "Flow Patterns",
     "particleSystems": "Particle Systems",
     "fractalGeometry": "Fractal Geometry",
     "neuralNetworks": "Neural Networks",
     "wavePhysics": "Wave Physics",
     "cellularAutomata": "Cellular Automata",
-    "audioVisualization": "Audio Visualization",
-    "dataVisualization": "Data Visualization",
+    "audioVisualisation": "Audio Visualisation",
+    "dataVisualisation": "Data Visualisation",
     "interactiveArt": "Interactive Art",
     "filters": "Filters",
     "allCategories": "All Categories",
@@ -218,7 +221,7 @@
     "authenticate": "Authenticate",
     "adminAuthentication": "Admin Authentication"
   },
-  "visualizationSettings": {
+  "visualisationSettings": {
     "controls": "Controls",
     "openControls": "Open controls",
     "closePanel": "Close panel",
@@ -296,7 +299,7 @@
     "showTrails": "Show Trails",
     "showAttractors": "Show Attractors",
     "noAttractors": "No attractors yet. Use the controls above to add attractors.",
-    "behaviorSettings": "Behavior Settings",
+    "behaviourSettings": "Behaviour Settings",
     "cohesionStrength": "Cohesion Strength",
     "separationStrength": "Separation Strength",
     "alignmentStrength": "Alignment Strength",
@@ -363,7 +366,7 @@
     "contourSettingsExpanded": "Contour Settings",
     "displaySettingsExpanded": "Display Settings",
     "swarmSettingsExpanded": "Swarm Settings",
-    "behaviorSettingsExpanded": "Behavior Settings",
+    "behaviourSettingsExpanded": "Behaviour Settings",
     "networkSettingsExpanded": "Network Settings",
     "fieldSettingsExpanded": "Field Settings",
     "polesExpanded": "Poles",
@@ -384,7 +387,7 @@
     "majorContourDescription": "How often to draw thicker contour lines",
     "styleInfo": "Style: Black and white topographic lines",
     "majorMinor": "Major/Minor",
-    "visualizationMode": "Visualization Mode",
+    "visualisationMode": "Visualisation Mode",
     "streamlineMode": "Streamline Mode",
     "showSources": "Show Sources",
     "streamlineDensity": "Streamline Density",
@@ -430,16 +433,16 @@
     "noWaveSources": "No wave sources yet. Use the controls above to add wave sources."
   },
   "about": {
-    "title": "About Visualization Studio",
+    "title": "About Visualisation Studio",
     "professionalGeneration": {
       "title": "Professional Pattern Generation",
-      "description": "Visualization Studio provides a comprehensive toolkit for creating sophisticated patterns and textures. Whether you're designing packaging, branding materials, or digital assets, our tools offer the precision and flexibility needed for professional results."
+      "description": "Visualisation Studio provides a comprehensive toolkit for creating sophisticated patterns and textures. Whether you're designing packaging, branding materials, or digital assets, our tools offer the precision and flexibility needed for professional results."
     },
-    "additionalInfo": "Each visualization tool is designed with both creative freedom and technical precision in mind, allowing you to explore endless possibilities while maintaining control over every aspect of your design.",
+    "additionalInfo": "Each visualisation tool is designed with both creative freedom and technical precision in mind, allowing you to explore endless possibilities while maintaining control over every aspect of your design.",
     "poweredBy": {
       "title": "Powered by H23",
       "description": "Developed by H23, a creative technology agency that specializes in building digital tools and experiences for ambitious brands.",
-      "expertise": "Our expertise in creative technology, branding, and interactive experiences informs every aspect of Visualization Studio, ensuring it meets the needs of professional designers and creative teams."
+      "expertise": "Our expertise in creative technology, branding, and interactive experiences informs every aspect of Visualisation Studio, ensuring it meets the needs of professional designers and creative teams."
     }
   },
   "navigation": {
@@ -451,17 +454,17 @@
     "reset": "Reset",
     "export": "Export",
     "settings": "Settings",
-    "visualizations": "Visualizations",
-    "selectVisualization": "Select Visualization"
+    "visualisations": "Visualisations",
+    "selectVisualisation": "Select Visualisation"
   },
-  "visualization": {
-    "selectVisualization": "Select Visualization",
+  "visualisation": {
+    "selectVisualisation": "Select Visualisation",
     "descriptions": {
       "gridField": "Create a field of lines that respond to magnetic poles",
       "flowField": "Design magnetic field illustrations with custom poles",
-      "circularField": "Visualize circular field lines around magnetic poles",
+      "circularField": "Visualise circular field lines around magnetic poles",
       "waveInterference": "Explore wave interference patterns with multiple sources",
-      "particleSwarm": "Watch particles flock and swarm with emergent behavior",
+      "particleSwarm": "Watch particles flock and swarm with emergent behaviour",
       "fractalTree": "Generate beautiful fractal trees with recursive branching",
       "turbulence": "Explore turbulent flow fields with vortices and noise",
       "topography": "Generate topographic contour lines from elevation points",
@@ -471,8 +474,86 @@
     }
   },
   "metadata": {
-    "title": "Visualization Studio",
+    "title": "Visualisation Studio",
     "description": "Professional pattern generation toolkit for creative branding and packaging design. Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control.",
-    "shortTitle": "Visualization Studio"
+    "shortTitle": "Visualisation Studio"
+  },
+  "error": {
+    "somethingWentWrong": "Something went wrong!",
+    "pageLoadError": "An error occurred while loading this page. Please try refreshing or contact support if the problem persists."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist. It might have been moved or deleted from Visualisation Studio."
+  },
+  "offline": {
+    "title": "You're Offline",
+    "lostConnection": "It looks like you've lost your internet connection. Some features may not be available while offline.",
+    "availableOffline": "Available Offline",
+    "homeAndNavigation": "Home page and navigation",
+    "visitedVisualisations": "Previously visited visualisations",
+    "basicFunctionality": "Basic app functionality",
+    "checkConnection": "Check your internet connection and try again"
+  },
+  "pwa": {
+    "installApp": "Install App",
+    "addToHomeScreen": "Add to home screen for quick access",
+    "install": "Install",
+    "quickAccess": "Quick access from home screen",
+    "worksOffline": "Works offline",
+    "appLikeExperience": "App-like experience",
+    "settings": "PWA Settings",
+    "settingsDescription": "Manage Progressive Web App settings and installation",
+    "installationStatus": "Installation Status",
+    "installed": "Installed",
+    "notInstalled": "Not Installed",
+    "connection": "Connection",
+    "offline": "Offline",
+    "online": "Online",
+    "resetting": "Resetting...",
+    "resetInstallPrompt": "Reset Install Prompt",
+    "showInstallGuideAgain": "This will show the installation guide again",
+    "showInstallInstructions": "Show Installation Instructions",
+    "iosStep1": "Tap the Share button",
+    "iosStep2": "Select 'Add to Home Screen'",
+    "iosStep3": "Tap 'Add' to confirm",
+    "androidStep1": "Tap the menu button (⋮)",
+    "androidStep2": "Select 'Add to Home screen'",
+    "androidStep3": "Tap 'Add' to confirm"
+  },
+  "cellular": {
+    "patternsAndControls": "Patterns & Controls",
+    "stepSimulation": "Step Simulation",
+    "clearGrid": "Clear Grid",
+    "predefinedPatterns": "Predefined Patterns",
+    "instructionToggleCells": "Click on the grid to toggle cells",
+    "instructionStepSimulation": "Use Step Simulation to advance one generation",
+    "instructionTryRules": "Try different rule sets to see new behaviours",
+    "instructionPatternCenter": "Patterns will be placed at the centre of the grid",
+    "rulesAndDisplay": "Rules & Display",
+    "ruleSets": "Rule Sets",
+    "currentRule": "Current Rule",
+    "birth": "Birth",
+    "survive": "Survive",
+    "displaySettings": "Display Settings",
+    "showGrid": "Show Grid",
+    "showAge": "Show Age",
+    "colorMode": "Colour Mode",
+    "binary": "Binary",
+    "age": "Age",
+    "neighbors": "Neighbours",
+    "cellSize": "Cell Size"
+  },
+  "sound": {
+    "audioInput": "Audio Input",
+    "audioStatus": "Audio Status",
+    "listening": "Listening",
+    "notConnected": "Not Connected",
+    "stopListening": "Stop Listening",
+    "startListening": "Start Listening",
+    "instructionStartListening": "Click to start listening to microphone input",
+    "instructionFrequencyAnalysis": "Real-time frequency analysis will be displayed",
+    "instructionMicPermission": "Browser may ask for microphone permission",
+    "instructionSyntheticData": "Currently shows synthetic wave data"
   }
 }

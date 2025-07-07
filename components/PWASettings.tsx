@@ -5,10 +5,12 @@ import { usePWA } from '@/lib/hooks/usePWA'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Download, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export default function PWASettings() {
   const { isInstalled, isOffline, resetInstallPrompt } = usePWA()
   const [isResetting, setIsResetting] = useState(false)
+  const { t } = useTranslation()
 
   const handleResetInstallPrompt = () => {
     setIsResetting(true)
@@ -25,10 +27,10 @@ export default function PWASettings() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Download className="w-5 h-5" />
-          PWA Settings
+          {t('pwa.settings')}
         </CardTitle>
         <CardDescription>
-          Manage Progressive Web App settings and installation
+          {t('pwa.settingsDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -40,10 +42,10 @@ export default function PWASettings() {
             ) : (
               <XCircle className="w-4 h-4 text-yellow-500" />
             )}
-            <span className="text-sm font-medium">Installation Status</span>
+            <span className="text-sm font-medium">{t('pwa.installationStatus')}</span>
           </div>
           <span className="text-sm text-muted-foreground">
-            {isInstalled ? 'Installed' : 'Not Installed'}
+            {isInstalled ? t('pwa.installed') : t('pwa.notInstalled')}
           </span>
         </div>
 
@@ -55,10 +57,10 @@ export default function PWASettings() {
             ) : (
               <CheckCircle className="w-4 h-4 text-green-500" />
             )}
-            <span className="text-sm font-medium">Connection</span>
+            <span className="text-sm font-medium">{t('pwa.connection')}</span>
           </div>
           <span className="text-sm text-muted-foreground">
-            {isOffline ? 'Offline' : 'Online'}
+            {isOffline ? t('pwa.offline') : t('pwa.online')}
           </span>
         </div>
 
@@ -71,10 +73,10 @@ export default function PWASettings() {
             className="w-full"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isResetting ? 'animate-spin' : ''}`} />
-            {isResetting ? 'Resetting...' : 'Reset Install Prompt'}
+            {isResetting ? t('pwa.resetting') : t('pwa.resetInstallPrompt')}
           </Button>
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            This will show the installation guide again
+            {t('pwa.showInstallGuideAgain')}
           </p>
         </div>
 
@@ -83,23 +85,23 @@ export default function PWASettings() {
           <div className="pt-2">
             <details className="group">
               <summary className="cursor-pointer text-sm font-medium text-foreground hover:text-primary transition-colors">
-                Show Installation Instructions
+                {t('pwa.showInstallInstructions')}
               </summary>
               <div className="mt-3 p-3 bg-muted/30 rounded-lg text-xs space-y-2">
                 <div>
                   <strong>iOS Safari:</strong>
                   <ol className="list-decimal list-inside mt-1 space-y-1">
-                    <li>Tap the Share button <span className="inline-block w-3 h-3 bg-blue-500 rounded-full"></span></li>
-                    <li>Select "Add to Home Screen"</li>
-                    <li>Tap "Add" to confirm</li>
+                    <li>{t('pwa.iosStep1')}</li>
+                    <li>{t('pwa.iosStep2')}</li>
+                    <li>{t('pwa.iosStep3')}</li>
                   </ol>
                 </div>
                 <div>
                   <strong>Android Chrome:</strong>
                   <ol className="list-decimal list-inside mt-1 space-y-1">
-                    <li>Tap the menu button ⋮</li>
-                    <li>Select "Add to Home screen"</li>
-                    <li>Tap "Add" to confirm</li>
+                    <li>{t('pwa.androidStep1')}</li>
+                    <li>{t('pwa.androidStep2')}</li>
+                    <li>{t('pwa.androidStep3')}</li>
                   </ol>
                 </div>
               </div>

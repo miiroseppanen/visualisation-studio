@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react'
 import { usePWA } from '@/lib/hooks/usePWA'
 import { Download, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export default function PWAInstallToast() {
   const { canInstall, isInstalled, installApp } = usePWA()
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
+  const { t } = useTranslation()
 
   useEffect(() => {
     // Check if user has dismissed the toast before
@@ -59,8 +61,8 @@ export default function PWAInstallToast() {
         </div>
         
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground">Install App</p>
-          <p className="text-xs text-muted-foreground">Add to home screen for quick access</p>
+          <p className="text-sm font-medium text-foreground">{t('pwa.installApp')}</p>
+          <p className="text-xs text-muted-foreground">{t('pwa.addToHomeScreen')}</p>
         </div>
 
         <div className="flex items-center gap-1">
@@ -68,12 +70,12 @@ export default function PWAInstallToast() {
             onClick={handleInstall}
             className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-xs font-medium hover:opacity-90 transition-opacity"
           >
-            Install
+            {t('pwa.install')}
           </button>
           <button
             onClick={handleDismiss}
             className="p-1 hover:bg-muted rounded-md transition-colors"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <X className="w-3 h-3 text-muted-foreground" />
           </button>

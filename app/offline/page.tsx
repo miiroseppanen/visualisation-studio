@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { H23Logo } from '@/components/ui/h23-logo'
+import { useTranslation } from 'react-i18next'
 
 export default function OfflinePage() {
+  const { t } = useTranslation()
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center space-y-6">
@@ -13,22 +15,21 @@ export default function OfflinePage() {
         
         <div className="space-y-4">
           <h1 className="text-2xl font-bold text-foreground">
-            You're Offline
+            {t('offline.title')}
           </h1>
           
           <p className="text-muted-foreground">
-            It looks like you've lost your internet connection. 
-            Some features may not be available while offline.
+            {t('offline.lostConnection')}
           </p>
           
           <div className="bg-card p-4 rounded-lg border">
             <h2 className="font-semibold text-foreground mb-2">
-              Available Offline
+              {t('offline.availableOffline')}
             </h2>
             <ul className="text-sm text-muted-foreground space-y-1 text-left">
-              <li>• Home page and navigation</li>
-              <li>• Previously visited visualizations</li>
-              <li>• Basic app functionality</li>
+              <li>• {t('offline.homeAndNavigation')}</li>
+              <li>• {t('offline.visitedVisualisations')}</li>
+              <li>• {t('offline.basicFunctionality')}</li>
             </ul>
           </div>
         </div>
@@ -38,19 +39,19 @@ export default function OfflinePage() {
             onClick={() => window.location.reload()}
             className="w-full bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
           >
-            Try Again
+            {t('common.tryAgain')}
           </button>
           
           <Link
             href="/"
             className="block w-full bg-secondary text-secondary-foreground px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
           >
-            Go to Home
+            {t('common.goHome')}
           </Link>
         </div>
         
         <p className="text-xs text-muted-foreground">
-          Check your internet connection and try again
+          {t('offline.checkConnection')}
         </p>
       </div>
     </div>

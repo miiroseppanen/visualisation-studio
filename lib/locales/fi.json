@@ -10,7 +10,10 @@
     "delete": "Poista",
     "edit": "Muokkaa",
     "download": "Lataa",
-    "language": "Kieli"
+    "language": "Kieli",
+    "goHome": "Mene kotiin",
+    "goBackHome": "Palaa kotiin",
+    "later": "Myöhemmin"
   },
   "navigation": {
     "home": "Koti",
@@ -462,5 +465,83 @@
     "title": "Visualisointi Studio",
     "description": "Ammattimainen kuviogenerointi-työkalupakki luovaan brändäykseen ja pakkaussuunnitteluun. Luo ainutlaatuisia geometrisia kuvioita, virtaavia tekstuureja ja dynaamisia visuaalisia järjestelmiä tarkalla hallinnalla.",
     "shortTitle": "Visualisointi Studio"
+  },
+  "error": {
+    "somethingWentWrong": "Jokin meni pieleen!",
+    "pageLoadError": "Virhe tapahtui sivun latauksen aikana. Yritä päivittää sivu tai ota yhteyttä tukeen, jos ongelma jatkuu."
+  },
+  "notFound": {
+    "title": "Sivua ei löytynyt",
+    "description": "Etsimääsi sivua ei ole olemassa. Se on saattanut siirtyä tai poistua Visualisointi Studiosta."
+  },
+  "offline": {
+    "title": "Olet offline",
+    "lostConnection": "Näyttää siltä, että internet-yhteys on katkennut. Jotkut ominaisuudet eivät välttämättä ole saatavilla offline-tilassa.",
+    "availableOffline": "Offline-tilassa saatavilla",
+    "homeAndNavigation": "Kotisivu ja navigointi",
+    "visitedVisualisations": "Aiemmin vieraillut visualisoinnit",
+    "basicFunctionality": "Perustoiminnallisuus",
+    "checkConnection": "Tarkista internet-yhteys ja yritä uudelleen"
+  },
+  "pwa": {
+    "installApp": "Asenna sovellus",
+    "addToHomeScreen": "Lisää kotinäyttöön nopeaa pääsyä varten",
+    "install": "Asenna",
+    "quickAccess": "Nopea pääsy kotinäytöltä",
+    "worksOffline": "Toimii offline-tilassa",
+    "appLikeExperience": "Sovelluksen kaltainen kokemus",
+    "settings": "PWA-asetukset",
+    "settingsDescription": "Hallitse Progressive Web App -asetuksia ja asennusta",
+    "installationStatus": "Asennustila",
+    "installed": "Asennettu",
+    "notInstalled": "Ei asennettu",
+    "connection": "Yhteys",
+    "offline": "Offline",
+    "online": "Online",
+    "resetting": "Nollataan...",
+    "resetInstallPrompt": "Nollaa asennuskehote",
+    "showInstallGuideAgain": "Tämä näyttää asennusoppaan uudelleen",
+    "showInstallInstructions": "Näytä asennusohjeet",
+    "iosStep1": "Napauta Jaa-painiketta",
+    "iosStep2": "Valitse 'Lisää kotinäyttöön'",
+    "iosStep3": "Napauta 'Lisää' vahvistaaksesi",
+    "androidStep1": "Napauta valikkopainiketta (⋮)",
+    "androidStep2": "Valitse 'Lisää kotinäyttöön'",
+    "androidStep3": "Napauta 'Lisää' vahvistaaksesi"
+  },
+  "cellular": {
+    "patternsAndControls": "Kuviot ja ohjaimet",
+    "stepSimulation": "Askel-simulaatio",
+    "clearGrid": "Tyhjennä ruudukko",
+    "predefinedPatterns": "Ennalta määritellyt kuviot",
+    "instructionToggleCells": "Napauta ruudukkoa vaihtaaksesi soluja",
+    "instructionStepSimulation": "Käytä Askel-simulaatiota edetäksesi yhden sukupolven",
+    "instructionTryRules": "Kokeile eri sääntöjoukkoja nähdäksesi uusia käyttäytymismalleja",
+    "instructionPatternCenter": "Kuviot sijoitetaan ruudukon keskelle",
+    "rulesAndDisplay": "Säännöt ja näyttö",
+    "ruleSets": "Sääntöjoukot",
+    "currentRule": "Nykyinen sääntö",
+    "birth": "Syntymä",
+    "survive": "Selviytyminen",
+    "displaySettings": "Näyttöasetukset",
+    "showGrid": "Näytä ruudukko",
+    "showAge": "Näytä ikä",
+    "colorMode": "Väritila",
+    "binary": "Binääri",
+    "age": "Ikä",
+    "neighbors": "Naapurit",
+    "cellSize": "Solun koko"
+  },
+  "sound": {
+    "audioInput": "Äänitulo",
+    "audioStatus": "Äänitila",
+    "listening": "Kuuntelee",
+    "notConnected": "Ei yhdistetty",
+    "stopListening": "Lopeta kuuntelu",
+    "startListening": "Aloita kuuntelu",
+    "instructionStartListening": "Napauta aloittaaksesi mikrofonin kuuntelun",
+    "instructionFrequencyAnalysis": "Reaaliaikainen taajuusanalyysi näytetään",
+    "instructionMicPermission": "Selain saattaa pyytää mikrofonilupaa",
+    "instructionSyntheticData": "Näyttää tällä hetkellä synteettisiä aaltodataa"
   }
 }

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 interface Rule {
   name: string
@@ -76,6 +77,7 @@ export default function CellularAutomataRules({
   onSetColorMode,
   onSetCellSize
 }: CellularAutomataRulesProps) {
+  const { t } = useTranslation()
   return (
     <div>
       <button
@@ -88,14 +90,14 @@ export default function CellularAutomataRules({
           <ChevronRight className="h-4 w-4" />
         )}
         <Settings className="h-4 w-4" />
-        Rules & Display
+        {t('cellular.rulesAndDisplay')}
       </button>
 
       {expanded && (
         <div className="space-y-4 pl-4 mt-4">
           {/* Rule Selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Rule Sets</Label>
+            <Label className="text-sm font-medium">{t('cellular.ruleSets')}</Label>
             
             {predefinedRules.map((rule) => (
               <Button
@@ -117,11 +119,11 @@ export default function CellularAutomataRules({
 
           {/* Current Rule Info */}
           <div className="space-y-2 pt-2 border-t">
-            <Label className="text-sm font-medium">Current Rule</Label>
+            <Label className="text-sm font-medium">{t('cellular.currentRule')}</Label>
             <div className="text-sm">
               <div className="font-medium">{currentRule.name}</div>
               <div className="text-muted-foreground">
-                Birth: {currentRule.birth.join(', ')} | Survive: {currentRule.survive.join(', ')}
+                {t('cellular.birth')}: {currentRule.birth.join(', ')} | {t('cellular.survive')}: {currentRule.survive.join(', ')}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
                 {currentRule.description}
@@ -131,7 +133,7 @@ export default function CellularAutomataRules({
 
           {/* Display Settings */}
           <div className="space-y-3 pt-2 border-t">
-            <Label className="text-sm font-medium">Display Settings</Label>
+            <Label className="text-sm font-medium">{t('cellular.displaySettings')}</Label>
             
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -139,7 +141,7 @@ export default function CellularAutomataRules({
                 checked={showGrid}
                 onCheckedChange={onSetShowGrid}
               />
-              <Label htmlFor="show-grid" className="text-sm">Show Grid</Label>
+              <Label htmlFor="show-grid" className="text-sm">{t('cellular.showGrid')}</Label>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -148,33 +150,33 @@ export default function CellularAutomataRules({
                 checked={showAge}
                 onCheckedChange={onSetShowAge}
               />
-              <Label htmlFor="show-age" className="text-sm">Show Age</Label>
+              <Label htmlFor="show-age" className="text-sm">{t('cellular.showAge')}</Label>
             </div>
 
             {/* Color Mode */}
             <div className="space-y-2">
-              <Label className="text-sm">Color Mode</Label>
+              <Label className="text-sm">{t('cellular.colorMode')}</Label>
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   variant={colorMode === 'binary' ? "default" : "outline"}
                   size="sm"
                   onClick={() => onSetColorMode('binary')}
                 >
-                  Binary
+                  {t('cellular.binary')}
                 </Button>
                 <Button
                   variant={colorMode === 'age' ? "default" : "outline"}
                   size="sm"
                   onClick={() => onSetColorMode('age')}
                 >
-                  Age
+                  {t('cellular.age')}
                 </Button>
                 <Button
                   variant={colorMode === 'neighbors' ? "default" : "outline"}
                   size="sm"
                   onClick={() => onSetColorMode('neighbors')}
                 >
-                  Neighbors
+                  {t('cellular.neighbors')}
                 </Button>
               </div>
             </div>
@@ -182,7 +184,7 @@ export default function CellularAutomataRules({
             {/* Cell Size */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-sm">Cell Size</Label>
+                <Label className="text-sm">{t('cellular.cellSize')}</Label>
                 <div className="text-sm text-muted-foreground">{cellSize}</div>
               </div>
               <Slider

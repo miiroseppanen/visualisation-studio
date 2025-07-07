@@ -3,6 +3,7 @@
 import React from 'react'
 import { ChevronDown, ChevronRight, Volume2, Mic, MicOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 interface FrequencyControlsProps {
   onInitializeAudio: () => void
@@ -17,6 +18,7 @@ export default function FrequencyControls({
   expanded,
   onToggleExpanded
 }: FrequencyControlsProps) {
+  const { t } = useTranslation()
   return (
     <div>
       <button
@@ -29,7 +31,7 @@ export default function FrequencyControls({
           <ChevronRight className="h-4 w-4" />
         )}
         <Volume2 className="h-4 w-4" />
-        Audio Input
+        {t('sound.audioInput')}
       </button>
 
       {expanded && (
@@ -37,9 +39,9 @@ export default function FrequencyControls({
           {/* Audio Status */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <div className="text-sm font-medium">Audio Status</div>
+              <div className="text-sm font-medium">{t('sound.audioStatus')}</div>
               <div className="text-sm text-muted-foreground">
-                {isListening ? 'Listening' : 'Not Connected'}
+                {isListening ? t('sound.listening') : t('sound.notConnected')}
               </div>
             </div>
           </div>
@@ -55,12 +57,12 @@ export default function FrequencyControls({
               {isListening ? (
                 <>
                   <MicOff className="w-4 h-4 mr-2" />
-                  Stop Listening
+                  {t('sound.stopListening')}
                 </>
               ) : (
                 <>
                   <Mic className="w-4 h-4 mr-2" />
-                  Start Listening
+                  {t('sound.startListening')}
                 </>
               )}
             </Button>
@@ -68,10 +70,10 @@ export default function FrequencyControls({
 
           {/* Instructions */}
           <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
-            <p>• Click to start listening to microphone input</p>
-            <p>• Real-time frequency analysis will be displayed</p>
-            <p>• Browser may ask for microphone permission</p>
-            <p>• Currently shows synthetic wave data</p>
+            <p>• {t('sound.instructionStartListening')}</p>
+            <p>• {t('sound.instructionFrequencyAnalysis')}</p>
+            <p>• {t('sound.instructionMicPermission')}</p>
+            <p>• {t('sound.instructionSyntheticData')}</p>
           </div>
         </div>
       )}

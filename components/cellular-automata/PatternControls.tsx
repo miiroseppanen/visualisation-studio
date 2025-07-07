@@ -3,6 +3,7 @@
 import React from 'react'
 import { ChevronDown, ChevronRight, Plus, Play, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 interface PatternControlsProps {
   onAddPattern: (pattern: boolean[][], centerX: number, centerY: number) => void
@@ -77,6 +78,7 @@ export default function PatternControls({
   expanded,
   onToggleExpanded
 }: PatternControlsProps) {
+  const { t } = useTranslation()
   const addPatternAtCenter = (pattern: boolean[][]) => {
     onAddPattern(pattern, 50, 50) // Center of 100x100 grid
   }
@@ -93,7 +95,7 @@ export default function PatternControls({
           <ChevronRight className="h-4 w-4" />
         )}
         <Plus className="h-4 w-4" />
-        Patterns & Controls
+        {t('cellular.patternsAndControls')}
       </button>
 
       {expanded && (
@@ -107,7 +109,7 @@ export default function PatternControls({
               className="w-full"
             >
               <Play className="w-4 h-4 mr-2" />
-              Step Simulation
+              {t('cellular.stepSimulation')}
             </Button>
 
             <Button
@@ -117,13 +119,13 @@ export default function PatternControls({
               className="w-full"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Clear Grid
+              {t('cellular.clearGrid')}
             </Button>
           </div>
 
           {/* Predefined Patterns */}
           <div className="space-y-3 pt-2 border-t">
-            <div className="text-sm font-medium">Predefined Patterns</div>
+            <div className="text-sm font-medium">{t('cellular.predefinedPatterns')}</div>
             
             <div className="grid grid-cols-2 gap-2">
               {predefinedPatterns.map((pattern) => (
@@ -142,10 +144,10 @@ export default function PatternControls({
 
           {/* Instructions */}
           <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
-            <p>• Click on the grid to toggle cells</p>
-            <p>• Use Step Simulation to advance one generation</p>
-            <p>• Try different rule sets to see new behaviors</p>
-            <p>• Patterns will be placed at the center of the grid</p>
+            <p>• {t('cellular.instructionToggleCells')}</p>
+            <p>• {t('cellular.instructionStepSimulation')}</p>
+            <p>• {t('cellular.instructionTryRules')}</p>
+            <p>• {t('cellular.instructionPatternCenter')}</p>
           </div>
         </div>
       )}

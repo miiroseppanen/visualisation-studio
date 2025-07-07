@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { usePWA } from '@/lib/hooks/usePWA'
 import { X, Download, Smartphone } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface PWAInstallModalProps {
   isOpen: boolean
@@ -11,6 +12,7 @@ interface PWAInstallModalProps {
 
 export default function PWAInstallModal({ isOpen, onClose }: PWAInstallModalProps) {
   const { canInstall, isInstalled, installApp } = usePWA()
+  const { t } = useTranslation()
 
   const handleInstall = async () => {
     if (canInstall) {
@@ -41,8 +43,8 @@ export default function PWAInstallModal({ isOpen, onClose }: PWAInstallModalProp
               <Download className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="font-semibold text-foreground">Install App</h2>
-              <p className="text-xs text-muted-foreground">Add to home screen</p>
+              <h2 className="font-semibold text-foreground">{t('pwa.installApp')}</h2>
+              <p className="text-xs text-muted-foreground">{t('pwa.addToHomeScreen')}</p>
             </div>
           </div>
           <button
@@ -56,9 +58,9 @@ export default function PWAInstallModal({ isOpen, onClose }: PWAInstallModalProp
         {/* Benefits */}
         <div className="bg-muted/30 rounded-lg p-3">
           <ul className="text-xs text-muted-foreground space-y-1">
-            <li>• Quick access from home screen</li>
-            <li>• Works offline</li>
-            <li>• App-like experience</li>
+            <li>• {t('pwa.quickAccess')}</li>
+            <li>• {t('pwa.worksOffline')}</li>
+            <li>• {t('pwa.appLikeExperience')}</li>
           </ul>
         </div>
 
@@ -68,14 +70,14 @@ export default function PWAInstallModal({ isOpen, onClose }: PWAInstallModalProp
             onClick={handleClose}
             className="flex-1 px-3 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-colors text-sm"
           >
-            Later
+            {t('common.later')}
           </button>
           <button
             onClick={handleInstall}
             className="flex-1 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm flex items-center justify-center gap-2"
           >
             <Smartphone className="w-3 h-3" />
-            Install
+            {t('pwa.install')}
           </button>
         </div>
       </div>
