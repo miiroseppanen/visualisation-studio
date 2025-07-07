@@ -13,17 +13,30 @@ async function getCollection() {
 
 export async function GET() {
   try {
-    console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not set')
+    console.log('=== MongoDB Debug Info ===')
+    console.log('MongoDB URI exists:', !!process.env.MONGODB_URI)
+    console.log('MongoDB URI starts with:', process.env.MONGODB_URI?.substring(0, 20) + '...')
     console.log('MongoDB DB:', process.env.MONGODB_DB || 'visualisation-waves')
+    console.log('Environment variables:', Object.keys(process.env).filter(key => key.includes('MONGODB')))
     
     const collection = await getCollection()
+    console.log('Collection obtained successfully')
     const suggestions = await collection.find({}).sort({ timestamp: -1 }).toArray()
+    console.log('Found suggestions count:', suggestions.length)
     return NextResponse.json(suggestions)
   } catch (error) {
-    console.error('MongoDB connection error:', error)
+    console.error('=== MongoDB Error Details ===')
+    console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error)
+    console.error('Error message:', error instanceof Error ? error.message : String(error))
+    console.error('Error code:', (error as any)?.code)
+    console.error('Error codeName:', (error as any)?.codeName)
+    console.error('Full error:', JSON.stringify(error, null, 2))
+    
     return NextResponse.json({ 
       error: 'Failed to fetch suggestions', 
       details: error instanceof Error ? error.message : String(error),
+      code: (error as any)?.code,
+      codeName: (error as any)?.codeName,
       uri: process.env.MONGODB_URI ? 'Set' : 'Not set'
     }, { status: 500 })
   }
