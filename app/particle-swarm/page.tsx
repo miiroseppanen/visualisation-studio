@@ -419,6 +419,15 @@ export default function ParticleSwarmPage() {
     link.click()
   }, [])
 
+  useEffect(() => {
+    // Disable scrolling when this page is mounted
+    document.body.style.overflow = 'hidden';
+    return () => {
+      // Restore scrolling when leaving the page
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   if (!isClient) {
     return <div>Loading...</div>
   }
