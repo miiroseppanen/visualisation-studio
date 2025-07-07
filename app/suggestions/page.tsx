@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import Link from 'next/link'
 import LanguageSelector from '@/components/ui/LanguageSelector'
 import { FullScreenLoader } from '@/components/ui/loader'
+import { useI18nInitialized } from '@/components/I18nProvider'
 
 const categories = [
   'branding', 'forFun', 'graphicDesign', 'illustrations', 'interactiveArts', 'packagingDesign', 'visualPresenting'
@@ -63,8 +64,8 @@ export default function SuggestionsPage() {
     clearSampleData
   } = useSuggestions()
   
+  const isI18nInitialized = useI18nInitialized();
 
-  
   const [filterCategory, setFilterCategory] = useState('')
   const [filterType, setFilterType] = useState('')
   const [sortBy, setSortBy] = useState<'score' | 'date' | 'title'>('score')
@@ -210,7 +211,7 @@ export default function SuggestionsPage() {
   
   console.log('Pending suggestions:', pendingSuggestions)
 
-  if (loading) {
+  if (loading && isI18nInitialized) {
     return (
       <AppLayout showNavigation={false}>
         <FullScreenLoader text={t('loadingIdeas')} />

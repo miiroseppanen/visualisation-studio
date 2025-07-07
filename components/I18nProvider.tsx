@@ -1,12 +1,17 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, createContext, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FullScreenLoader } from '@/components/ui/loader'
 import '@/lib/i18n' // Initialize i18n
 
 interface I18nProviderProps {
   children: React.ReactNode
+}
+
+const I18nInitializedContext = createContext(false)
+export function useI18nInitialized() {
+  return useContext(I18nInitializedContext)
 }
 
 export function I18nProvider({ children }: I18nProviderProps) {
@@ -49,5 +54,9 @@ export function I18nProvider({ children }: I18nProviderProps) {
     return <FullScreenLoader text="Initialising..." />
   }
 
-  return <>{children}</>
+  return (
+    <I18nInitializedContext.Provider value={isInitialized}>
+      {children}
+    </I18nInitializedContext.Provider>
+  )
 }
