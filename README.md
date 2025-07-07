@@ -31,7 +31,7 @@ A professional pattern generation toolkit for creative branding and packaging de
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18.17.0 or higher
 - npm or yarn
 
 ### Installation
@@ -47,7 +47,18 @@ cd visualisation-studio
 npm install
 ```
 
-3. Run the development server:
+3. Set up environment variables:
+   Create a `.env` file in the root directory with:
+   ```
+   DATABASE_URL="your_postgresql_connection_string"
+   ```
+
+4. Generate Prisma client:
+   ```bash
+   npx prisma generate
+   ```
+
+5. Run the development server:
 ```bash
 npm run dev
 ```
@@ -84,11 +95,36 @@ This project follows Dieter Rams' "Less, but better" philosophy:
 
 ## Deployment
 
-This project is optimized for deployment on Vercel:
+### Vercel Deployment
 
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Deploy automatically on every push
+This project is configured for deployment on Vercel with the following setup:
+
+1. **Environment Variables**: Set the following environment variable in your Vercel project:
+   - `DATABASE_URL`: Your PostgreSQL connection string (e.g., Neon, Supabase, etc.)
+
+2. **Build Process**: The build process automatically:
+   - Generates the Prisma client (`npx prisma generate`)
+   - Builds the Next.js application (`npm run build`)
+
+3. **Database**: The application uses PostgreSQL with Prisma ORM. Make sure your database is accessible from Vercel's servers.
+
+### Build Configuration
+
+The project includes:
+- `postinstall` script to generate Prisma client after dependencies are installed
+- Modified `vercel.json` to include Prisma generation in the build command
+- TypeScript and ESLint errors are ignored during build to prevent deployment issues
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npx prisma generate` - Generate Prisma client
+- `npx prisma db push` - Push schema changes to database
 
 ## Contributing
 

@@ -1,12 +1,23 @@
 import { PrismaClient, Suggestion, Comment, Tag, Implementation, Dependency, UserInteraction, Statistics, SuggestionStatus, Complexity, Difficulty, ImplementationType, InteractionType } from '@prisma/client'
 import { VisualizationSuggestion, SuggestionFilters, SuggestionStats } from '../types'
 
+// Global Prisma client instance
+let prisma: PrismaClient | null = null
+
+// Initialize Prisma client
+function getPrismaClient(): PrismaClient {
+  if (!prisma) {
+    prisma = new PrismaClient()
+  }
+  return prisma
+}
+
 // Prisma database provider for suggestions
 export class PrismaProvider {
   private prisma: PrismaClient
 
   constructor() {
-    this.prisma = new PrismaClient()
+    this.prisma = getPrismaClient()
   }
 
   // Initialize database connection
