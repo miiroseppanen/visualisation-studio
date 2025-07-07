@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Download, RotateCcw, Grid, Play, Pause } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
 import CellularAutomataRules from '@/components/cellular-automata/CellularAutomataRules'
 import PatternControls from '@/components/cellular-automata/PatternControls'
 import AnimationControls from '@/components/cellular-automata/AnimationControls'
+import { FullScreenLoader } from '@/components/ui/loader'
 import type { CellularAutomataAnimationSettings, CellularAutomataPanelState } from '@/lib/types'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
@@ -27,6 +29,7 @@ interface Rule {
 }
 
 export default function CellularAutomataPage() {
+  const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const renderFrameRef = useRef<number>()
@@ -400,11 +403,7 @@ export default function CellularAutomataPage() {
   }, [initializeGrid])
 
   if (!isClient) {
-    return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading cellular automata visualizer...</div>
-      </div>
-    )
+    return <FullScreenLoader text={t('common.preparing')} />
   }
 
   return (

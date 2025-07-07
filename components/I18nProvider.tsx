@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FullScreenLoader } from '@/components/ui/loader'
 import '@/lib/i18n' // Initialize i18n
 
 interface I18nProviderProps {
@@ -45,11 +46,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
 
   // Show loading state while i18n is initializing
   if (!isInitialized) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
-      </div>
-    )
+    return <FullScreenLoader text="Initialising..." />
   }
 
   return <>{children}</>

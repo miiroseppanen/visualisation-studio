@@ -15,6 +15,7 @@ import { useSuggestions } from '@/lib/hooks/useSuggestions'
 import { useTranslation } from 'react-i18next'
 import Link from 'next/link'
 import LanguageSelector from '@/components/ui/LanguageSelector'
+import { FullScreenLoader } from '@/components/ui/loader'
 
 const categories = [
   'branding', 'forFun', 'graphicDesign', 'illustrations', 'interactiveArts', 'packagingDesign', 'visualPresenting'
@@ -212,12 +213,7 @@ export default function SuggestionsPage() {
   if (loading) {
     return (
       <AppLayout showNavigation={false}>
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto mb-4"></div>
-            <p className="text-muted-foreground">{t('loadingIdeas')}</p>
-          </div>
-        </div>
+        <FullScreenLoader text={t('loadingIdeas')} />
       </AppLayout>
     )
   }

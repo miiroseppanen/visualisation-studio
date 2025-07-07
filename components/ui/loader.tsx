@@ -1,191 +1,94 @@
 'use client'
 
-import { useTheme } from '@/components/ui/ThemeProvider'
 import { useTranslation } from 'react-i18next'
 
 interface LoaderProps {
-  variant?: 'dots' | 'geometric' | 'wave' | 'simple' | 'line'
   size?: 'sm' | 'md' | 'lg'
   showText?: boolean
   text?: string
   className?: string
+  progress?: number // 0-100 for progress-based loading
 }
 
-// Unified line loader - horizontal line moving from bottom to top
-const LineLoader = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
-  const { theme } = useTheme()
-  const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+// Unified horizontal line loader - moves from bottom to top of screen
+const HorizontalLineLoader = ({ 
+  size = 'md', 
+  progress 
+}: { 
+  size?: 'sm' | 'md' | 'lg'
+  progress?: number 
+}) => {
+  // Use system preference for dark mode detection
+  const isDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
   
   const lineHeight = size === 'sm' ? 'h-0.5' : size === 'lg' ? 'h-1' : 'h-0.5'
-  const containerHeight = size === 'sm' ? 'h-8' : size === 'lg' ? 'h-16' : 'h-12'
+  
+  // If progress is provided, use it for positioning
+  const linePosition = progress !== undefined 
+    ? `${100 - progress}%` // 0% progress = bottom (100% from top), 100% progress = top (0% from top)
+    : undefined
   
   return (
-    <div className={`relative ${containerHeight} w-full overflow-hidden`}>
+    <div className="fixed inset-0 z-50 pointer-events-none">
       <div 
-        className={`absolute ${lineHeight} w-full ${
+        className={`absolute left-0 right-0 ${lineHeight} ${
           isDark ? 'bg-white' : 'bg-black'
-        } animate-line-sweep`}
+        }`}
         style={{
-          bottom: '0',
-          animationDuration: '2s',
-          animationTimingFunction: 'ease-in-out',
-          animationIterationCount: 'infinite'
+          bottom: progress !== undefined ? linePosition : '0',
+          transition: progress !== undefined ? 'bottom 0.3s ease-out' : 'none',
+          animation: progress === undefined ? 'line-sweep 2s ease-in-out infinite' : 'none'
         }}
       />
     </div>
   )
 }
 
-// Simple dots component
-const AnimatedDots = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
-  const { theme } = useTheme()
-  const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  
-  const dotSize = size === 'sm' ? 'w-1 h-1' : size === 'lg' ? 'w-2 h-2' : 'w-1.5 h-1.5'
-  
-  return (
-    <div className="flex items-center space-x-1">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className={`${dotSize} rounded-full ${
-            isDark ? 'bg-white' : 'bg-black'
-          } animate-pulse`}
-          style={{
-            animationDelay: `${i * 0.15}s`,
-            animationDuration: '1s'
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// Simple geometric loader
-const GeometricLoader = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
-  const { theme } = useTheme()
-  const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  
-  const containerSize = size === 'sm' ? 'w-6 h-6' : size === 'lg' ? 'w-12 h-12' : 'w-8 h-8'
-  const borderWidth = size === 'sm' ? 'border' : size === 'lg' ? 'border-2' : 'border'
-  
-  return (
-    <div 
-      className={`${containerSize} ${borderWidth} border-t-transparent rounded-full ${
-        isDark ? 'border-white' : 'border-black'
-      } animate-spin`}
-      style={{ animationDuration: '1s' }}
-    />
-  )
-}
-
-// Simple wave loader
-const WaveLoader = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
-  const { theme } = useTheme()
-  const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  
-  const barWidth = size === 'sm' ? 'w-0.5' : size === 'lg' ? 'w-1' : 'w-0.5'
-  const barHeight = size === 'sm' ? 'h-3' : size === 'lg' ? 'h-6' : 'h-4'
-  
-  return (
-    <div className="flex items-center space-x-0.5">
-      {[0, 1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className={`${barWidth} ${barHeight} ${
-            isDark ? 'bg-white' : 'bg-black'
-          } animate-pulse`}
-          style={{
-            animationDelay: `${i * 0.1}s`,
-            animationDuration: '0.8s'
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// Simple spinner component
-const SimpleSpinner = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
-  const { theme } = useTheme()
-  const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  
-  const spinnerSize = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-8 h-8' : 'w-6 h-6'
-  const borderWidth = size === 'sm' ? 'border' : size === 'lg' ? 'border-2' : 'border'
-  
-  return (
-    <div 
-      className={`${spinnerSize} ${borderWidth} border-t-transparent rounded-full ${
-        isDark ? 'border-white' : 'border-black'
-      } animate-spin`}
-      style={{ animationDuration: '1s' }}
-    />
-  )
-}
-
 export function Loader({ 
-  variant = 'line', 
   size = 'md', 
   showText = false, 
   text,
-  className = '' 
+  className = '',
+  progress
 }: LoaderProps) {
   const { t } = useTranslation()
   
-  const renderLoader = () => {
-    switch (variant) {
-      case 'dots':
-        return <AnimatedDots size={size} />
-      case 'wave':
-        return <WaveLoader size={size} />
-      case 'geometric':
-        return <GeometricLoader size={size} />
-      case 'line':
-        return <LineLoader size={size} />
-      case 'simple':
-      default:
-        return <SimpleSpinner size={size} />
-    }
-  }
-  
   const displayText = text || t('common.loading')
-  
-  if (showText) {
-    return (
-      <div className={`flex items-center space-x-3 ${className}`}>
-        {renderLoader()}
-        <span className="text-sm text-muted-foreground">{displayText}</span>
-      </div>
-    )
-  }
   
   return (
     <div className={className}>
-      {renderLoader()}
+      <HorizontalLineLoader size={size} progress={progress} />
+      {showText && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
+          <span className="text-sm text-muted-foreground bg-background/80 px-3 py-1 rounded">
+            {displayText}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
 
 // Full screen loader component
 export function FullScreenLoader({ 
-  variant = 'line',
-  text 
+  text,
+  progress
 }: { 
-  variant?: 'dots' | 'geometric' | 'wave' | 'simple' | 'line'
   text?: string 
+  progress?: number
 }) {
   const { t } = useTranslation()
   
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="flex flex-col items-center space-y-4">
-        <Loader variant={variant} size="lg" />
-        {text && (
-          <span className="text-base text-muted-foreground">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+      <HorizontalLineLoader size="lg" progress={progress} />
+      {text && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+          <span className="text-base text-muted-foreground bg-background/90 px-4 py-2 rounded">
             {text}
           </span>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 } 

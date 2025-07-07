@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Download, RotateCcw, Brain, Zap, Network } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
 import NeuralNetworkSettings from '@/components/neural-network/NeuralNetworkSettings'
 import NetworkControls from '@/components/neural-network/NetworkControls'
 import AnimationControls from '@/components/neural-network/AnimationControls'
+import { FullScreenLoader } from '@/components/ui/loader'
 import type { NeuralNetworkAnimationSettings, NeuralNetworkPanelState } from '@/lib/types'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
@@ -38,6 +40,7 @@ interface TrainingData {
 }
 
 export default function NeuralNetworkPage() {
+  const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const renderFrameRef = useRef<number>()
@@ -722,11 +725,7 @@ export default function NeuralNetworkPage() {
   }, [forwardPropagate])
 
   if (!isClient) {
-    return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading neural network visualizer...</div>
-      </div>
-    )
+    return <FullScreenLoader text={t('common.preparing')} />
   }
 
   return (

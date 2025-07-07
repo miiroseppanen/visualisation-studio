@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Download, RotateCcw, Volume2, Music } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
 import SoundWaveSettings from '@/components/sound-wave/SoundWaveSettings'
 import FrequencyControls from '@/components/sound-wave/FrequencyControls'
 import AnimationControls from '@/components/sound-wave/AnimationControls'
+import { FullScreenLoader } from '@/components/ui/loader'
 import type { SoundWaveAnimationSettings, SoundWavePanelState } from '@/lib/types'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
@@ -26,6 +28,7 @@ interface FrequencyBin {
 }
 
 export default function SoundWavePage() {
+  const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const renderFrameRef = useRef<number>()
@@ -405,11 +408,7 @@ export default function SoundWavePage() {
   }, [])
 
   if (!isClient) {
-    return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading sound wave visualizer...</div>
-      </div>
-    )
+    return <FullScreenLoader text={t('common.preparing')} />
   }
 
   return (

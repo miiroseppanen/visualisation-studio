@@ -605,7 +605,7 @@ export default function WaveInterference2Page() {
   }, [])
 
   if (!isClient) {
-    return <FullScreenLoader variant="line" text={t('common.preparing')} />
+    return <FullScreenLoader text={t('common.preparing')} />
   }
 
   return (

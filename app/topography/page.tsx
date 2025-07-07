@@ -1,17 +1,20 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import EnhancedVisualizationLayout from '@/components/layout/EnhancedVisualizationLayout'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { TopographySettings } from '@/components/topography/TopographySettings'
 import { ElevationPointControls } from '@/components/topography/ElevationPointControls'
 import { TopographyDisplaySettings } from '@/components/topography/TopographyDisplaySettings'
 import { AnimationControls } from '@/components/topography/AnimationControls'
+import { FullScreenLoader } from '@/components/ui/loader'
 import type { TopographyAnimationSettings } from '@/lib/types'
 import { useTopography } from '@/lib/hooks/useTopography'
 import { TopographyRenderer } from '@/lib/renderers/TopographyRenderer'
 
 export default function TopographyPage() {
+  const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rendererRef = useRef<TopographyRenderer | null>(null)
   const [isClient, setIsClient] = useState(false)
@@ -143,11 +146,7 @@ export default function TopographyPage() {
   }
 
   if (!isClient) {
-    return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading topography visualizer...</div>
-      </div>
-    )
+    return <FullScreenLoader text={t('common.preparing')} />
   }
 
   return (

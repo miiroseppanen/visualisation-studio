@@ -16,7 +16,7 @@ export default function Loading() {
         <CardContent className="flex flex-col items-center justify-center p-12 space-y-6">
           {/* Main unified line loader */}
           <div className="w-full max-w-xs">
-            <Loader variant="line" size="lg" />
+            <Loader size="lg" />
           </div>
           
           {/* Loading text */}

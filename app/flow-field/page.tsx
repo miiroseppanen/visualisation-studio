@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Download, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
 import PoleControls from '@/components/flow-field/PoleControls'
 import ParticleSettings from '@/components/flow-field/ParticleSettings'
 import { AnimationControls } from '@/components/flow-field/AnimationControls'
+import { FullScreenLoader } from '@/components/ui/loader'
 import type { FlowFieldAnimationSettings, FlowFieldPanelState } from '@/lib/types'
 import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
 import { registerAnimationFrame, unregisterAnimationFrame, updateTrailEfficiently } from '@/lib/utils'
@@ -54,6 +56,7 @@ interface WaveFunction {
 }
 
 export default function FlowFieldPage() {
+  const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const [isClient, setIsClient] = useState(false)
@@ -825,11 +828,7 @@ export default function FlowFieldPage() {
   }
 
   if (!isClient) {
-    return (
-      <div className="h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading quantum flow field visualizer...</div>
-      </div>
-    )
+    return <FullScreenLoader text={t('common.preparing')} />
   }
 
   return (
