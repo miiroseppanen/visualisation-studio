@@ -11,12 +11,12 @@ interface LoaderProps {
   className?: string
 }
 
-// Animated dots component
+// Simple dots component
 const AnimatedDots = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
   const { theme } = useTheme()
   const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   
-  const dotSize = size === 'sm' ? 'w-1 h-1' : size === 'lg' ? 'w-3 h-3' : 'w-2 h-2'
+  const dotSize = size === 'sm' ? 'w-1 h-1' : size === 'lg' ? 'w-2 h-2' : 'w-1.5 h-1.5'
   
   return (
     <div className="flex items-center space-x-1">
@@ -27,8 +27,8 @@ const AnimatedDots = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
             isDark ? 'bg-white' : 'bg-black'
           } animate-pulse`}
           style={{
-            animationDelay: `${i * 0.2}s`,
-            animationDuration: '1.4s'
+            animationDelay: `${i * 0.15}s`,
+            animationDuration: '1s'
           }}
         />
       ))}
@@ -36,57 +36,35 @@ const AnimatedDots = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
   )
 }
 
-// Geometric loader component
+// Simple geometric loader
 const GeometricLoader = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
   const { theme } = useTheme()
   const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   
-  const containerSize = size === 'sm' ? 'w-8 h-8' : size === 'lg' ? 'w-16 h-16' : 'w-12 h-12'
-  const borderWidth = size === 'sm' ? 'border' : size === 'lg' ? 'border-4' : 'border-2'
-  const dotSize = size === 'sm' ? 'w-0.5 h-0.5' : size === 'lg' ? 'w-2 h-2' : 'w-1 h-1'
+  const containerSize = size === 'sm' ? 'w-6 h-6' : size === 'lg' ? 'w-12 h-12' : 'w-8 h-8'
+  const borderWidth = size === 'sm' ? 'border' : size === 'lg' ? 'border-2' : 'border'
   
   return (
-    <div className={`relative ${containerSize}`}>
-      {/* Rotating square */}
-      <div 
-        className={`absolute inset-0 ${borderWidth} border-t-transparent rounded-none ${
-          isDark ? 'border-white' : 'border-black'
-        } animate-spin`}
-        style={{ animationDuration: '2s' }}
-      />
-      
-      {/* Inner rotating triangle */}
-      <div 
-        className={`absolute inset-2 ${borderWidth} border-b-transparent border-l-transparent ${
-          isDark ? 'border-white' : 'border-black'
-        } animate-spin`}
-        style={{ 
-          animationDuration: '1.5s',
-          animationDirection: 'reverse'
-        }}
-      />
-      
-      {/* Center dot */}
-      <div 
-        className={`absolute top-1/2 left-1/2 ${dotSize} -translate-x-1/2 -translate-y-1/2 rounded-full ${
-          isDark ? 'bg-white' : 'bg-black'
-        } animate-pulse`}
-      />
-    </div>
+    <div 
+      className={`${containerSize} ${borderWidth} border-t-transparent rounded-full ${
+        isDark ? 'border-white' : 'border-black'
+      } animate-spin`}
+      style={{ animationDuration: '1s' }}
+    />
   )
 }
 
-// Wave loader component
+// Simple wave loader
 const WaveLoader = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
   const { theme } = useTheme()
   const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   
-  const barWidth = size === 'sm' ? 'w-0.5' : size === 'lg' ? 'w-2' : 'w-1'
-  const barHeight = size === 'sm' ? 'h-4' : size === 'lg' ? 'h-8' : 'h-6'
+  const barWidth = size === 'sm' ? 'w-0.5' : size === 'lg' ? 'w-1' : 'w-0.5'
+  const barHeight = size === 'sm' ? 'h-3' : size === 'lg' ? 'h-6' : 'h-4'
   
   return (
-    <div className="flex items-center space-x-1">
-      {[0, 1, 2, 3, 4].map((i) => (
+    <div className="flex items-center space-x-0.5">
+      {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
           className={`${barWidth} ${barHeight} ${
@@ -94,7 +72,7 @@ const WaveLoader = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
           } animate-pulse`}
           style={{
             animationDelay: `${i * 0.1}s`,
-            animationDuration: '1s'
+            animationDuration: '0.8s'
           }}
         />
       ))}
@@ -108,19 +86,20 @@ const SimpleSpinner = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
   const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   
   const spinnerSize = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-8 h-8' : 'w-6 h-6'
-  const borderWidth = size === 'sm' ? 'border' : size === 'lg' ? 'border-4' : 'border-2'
+  const borderWidth = size === 'sm' ? 'border' : size === 'lg' ? 'border-2' : 'border'
   
   return (
     <div 
       className={`${spinnerSize} ${borderWidth} border-t-transparent rounded-full ${
         isDark ? 'border-white' : 'border-black'
       } animate-spin`}
+      style={{ animationDuration: '1s' }}
     />
   )
 }
 
 export function Loader({ 
-  variant = 'geometric', 
+  variant = 'simple', 
   size = 'md', 
   showText = false, 
   text,
@@ -134,11 +113,11 @@ export function Loader({
         return <AnimatedDots size={size} />
       case 'wave':
         return <WaveLoader size={size} />
-      case 'simple':
-        return <SimpleSpinner size={size} />
       case 'geometric':
-      default:
         return <GeometricLoader size={size} />
+      case 'simple':
+      default:
+        return <SimpleSpinner size={size} />
     }
   }
   
@@ -162,7 +141,7 @@ export function Loader({
 
 // Full screen loader component
 export function FullScreenLoader({ 
-  variant = 'geometric',
+  variant = 'simple',
   text 
 }: { 
   variant?: 'dots' | 'geometric' | 'wave' | 'simple'
@@ -172,10 +151,10 @@ export function FullScreenLoader({
   
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="flex flex-col items-center space-y-6">
+      <div className="flex flex-col items-center space-y-4">
         <Loader variant={variant} size="lg" />
         {text && (
-          <span className="text-lg font-medium text-foreground">
+          <span className="text-base text-muted-foreground">
             {text}
           </span>
         )}

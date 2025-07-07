@@ -2,11 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light' | 'dark' | 'system' | 'pastel';
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  resolvedTheme: 'light' | 'dark' | 'pastel';
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -21,12 +22,13 @@ export function useTheme() {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark' | 'pastel'>('light');
 
   // Set theme on mount and listen for system changes
   useEffect(() => {
     const persisted = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
     let initial: Theme = 'system';
-    if (persisted === 'light' || persisted === 'dark' || persisted === 'system') {
+    if (persisted === 'light' || persisted === 'dark' || persisted === 'system' || persisted === 'pastel') {
       initial = persisted;
     }
     setThemeState(initial);
@@ -54,23 +56,37 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   function applyTheme(theme: Theme) {
     const root = window.document.documentElement;
+    
+    // Remove all theme classes first
+    root.classList.remove('dark', 'theme-pastel');
+    
+    let resolved: 'light' | 'dark' | 'pastel' = 'light';
+    
     if (theme === 'dark') {
       root.classList.add('dark');
+      resolved = 'dark';
     } else if (theme === 'light') {
-      root.classList.remove('dark');
+      // No classes needed for light theme (default)
+      resolved = 'light';
+    } else if (theme === 'pastel') {
+      root.classList.add('theme-pastel');
+      resolved = 'pastel';
     } else {
       // system
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (isDark) {
         root.classList.add('dark');
+        resolved = 'dark';
       } else {
-        root.classList.remove('dark');
+        resolved = 'light';
       }
     }
+    
+    setResolvedTheme(resolved);
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Grid3X3, Magnet, Wind, Mountain, Radio, Sun, Moon, Laptop, ChevronDown } from 'lucide-react'
+import { Grid3X3, Magnet, Wind, Mountain, Radio, Sun, Moon, Laptop, ChevronDown, Palette } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { H23Logo } from '@/components/ui/h23-logo'
 import { useNavigation } from '@/lib/hooks/useNavigation'
@@ -107,7 +107,10 @@ export default function AppNavigation({
           className="p-2 rounded-lg hover:bg-accent/40 transition-colors focus:outline-none"
           aria-label="Toggle theme"
         >
-          {theme === 'dark' ? <Moon className="w-5 h-5" /> : theme === 'light' ? <Sun className="w-5 h-5" /> : <Laptop className="w-5 h-5" />}
+          {theme === 'dark' ? <Moon className="w-5 h-5" /> : 
+           theme === 'light' ? <Sun className="w-5 h-5" /> : 
+           theme === 'pastel' ? <Palette className="w-5 h-5" /> : 
+           <Laptop className="w-5 h-5" />}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
@@ -117,6 +120,9 @@ export default function AppNavigation({
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">
             <Moon className="w-4 h-4 mr-2 inline" /> Dark
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="pastel">
+            <Palette className="w-4 h-4 mr-2 inline" /> Pastel
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
             <Laptop className="w-4 h-4 mr-2 inline" /> System

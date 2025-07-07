@@ -2,6 +2,7 @@ import { BaseRenderer, SVGBuilder, type SVGExportConfig } from '../unified-rende
 import type { Pole } from '../types'
 import type { CircularFieldLine } from '../circular-field-physics'
 import type { CircularFieldDisplaySettings } from '../types'
+import { getColorPalette } from '../constants'
 
 interface CircularFieldRenderData {
   poles: Pole[]
@@ -22,28 +23,40 @@ export class CircularFieldRenderer extends BaseRenderer {
     poles: Pole[],
     fieldLines: CircularFieldLine[],
     displaySettings: CircularFieldDisplaySettings,
-    theme: 'light' | 'dark' | 'system' = 'light'
+    theme: 'light' | 'dark' | 'system' | 'pastel' = 'light'
   ): void {
     this.clear()
 
-    // Determine if dark theme is active
-    const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    // Determine the actual theme being used
+    let resolvedTheme: 'light' | 'dark' | 'pastel' = 'light'
+    if (theme === 'pastel') {
+      resolvedTheme = 'pastel'
+    } else if (theme === 'dark') {
+      resolvedTheme = 'dark'
+    } else if (theme === 'system') {
+      const isDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+      resolvedTheme = isDark ? 'dark' : 'light'
+    }
+
+    // Get appropriate color palette
+    const colorPalette = getColorPalette(resolvedTheme)
 
     // Render field lines first (so poles appear on top)
     if (displaySettings.showFieldLines) {
-      this.renderFieldLines(fieldLines, displaySettings, isDark)
+      this.renderFieldLines(fieldLines, displaySettings, resolvedTheme, colorPalette)
     }
 
     // Render poles using unified utilities
     if (displaySettings.showPoles) {
-      this.renderPoles(poles, displaySettings, isDark)
+      this.renderPoles(poles, displaySettings, resolvedTheme, colorPalette)
     }
   }
 
   private renderFieldLines(
     fieldLines: CircularFieldLine[],
     displaySettings: CircularFieldDisplaySettings,
-    isDark: boolean
+    theme: 'light' | 'dark' | 'pastel',
+    colorPalette: any
   ): void {
     fieldLines.forEach(line => {
       if (line.points.length < 2) return
@@ -60,7 +73,16 @@ export class CircularFieldRenderer extends BaseRenderer {
       const opacity = baseOpacity * intensityFactor
       
       // Set line style with theme-aware colors
-      this.ctx.strokeStyle = isDark ? '#ffffff' : '#000000'
+      let strokeColor: string
+      if (theme === 'pastel') {
+        // Use soft colors for pastel theme - alternate between positive and negative colors
+        strokeColor = line.intensity > 0 ? colorPalette.positive : colorPalette.negative
+      } else {
+        // Use black/white for other themes
+        strokeColor = theme === 'dark' ? '#ffffff' : '#000000'
+      }
+      
+      this.ctx.strokeStyle = strokeColor
       this.ctx.lineWidth = lineWidth
       this.ctx.globalAlpha = opacity
       this.ctx.lineCap = 'round'
@@ -98,16 +120,50 @@ export class CircularFieldRenderer extends BaseRenderer {
   private renderPoles(
     poles: Pole[],
     displaySettings: CircularFieldDisplaySettings,
-    isDark: boolean
+    theme: 'light' | 'dark' | 'pastel',
+    colorPalette: any
   ): void {
     poles.forEach((pole, index) => {
-      // Use unified pole rendering
-      this.drawPoles([pole])
+      this.ctx.save()
+      
+      const radius = Math.max(3, Math.min(15, pole.strength * 0.3))
+      
+      // Use theme-appropriate colors
+      let fillColor: string
+      let strokeColor: string
+      
+      if (theme === 'pastel') {
+        fillColor = pole.isPositive ? colorPalette.positive : colorPalette.negative
+        strokeColor = '#ffffff'
+      } else {
+        fillColor = pole.isPositive ? '#ef4444' : '#3b82f6'
+        strokeColor = theme === 'dark' ? '#ffffff' : '#000000'
+      }
+      
+      // Draw pole
+      this.ctx.fillStyle = fillColor
+      this.ctx.strokeStyle = strokeColor
+      this.ctx.lineWidth = 2
+      
+      this.ctx.beginPath()
+      this.ctx.arc(pole.x, pole.y, radius, 0, 2 * Math.PI)
+      this.ctx.fill()
+      this.ctx.stroke()
+      
+      // Draw pole symbol
+      const symbol = pole.isPositive ? '+' : '−'
+      this.ctx.fillStyle = strokeColor
+      this.ctx.font = 'bold 12px sans-serif'
+      this.ctx.textAlign = 'center'
+      this.ctx.textBaseline = 'middle'
+      this.ctx.fillText(symbol, pole.x, pole.y)
+      
+      this.ctx.restore()
 
       // Add pole label if enabled (specific to circular field)
       if (displaySettings.showPoleLabels) {
         this.ctx.save()
-        this.ctx.fillStyle = isDark ? '#ffffff' : '#000000'
+        this.ctx.fillStyle = strokeColor
         this.ctx.font = '12px sans-serif'
         this.ctx.textAlign = 'center'
         this.ctx.fillText(
@@ -118,7 +174,7 @@ export class CircularFieldRenderer extends BaseRenderer {
         
         // Show strength
         this.ctx.font = '10px sans-serif'
-        this.ctx.fillStyle = isDark ? '#cccccc' : '#666666'
+        this.ctx.fillStyle = '#666666'
         this.ctx.fillText(
           `${pole.strength.toFixed(1)}`,
           pole.x,

@@ -49,9 +49,52 @@
     --ring: 0 0% 83.1%;
   }
 
-  * {
-    @apply border-border;
+  /* Pastel theme with colored backgrounds */
+  .theme-pastel {
+    --background: 200 25% 92%;
+    --foreground: 220 50% 35%;
+    --card: 180 25% 88%;
+    --card-foreground: 220 50% 35%;
+    --popover: 180 25% 88%;
+    --popover-foreground: 220 50% 35%;
+    --primary: 200 70% 60%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 280 35% 85%;
+    --secondary-foreground: 220 50% 35%;
+    --muted: 160 25% 82%;
+    --muted-foreground: 220 50% 55%;
+    --accent: 320 55% 80%;
+    --accent-foreground: 220 50% 35%;
+    --destructive: 0 70% 70%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 200 25% 75%;
+    --input: 200 25% 75%;
+    --ring: 200 70% 60%;
   }
+
+  .dark.theme-pastel {
+    --background: 220 15% 8%;
+    --foreground: 180 50% 85%;
+    --card: 200 20% 12%;
+    --card-foreground: 180 50% 85%;
+    --popover: 200 20% 12%;
+    --popover-foreground: 180 50% 85%;
+    --primary: 200 70% 70%;
+    --primary-foreground: 220 15% 8%;
+    --secondary: 280 30% 18%;
+    --secondary-foreground: 180 50% 85%;
+    --muted: 160 20% 16%;
+    --muted-foreground: 180 50% 75%;
+    --accent: 320 50% 22%;
+    --accent-foreground: 180 50% 85%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 180 50% 85%;
+    --border: 200 20% 20%;
+    --input: 200 20% 20%;
+    --ring: 200 70% 70%;
+  }
+
+
   
   body {
     @apply bg-background text-foreground font-sans antialiased;
@@ -72,10 +115,6 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -610,4 +649,132 @@ body {
 
 .animate-slide-in {
   animation: slideIn 0.3s ease-out;
+}
+
+/* Pastel theme specific styling */
+.theme-pastel .bg-primary {
+  background-color: hsl(200, 70%, 60%) !important;
+}
+
+.theme-pastel .bg-secondary {
+  background-color: hsl(280, 35%, 85%) !important;
+}
+
+.theme-pastel .bg-accent {
+  background-color: hsl(320, 55%, 80%) !important;
+}
+
+.theme-pastel .border-border {
+  border-color: hsl(200, 25%, 75%) !important;
+}
+
+.theme-pastel .text-foreground {
+  color: hsl(220, 50%, 35%) !important;
+}
+
+.theme-pastel .text-muted-foreground {
+  color: hsl(220, 50%, 55%) !important;
+}
+
+.theme-pastel .bg-card {
+  background-color: hsl(180, 25%, 88%) !important;
+}
+
+.theme-pastel .bg-background {
+  background-color: hsl(200, 25%, 92%) !important;
+}
+
+.theme-pastel .hover\:bg-accent:hover {
+  background-color: hsl(320, 55%, 80%) !important;
+}
+
+.theme-pastel .hover\:bg-secondary:hover {
+  background-color: hsl(280, 35%, 85%) !important;
+}
+
+.theme-pastel .focus\:ring-ring:focus {
+  --tw-ring-color: hsl(200, 70%, 60%) !important;
+}
+
+/* Enhanced pastel theme with subtle gradients and patterns */
+.theme-pastel .bg-background {
+  background: linear-gradient(135deg, hsl(200, 25%, 92%) 0%, hsl(180, 25%, 90%) 100%) !important;
+}
+
+.theme-pastel .bg-card {
+  background: linear-gradient(135deg, hsl(180, 25%, 88%) 0%, hsl(160, 25%, 86%) 100%) !important;
+  border: 1px solid hsl(200, 25%, 80%) !important;
+}
+
+.theme-pastel .bg-secondary {
+  background: linear-gradient(135deg, hsl(280, 35%, 85%) 0%, hsl(300, 35%, 83%) 100%) !important;
+}
+
+.theme-pastel .bg-accent {
+  background: linear-gradient(135deg, hsl(320, 55%, 80%) 0%, hsl(340, 55%, 78%) 100%) !important;
+}
+
+/* Add subtle color variations to different UI elements */
+.theme-pastel .glass {
+  background: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.theme-pastel .glass-nav {
+  background: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+}
+
+.theme-pastel .glass-nav:hover {
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Dark pastel theme specific styling */
+.dark.theme-pastel .bg-primary {
+  background-color: hsl(200, 70%, 70%) !important;
+}
+
+.dark.theme-pastel .bg-secondary {
+  background-color: hsl(280, 30%, 18%) !important;
+}
+
+.dark.theme-pastel .bg-accent {
+  background-color: hsl(320, 50%, 22%) !important;
+}
+
+.dark.theme-pastel .border-border {
+  border-color: hsl(200, 20%, 20%) !important;
+}
+
+.dark.theme-pastel .text-foreground {
+  color: hsl(180, 50%, 85%) !important;
+}
+
+.dark.theme-pastel .text-muted-foreground {
+  color: hsl(180, 50%, 75%) !important;
+}
+
+.dark.theme-pastel .bg-card {
+  background-color: hsl(200, 20%, 12%) !important;
+}
+
+.dark.theme-pastel .bg-background {
+  background-color: hsl(220, 15%, 8%) !important;
+}
+
+.dark.theme-pastel .hover\:bg-accent:hover {
+  background-color: hsl(320, 50%, 22%) !important;
+}
+
+.dark.theme-pastel .hover\:bg-secondary:hover {
+  background-color: hsl(280, 30%, 18%) !important;
+}
+
+.dark.theme-pastel .focus\:ring-ring:focus {
+  --tw-ring-color: hsl(200, 70%, 70%) !important;
 } 

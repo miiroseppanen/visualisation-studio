@@ -41,6 +41,34 @@ export const COLOR_PALETTE = {
   ridge: '#6B7280'        // Gray for ridges
 } as const
 
+// Pastel color palette for visualizations
+export const PASTEL_COLOR_PALETTE = {
+  // Primary colors for poles and sources
+  positive: '#FF6B6B',    // Vibrant coral for positive/north poles
+  negative: '#4ECDC4',    // Vibrant teal for negative/south poles
+  neutral: '#A8E6CF',     // Vibrant mint for neutral elements
+  
+  // Extended palette with vibrant colors
+  paleGreen: '#96CEB4',   // Vibrant sage for additional elements
+  
+  // Source type colors
+  vortex: '#4ECDC4',      // Vibrant teal for rotational flow
+  source: '#4ECDC4',      // Vibrant teal for outward flow
+  sink: '#FF6B6B',        // Vibrant coral for inward flow
+  uniform: '#96CEB4',     // Vibrant sage for uniform flow
+  
+  // Topography colors
+  peak: '#4ECDC4',        // Vibrant teal for peaks
+  valley: '#FF6B6B',      // Vibrant coral for valleys
+  saddle: '#A8E6CF',      // Vibrant mint for saddles
+  ridge: '#A8E6CF'        // Vibrant mint for ridges
+} as const
+
+// Helper function to get appropriate color palette based on theme
+export function getColorPalette(theme: 'light' | 'dark' | 'pastel') {
+  return theme === 'pastel' ? PASTEL_COLOR_PALETTE : COLOR_PALETTE;
+}
+
 // Turbulence-specific constants
 export const DEFAULT_TURBULENCE_LINE_LENGTH = 60 // Longer default for turbulence
 export const MIN_TURBULENCE_LINE_LENGTH = 10

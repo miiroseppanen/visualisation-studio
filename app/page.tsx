@@ -153,6 +153,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
     const getCurrentTheme = () => {
       if (theme === 'dark') return 'dark'
       if (theme === 'light') return 'light'
+      if (theme === 'pastel') return 'pastel'
       if (!window.matchMedia) return 'light'
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
@@ -200,7 +201,14 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       }
 
       // Clear canvas with theme-appropriate background
-      const bgColor = currentTheme === 'dark' ? '#0a0a0a' : '#ffffff'
+      let bgColor: string
+      if (currentTheme === 'dark') {
+        bgColor = '#0a0a0a'
+      } else if (currentTheme === 'pastel') {
+        bgColor = '#e8f4f8' // More colorful pastel background
+      } else {
+        bgColor = '#ffffff'
+      }
       ctx.fillStyle = bgColor
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -215,7 +223,18 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         }
 
         const alpha = line.life / line.maxLife
-        const strokeColor = currentTheme === 'dark' ? '#ffffff' : '#000000'
+        let strokeColor: string
+        
+        if (currentTheme === 'pastel') {
+          // Use vibrant pastel colors for the mathematical background
+          const colors = ['#FF6B6B', '#4ECDC4', '#A8E6CF', '#96CEB4', '#FFEAA7', '#DDA0DD']
+          const colorIndex = Math.floor(Math.random() * colors.length)
+          strokeColor = colors[colorIndex]
+        } else if (currentTheme === 'dark') {
+          strokeColor = '#ffffff'
+        } else {
+          strokeColor = '#000000'
+        }
         
         ctx.strokeStyle = strokeColor
         ctx.lineWidth = 1
@@ -309,7 +328,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div style={{ filter: 'grayscale(100%)' }}>
+    <div>
       <AppLayout showNavigation={true} navigationVariant="header">
         {/* Hero Section - Golden ratio proportions */}
         <section ref={heroRef} className="relative min-h-screen transition-colors duration-500">
@@ -385,8 +404,8 @@ export default function HomePage() {
                         </CardHeader>
                         <CardContent className="pt-0">
                           {/* Icon Preview */}
-                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 transition-all duration-200">
-                            <viz.icon className="w-24 h-24 text-foreground/60 group-hover:text-foreground/80 group-hover:scale-110 transition-all duration-200" />
+                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 theme-pastel:from-blue-50 theme-pastel:to-purple-100 dark.theme-pastel:from-blue-900 dark.theme-pastel:to-purple-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 theme-pastel:group-hover:from-blue-100 theme-pastel:group-hover:to-purple-200 dark.theme-pastel:group-hover:from-blue-800 dark.theme-pastel:group-hover:to-purple-700 transition-all duration-200">
+                            <viz.icon className="w-24 h-24 text-foreground group-hover:text-foreground group-hover:scale-110 transition-all duration-200" />
                           </div>
                           <ul className="space-y-2 mb-4">
                             {viz.features.map((feature: string, index: number) => (
@@ -437,8 +456,8 @@ export default function HomePage() {
                         </CardHeader>
                         <CardContent className="pt-0">
                           {/* Icon Preview */}
-                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 transition-all duration-200">
-                            <viz.icon className="w-24 h-24 text-foreground/60 group-hover:text-foreground/80 group-hover:scale-110 transition-all duration-200" />
+                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 theme-pastel:from-blue-50 theme-pastel:to-purple-100 dark.theme-pastel:from-blue-900 dark.theme-pastel:to-purple-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 theme-pastel:group-hover:from-blue-100 theme-pastel:group-hover:to-purple-200 dark.theme-pastel:group-hover:from-blue-800 dark.theme-pastel:group-hover:to-purple-700 transition-all duration-200">
+                            <viz.icon className="w-24 h-24 text-foreground group-hover:text-foreground group-hover:scale-110 transition-all duration-200" />
                           </div>
                           <ul className="space-y-2 mb-4">
                             {viz.features.map((feature: string, index: number) => (

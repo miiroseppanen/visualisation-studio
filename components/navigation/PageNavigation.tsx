@@ -6,7 +6,7 @@ import { ArrowLeft, Home, Plus, Unlock, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/components/ui/ThemeProvider'
 import { useTranslation } from 'react-i18next'
-import { Sun, Moon, Laptop } from 'lucide-react'
+import { Sun, Moon, Laptop, Palette } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,7 +83,10 @@ function ThemeSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="p-2">
-          {theme === 'dark' ? <Moon className="w-4 h-4" /> : theme === 'light' ? <Sun className="w-4 h-4" /> : <Laptop className="w-4 h-4" />}
+          {theme === 'dark' ? <Moon className="w-4 h-4" /> : 
+           theme === 'light' ? <Sun className="w-4 h-4" /> : 
+           theme === 'pastel' ? <Palette className="w-4 h-4" /> : 
+           <Laptop className="w-4 h-4" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
@@ -93,6 +96,9 @@ function ThemeSwitcher() {
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">
             <Moon className="w-4 h-4 mr-2 inline" /> Dark
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="pastel">
+            <Palette className="w-4 h-4 mr-2 inline" /> Pastel
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
             <Laptop className="w-4 h-4 mr-2 inline" /> System
