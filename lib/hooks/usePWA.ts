@@ -3,116 +3,114 @@
 import { useState, useEffect } from 'react'
 
 interface PWAState {
-  isInstalled: boolean
-  isUpdateAvailable: boolean
-  isOffline: boolean
   canInstall: boolean
-  deferredPrompt: any
+  isInstalled: boolean
+  isOnline: boolean
+  hasUpdate: boolean
+  installPrompt: any
+  installApp: () => Promise<void>
+  showInstallToast: () => void
 }
 
-export function usePWA() {
-  const [pwaState, setPwaState] = useState<PWAState>({
-    isInstalled: false,
-    isUpdateAvailable: false,
-    isOffline: false,
-    canInstall: false,
-    deferredPrompt: null
-  })
+export function usePWA(): PWAState {
+  const [canInstall, setCanInstall] = useState(false)
+  const [isInstalled, setIsInstalled] = useState(false)
+  const [isOnline, setIsOnline] = useState(true)
+  const [hasUpdate, setHasUpdate] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState<any>(null)
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-
     // Check if app is installed
-    const checkInstallation = () => {
-      const isInstalled = window.matchMedia('(display-mode: standalone)').matches
-      setPwaState(prev => ({ ...prev, isInstalled }))
+    const checkIfInstalled = () => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      const isInApp = (window.navigator as any).standalone === true
+      setIsInstalled(isStandalone || isInApp)
     }
 
-    // Check offline status
-    const checkOfflineStatus = () => {
-      setPwaState(prev => ({ ...prev, isOffline: !navigator.onLine }))
+    // Check online status
+    const updateOnlineStatus = () => {
+      setIsOnline(navigator.onLine)
     }
 
-    // Handle before install prompt
+    // Listen for install prompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
-      setPwaState(prev => ({ 
-        ...prev, 
-        canInstall: true, 
-        deferredPrompt: e 
-      }))
+      setInstallPrompt(e)
+      setCanInstall(true)
     }
 
-    // Handle app installed
+    // Listen for app installed
     const handleAppInstalled = () => {
-      setPwaState(prev => ({ 
-        ...prev, 
-        isInstalled: true, 
-        canInstall: false, 
-        deferredPrompt: null 
-      }))
+      setIsInstalled(true)
+      setCanInstall(false)
+      setInstallPrompt(null)
     }
 
-    // Initial checks
-    checkInstallation()
-    checkOfflineStatus()
+    // Listen for service worker updates
+    const handleServiceWorkerUpdate = () => {
+      setHasUpdate(true)
+    }
 
-    // Event listeners
-    window.matchMedia('(display-mode: standalone)').addEventListener('change', checkInstallation)
-    window.addEventListener('online', checkOfflineStatus)
-    window.addEventListener('offline', checkOfflineStatus)
+    // Check initial state
+    checkIfInstalled()
+    updateOnlineStatus()
+
+    // Add event listeners
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     window.addEventListener('appinstalled', handleAppInstalled)
+    window.addEventListener('online', updateOnlineStatus)
+    window.addEventListener('offline', updateOnlineStatus)
 
-    // Service worker update handling
+    // Listen for service worker updates
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        setPwaState(prev => ({ ...prev, isUpdateAvailable: false }))
-      })
+      navigator.serviceWorker.addEventListener('controllerchange', handleServiceWorkerUpdate)
     }
 
     return () => {
-      window.matchMedia('(display-mode: standalone)').removeEventListener('change', checkInstallation)
-      window.removeEventListener('online', checkOfflineStatus)
-      window.removeEventListener('offline', checkOfflineStatus)
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
       window.removeEventListener('appinstalled', handleAppInstalled)
+      window.removeEventListener('online', updateOnlineStatus)
+      window.removeEventListener('offline', updateOnlineStatus)
+      
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('controllerchange', handleServiceWorkerUpdate)
+      }
     }
   }, [])
 
-  const installApp = async () => {
-    if (pwaState.deferredPrompt) {
-      pwaState.deferredPrompt.prompt()
-      const { outcome } = await pwaState.deferredPrompt.userChoice
-      
-      if (outcome === 'accepted') {
-        console.log('User accepted the install prompt')
-      } else {
-        console.log('User dismissed the install prompt')
+  const installApp = async (): Promise<void> => {
+    if (installPrompt) {
+      try {
+        const result = await installPrompt.prompt()
+        console.log('Install prompt result:', result)
+        
+        if (result.outcome === 'accepted') {
+          console.log('User accepted the install prompt')
+        } else {
+          console.log('User dismissed the install prompt')
+        }
+        
+        setInstallPrompt(null)
+        setCanInstall(false)
+      } catch (error) {
+        console.error('Error during installation:', error)
+        throw error
       }
-      
-      setPwaState(prev => ({ 
-        ...prev, 
-        canInstall: false, 
-        deferredPrompt: null 
-      }))
     }
   }
 
-  const updateApp = () => {
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' })
-    }
-  }
-
-  const setUpdateAvailable = (available: boolean) => {
-    setPwaState(prev => ({ ...prev, isUpdateAvailable: available }))
+  const showInstallToast = () => {
+    // This will be handled by the parent component
+    // The hook just provides the function interface
   }
 
   return {
-    ...pwaState,
+    canInstall,
+    isInstalled,
+    isOnline,
+    hasUpdate,
+    installPrompt,
     installApp,
-    updateApp,
-    setUpdateAvailable
+    showInstallToast
   }
 } 

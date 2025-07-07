@@ -1,7 +1,7 @@
 'use client'
 
 import { usePWA } from '@/lib/hooks/usePWA'
-import { Download, Wifi, WifiOff, RefreshCw } from 'lucide-react'
+import { Download, Wifi, WifiOff, RefreshCw, Settings } from 'lucide-react'
 
 export default function PWAStatus() {
   const { 
@@ -13,12 +13,28 @@ export default function PWAStatus() {
     updateApp 
   } = usePWA()
 
-  if (!isInstalled && !isUpdateAvailable && !isOffline && !canInstall) {
+  // Only show on mobile devices
+  const isMobile = typeof window !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  
+  if (!isMobile || (!isInstalled && !isUpdateAvailable && !isOffline && !canInstall)) {
     return null
   }
 
   return (
     <div className="fixed top-4 right-4 space-y-2 z-50">
+      {/* Settings Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => {
+            // You can add a modal or navigation to PWA settings here
+            console.log('PWA Settings clicked')
+          }}
+          className="p-2 bg-background/80 backdrop-blur-sm border border-border rounded-lg hover:bg-background transition-colors"
+          title="PWA Settings"
+        >
+          <Settings className="w-4 h-4 text-muted-foreground" />
+        </button>
+      </div>
       {/* Offline indicator */}
       {isOffline && (
         <div className="bg-yellow-500 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm">

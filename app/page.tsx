@@ -9,14 +9,18 @@ import AppLayout from '@/components/layout/AppLayout'
 import { useTheme } from '@/components/ui/ThemeProvider'
 import { useTranslation } from 'react-i18next'
 import { useHomePageVisualizations } from '@/lib/hooks/useHomePageVisualizations'
+import PWAInstallModal from '@/components/PWAInstallModal'
+import PWAInstallToast from '@/components/PWAInstallToast'
 
 // Interactive Mathematical Line-Based Background Animation
 const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
   const { theme } = useTheme()
-  const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 })
-  const [touchPos, setTouchPos] = React.useState({ x: 0, y: 0 })
+  const mousePosRef = useRef({ x: 0, y: 0 })
+  const touchPosRef = useRef({ x: 0, y: 0 })
+  const lastTimeRef = useRef(0)
+  const frameCountRef = useRef(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -50,29 +54,29 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
     // Mouse and touch handlers
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
-      setMousePos({
+      mousePosRef.current = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top
-      })
+      }
     }
 
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault()
       const rect = canvas.getBoundingClientRect()
       const touch = e.touches[0]
-      setTouchPos({
+      touchPosRef.current = {
         x: touch.clientX - rect.left,
         y: touch.clientY - rect.top
-      })
+      }
     }
 
     const handleTouchStart = (e: TouchEvent) => {
       const rect = canvas.getBoundingClientRect()
       const touch = e.touches[0]
-      setTouchPos({
+      touchPosRef.current = {
         x: touch.clientX - rect.left,
         y: touch.clientY - rect.top
-      })
+      }
     }
 
     // Add event listeners
@@ -99,14 +103,14 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       const yScaled = (y - canvas.height / 2) * scale
       
       // Harmonic oscillator with mouse interaction
-      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const touchDistance = Math.sqrt((x - touchPos.x) ** 2 + (y - touchPos.y) ** 2)
+      const mouseDistance = Math.sqrt((x - mousePosRef.current.x) ** 2 + (y - mousePosRef.current.y) ** 2)
+      const touchDistance = Math.sqrt((x - touchPosRef.current.x) ** 2 + (y - touchPosRef.current.y) ** 2)
       const minDistance = Math.min(mouseDistance, touchDistance)
       
       const harmonic = Math.sin(xScaled + t * 0.3) * Math.cos(yScaled + t * 0.2) * 
                       Math.sin(Math.sqrt(xScaled * xScaled + yScaled * yScaled) + t * 0.1)
       
-      const interaction = Math.sin(minDistance * 0.02 - t * 2) * Math.exp(-minDistance * 0.001) * 0.8
+      const interaction = Math.sin(minDistance * 0.015 - t * 1.5) * Math.exp(-minDistance * 0.001) * 0.6
       
       return harmonic + interaction
     }
@@ -117,14 +121,14 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       const yScaled = (y - canvas.height / 2) * scale
       
       // Fractal-like pattern with mouse interaction
-      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const touchDistance = Math.sqrt((x - touchPos.x) ** 2 + (y - touchPos.y) ** 2)
+      const mouseDistance = Math.sqrt((x - mousePosRef.current.x) ** 2 + (y - mousePosRef.current.y) ** 2)
+      const touchDistance = Math.sqrt((x - touchPosRef.current.x) ** 2 + (y - touchPosRef.current.y) ** 2)
       const minDistance = Math.min(mouseDistance, touchDistance)
       
       const fractal = Math.sin(xScaled * 2 + t * 0.4) * Math.cos(yScaled * 2 + t * 0.3) * 
                      Math.sin(xScaled * yScaled + t * 0.2)
       
-      const interaction = Math.cos(minDistance * 0.015 - t * 1.5) * Math.exp(-minDistance * 0.0008) * 0.6
+      const interaction = Math.cos(minDistance * 0.012 - t * 1.2) * Math.exp(-minDistance * 0.0008) * 0.5
       
       return fractal + interaction
     }
@@ -135,8 +139,8 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       const yScaled = (y - canvas.height / 2) * scale
       
       // Spiral pattern with mouse interaction
-      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const touchDistance = Math.sqrt((x - touchPos.x) ** 2 + (y - touchPos.y) ** 2)
+      const mouseDistance = Math.sqrt((x - mousePosRef.current.x) ** 2 + (y - mousePosRef.current.y) ** 2)
+      const touchDistance = Math.sqrt((x - touchPosRef.current.x) ** 2 + (y - touchPosRef.current.y) ** 2)
       const minDistance = Math.min(mouseDistance, touchDistance)
       
       const angle = Math.atan2(yScaled, xScaled)
@@ -144,7 +148,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       
       const spiral = Math.sin(angle * 3 + radius * 2 + t * 0.3) * Math.cos(radius + t * 0.2)
       
-      const interaction = Math.sin(minDistance * 0.01 - t * 2.5) * Math.exp(-minDistance * 0.0012) * 0.7
+      const interaction = Math.sin(minDistance * 0.008 - t * 2) * Math.exp(-minDistance * 0.0012) * 0.5
       
       return spiral + interaction
     }
@@ -163,8 +167,8 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       const angle = Math.random() * Math.PI * 2
       const length = 40 + Math.random() * 80
       
-      const mouseDistance = Math.sqrt((x - mousePos.x) ** 2 + (y - mousePos.y) ** 2)
-      const touchDistance = Math.sqrt((x - touchPos.x) ** 2 + (y - touchPos.y) ** 2)
+      const mouseDistance = Math.sqrt((x - mousePosRef.current.x) ** 2 + (y - mousePosRef.current.y) ** 2)
+      const touchDistance = Math.sqrt((x - touchPosRef.current.x) ** 2 + (y - touchPosRef.current.y) ** 2)
       const minDistance = Math.min(mouseDistance, touchDistance)
       
       const influence = Math.exp(-minDistance * 0.001) * 0.3
@@ -180,8 +184,8 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       })
     }
 
-    // Initialize lines
-    for (let i = 0; i < 60; i++) {
+    // Initialize lines - reduced count for smoother performance
+    for (let i = 0; i < 40; i++) {
       createLine(
         Math.random() * canvas.width,
         Math.random() * canvas.height,
@@ -189,9 +193,21 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       )
     }
 
-    // Animation loop
-    const animate = () => {
-      time += 0.016
+    // Animation loop with frame rate control
+    const animate = (currentTime: number) => {
+      // Frame rate control - limit to 30 FPS for smoother animation
+      if (currentTime - lastTimeRef.current < 33) { // ~30 FPS
+        animationRef.current = requestAnimationFrame(animate)
+        return
+      }
+      
+      const deltaTime = currentTime - lastTimeRef.current
+      lastTimeRef.current = currentTime
+      
+      // Use consistent time step for smoother animation
+      time += Math.min(deltaTime * 0.001, 0.033) // Cap at 33ms
+      frameCountRef.current++
+      
       const currentTheme = getCurrentTheme()
 
       // Safety check for canvas context
@@ -212,10 +228,10 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       ctx.fillStyle = bgColor
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Update and draw lines
+      // Update and draw lines with stable colors
       for (let i = lines.length - 1; i >= 0; i--) {
         const line = lines[i]
-        line.life -= 0.01
+        line.life -= 0.008 // Slower fade for smoother animation
 
         if (line.life <= 0) {
           lines.splice(i, 1)
@@ -225,11 +241,12 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         const alpha = line.life / line.maxLife
         let strokeColor: string
         
+        // Use stable colors based on line type and frame count for consistency
         if (currentTheme === 'pastel') {
-          // Use vibrant pastel colors for the mathematical background
           const colors = ['#FF6B6B', '#4ECDC4', '#A8E6CF', '#96CEB4', '#FFEAA7', '#DDA0DD']
-          const colorIndex = Math.floor(Math.random() * colors.length)
-          strokeColor = colors[colorIndex]
+          const colorIndex = (line.type === 'harmonic' ? 0 : line.type === 'fractal' ? 1 : 2) + 
+                           (frameCountRef.current % 3) * 2
+          strokeColor = colors[colorIndex % colors.length]
         } else if (currentTheme === 'dark') {
           strokeColor = '#ffffff'
         } else {
@@ -237,24 +254,24 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
         }
         
         ctx.strokeStyle = strokeColor
-        ctx.lineWidth = 1
-        ctx.globalAlpha = alpha * 0.6
+        ctx.lineWidth = 0.8 // Slightly thinner lines
+        ctx.globalAlpha = alpha * 0.5 // Reduced opacity for smoother look
 
         ctx.beginPath()
         ctx.moveTo(line.x1, line.y1)
         ctx.lineTo(line.x2, line.y2)
         ctx.stroke()
 
-        // Add subtle glow effect
+        // Reduced glow effect for less flickering
         ctx.shadowColor = strokeColor
-        ctx.shadowBlur = 2
+        ctx.shadowBlur = 1
         ctx.stroke()
         ctx.shadowBlur = 0
       }
 
-      // Create new lines based on mathematical functions
-      if (lines.length < 60) {
-        for (let i = 0; i < 3; i++) {
+      // Create new lines based on mathematical functions - reduced frequency
+      if (lines.length < 50 && frameCountRef.current % 4 === 0) { // Every 4 frames
+        for (let i = 0; i < 2; i++) { // Reduced from 3 to 2
           const x = Math.random() * canvas.width
           const y = Math.random() * canvas.height
           
@@ -264,7 +281,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
           
           const maxValue = Math.max(Math.abs(harmonic), Math.abs(fractal), Math.abs(spiral))
           
-          if (maxValue > 0.3) {
+          if (maxValue > 0.4) { // Increased threshold for more stable generation
             const types: Array<'harmonic' | 'fractal' | 'spiral'> = ['harmonic', 'fractal', 'spiral']
             const type = types[Math.floor(Math.random() * 3)]
             createLine(x, y, type)
@@ -275,7 +292,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       animationRef.current = requestAnimationFrame(animate)
     }
 
-    animate()
+    animate(performance.now())
 
     return () => {
       if (animationRef.current) {
@@ -286,7 +303,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       canvas.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('resize', resizeCanvas)
     }
-  }, [theme, mousePos, touchPos])
+      }, [theme])
 
   return (
     <canvas
@@ -306,6 +323,7 @@ export default function HomePage() {
   const { allVisualizations, verifiedVisualizations, inProgressVisualizations } = useHomePageVisualizations()
   const [heroOpacity, setHeroOpacity] = React.useState(1)
   const heroRef = React.useRef<HTMLDivElement>(null)
+  const [isPWAModalOpen, setIsPWAModalOpen] = React.useState(false)
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -551,6 +569,15 @@ export default function HomePage() {
           </div>
         </section>
       </AppLayout>
+      
+      {/* PWA Install Toast */}
+      <PWAInstallToast onOpenModal={() => setIsPWAModalOpen(true)} />
+      
+      {/* PWA Install Modal */}
+      <PWAInstallModal 
+        isOpen={isPWAModalOpen} 
+        onClose={() => setIsPWAModalOpen(false)} 
+      />
     </div>
   )
 } 
