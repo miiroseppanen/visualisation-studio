@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 
 const categories = [
-  'fieldVisualizations', 'flowPatterns', 'particleSystems', 'fractalGeometry', 'neuralNetworks', 'wavePhysics', 'cellularAutomata', 'audioVisualization', 'dataVisualization', 'interactiveArt'
+  'branding', 'forFun', 'graphicDesign', 'illustrations', 'interactiveArts', 'packagingDesign', 'visualPresenting'
 ]
 
 const suggestionTypes = [

@@ -17,7 +17,7 @@ import Link from 'next/link'
 import LanguageSelector from '@/components/ui/LanguageSelector'
 
 const categories = [
-  'fieldVisualizations', 'flowPatterns', 'particleSystems', 'fractalGeometry', 'neuralNetworks', 'wavePhysics', 'cellularAutomata', 'audioVisualization', 'dataVisualization', 'interactiveArt'
+  'branding', 'forFun', 'graphicDesign', 'illustrations', 'interactiveArts', 'packagingDesign', 'visualPresenting'
 ]
 
 const suggestionTypes = [
