@@ -317,12 +317,17 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
 
 // Visualization data is now centralized in lib/navigation-config.ts and lib/hooks/useHomePageVisualizations.ts
 
+function isMobileDevice() {
+  if (typeof navigator === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
 export default function HomePage() {
   const { t } = useTranslation()
   const { allVisualizations, verifiedVisualizations, inProgressVisualizations } = useHomePageVisualizations()
   const [heroOpacity, setHeroOpacity] = React.useState(1)
   const heroRef = React.useRef<HTMLDivElement>(null)
-  const [isMobile, setIsMobile] = useState(false);
+  const [showPwaToast, setShowPwaToast] = React.useState(false);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -344,8 +349,10 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  useEffect(() => {
-    setIsMobile(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+  React.useEffect(() => {
+    // Only run on client
+    const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    setShowPwaToast(isMobile);
   }, []);
 
   return (
@@ -573,8 +580,8 @@ export default function HomePage() {
         </section>
       </AppLayout>
       
-      {/* PWA Install Toast */}
-      {isMobile && <PWAInstallToast />}
+      {/* PWA Install Toast - only show on mobile */}
+      {showPwaToast && <PWAInstallToast />}
     </div>
   )
 } 
