@@ -1,6 +1,7 @@
 'use client'
 
 import { useTranslation } from 'react-i18next'
+import { useEffect, useState } from 'react'
 
 interface LoaderProps {
   size?: 'sm' | 'md' | 'lg'
@@ -18,9 +19,15 @@ const HorizontalLineLoader = ({
   size?: 'sm' | 'md' | 'lg'
   progress?: number 
 }) => {
-  // Use system preference for dark mode detection
-  const isDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-  
+  // Use state for dark mode detection to avoid hydration mismatch
+  const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches)
+    }
+  }, [])
+
   const lineHeight = size === 'sm' ? 'h-0.5' : size === 'lg' ? 'h-1' : 'h-0.5'
   
   // If progress is provided, use it for positioning

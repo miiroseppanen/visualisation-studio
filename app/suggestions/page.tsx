@@ -197,19 +197,10 @@ export default function SuggestionsPage() {
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     })
 
-  // Debug logging
-  console.log('All suggestions:', suggestions)
-  console.log('Filtered suggestions:', filteredSuggestions)
-  
   // Separate suggestions by status
-  const pendingSuggestions = filteredSuggestions.filter(s => {
-    console.log('Checking status:', s.status, 'for suggestion:', s.title)
-    return s.status === 'pending'
-  })
+  const pendingSuggestions = filteredSuggestions.filter(s => s.status === 'pending')
   const doneSuggestions = filteredSuggestions.filter(s => s.status === 'implemented')
   const approvedSuggestions = filteredSuggestions.filter(s => s.status === 'approved')
-  
-  console.log('Pending suggestions:', pendingSuggestions)
 
   if (loading && isI18nInitialized) {
     return (

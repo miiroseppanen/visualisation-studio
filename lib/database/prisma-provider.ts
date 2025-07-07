@@ -1,15 +1,41 @@
 import { PrismaClient, Suggestion, Comment, Tag, Implementation, Dependency, UserInteraction, Statistics, SuggestionStatus, Complexity, Difficulty, ImplementationType, InteractionType } from '@prisma/client'
 import { VisualizationSuggestion, SuggestionFilters, SuggestionStats } from '../types'
 
-// Global Prisma client instance
-let prisma: PrismaClient | null = null
+// Global Prisma client instance with connection pooling
+let globalPrisma: PrismaClient | null = null
 
-// Initialize Prisma client
 function getPrismaClient(): PrismaClient {
-  if (!prisma) {
-    prisma = new PrismaClient()
+  if (!globalPrisma) {
+    globalPrisma = new PrismaClient({
+      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL
+        }
+      }
+    })
   }
-  return prisma
+  return globalPrisma
+}
+
+// Cache for suggestions to reduce database calls
+const suggestionsCache = new Map<string, VisualizationSuggestion>()
+const cacheTimeout = 5 * 60 * 1000 // 5 minutes
+const cacheTimestamps = new Map<string, number>()
+
+function isCacheValid(key: string): boolean {
+  const timestamp = cacheTimestamps.get(key)
+  return timestamp ? Date.now() - timestamp < cacheTimeout : false
+}
+
+function clearExpiredCache(): void {
+  const now = Date.now()
+  for (const [key, timestamp] of cacheTimestamps.entries()) {
+    if (now - timestamp >= cacheTimeout) {
+      suggestionsCache.delete(key)
+      cacheTimestamps.delete(key)
+    }
+  }
 }
 
 // Prisma database provider for suggestions
@@ -33,13 +59,8 @@ export class PrismaProvider {
 
   private mapComplexity(complexity: string): 'LOW' | 'MEDIUM' | 'HIGH' {
     switch (complexity) {
-      case 'new-visual':
-      case 'bug':
       case 'low': return 'LOW'
-      case 'improvement':
-      case 'enhancement':
       case 'medium': return 'MEDIUM'
-      case 'feature':
       case 'high': return 'HIGH'
       default: return 'MEDIUM'
     }
@@ -47,13 +68,8 @@ export class PrismaProvider {
 
   private mapDifficulty(difficulty: string): 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' {
     switch (difficulty) {
-      case 'new-visual':
-      case 'bug':
       case 'beginner': return 'BEGINNER'
-      case 'improvement':
-      case 'enhancement':
       case 'intermediate': return 'INTERMEDIATE'
-      case 'feature':
       case 'advanced': return 'ADVANCED'
       default: return 'INTERMEDIATE'
     }
@@ -63,7 +79,6 @@ export class PrismaProvider {
   async init(): Promise<void> {
     try {
       await this.prisma.$connect()
-      console.log('Connected to Neon PostgreSQL database')
     } catch (error) {
       console.error('Failed to connect to database:', error)
       throw error
@@ -178,6 +193,10 @@ export class PrismaProvider {
         }
       })
 
+      // Update cache
+      suggestionsCache.set(suggestion.id, suggestion)
+      cacheTimestamps.set(suggestion.id, Date.now())
+
       await this.updateStatistics()
     } catch (error) {
       console.error('Failed to save suggestion:', error)
@@ -185,9 +204,14 @@ export class PrismaProvider {
     }
   }
 
-  // Get suggestion by ID
+  // Get suggestion by ID with caching
   async get(id: string): Promise<VisualizationSuggestion | null> {
     try {
+      // Check cache first
+      if (suggestionsCache.has(id) && isCacheValid(id)) {
+        return suggestionsCache.get(id)!
+      }
+
       const suggestion = await this.prisma.suggestion.findUnique({
         where: { id },
         include: {
@@ -204,7 +228,7 @@ export class PrismaProvider {
 
       if (!suggestion) return null
 
-      return {
+      const result = {
         id: suggestion.id,
         title: suggestion.title,
         description: suggestion.description,
@@ -241,15 +265,24 @@ export class PrismaProvider {
         } : undefined,
         dependencies: suggestion.dependencies.map(d => d.dependencyName)
       }
+
+      // Cache the result
+      suggestionsCache.set(id, result)
+      cacheTimestamps.set(id, Date.now())
+
+      return result
     } catch (error) {
       console.error('Failed to get suggestion:', error)
       throw error
     }
   }
 
-  // Get all suggestions with filters
+  // Get all suggestions with filters and caching
   async getAll(filters?: SuggestionFilters): Promise<VisualizationSuggestion[]> {
     try {
+      // Clear expired cache entries
+      clearExpiredCache()
+
       const where: any = {}
 
       if (filters?.status) {
@@ -258,18 +291,6 @@ export class PrismaProvider {
 
       if (filters?.category) {
         where.category = filters.category
-      }
-
-      if (filters?.complexity) {
-        where.complexity = filters.complexity as Complexity
-      }
-
-      if (filters?.difficulty) {
-        where.difficulty = filters.difficulty as Difficulty
-      }
-
-      if (filters?.author) {
-        where.author = filters.author
       }
 
       const suggestions = await this.prisma.suggestion.findMany({
@@ -284,13 +305,12 @@ export class PrismaProvider {
           implementation: true,
           dependencies: true
         },
-        orderBy: filters?.sortBy === 'timestamp' ? { timestamp: 'desc' } :
-                filters?.sortBy === 'upvotes' ? { upvotes: 'desc' } :
-                filters?.sortBy === 'views' ? { views: 'desc' } :
-                { timestamp: 'desc' }
+        orderBy: {
+          timestamp: 'desc'
+        }
       })
 
-      return suggestions.map(suggestion => ({
+      const result = suggestions.map(suggestion => ({
         id: suggestion.id,
         title: suggestion.title,
         description: suggestion.description,
@@ -327,6 +347,14 @@ export class PrismaProvider {
         } : undefined,
         dependencies: suggestion.dependencies.map(d => d.dependencyName)
       }))
+
+      // Cache individual suggestions
+      result.forEach(suggestion => {
+        suggestionsCache.set(suggestion.id, suggestion)
+        cacheTimestamps.set(suggestion.id, Date.now())
+      })
+
+      return result
     } catch (error) {
       console.error('Failed to get suggestions:', error)
       throw error
@@ -336,29 +364,32 @@ export class PrismaProvider {
   // Update suggestion
   async update(id: string, updates: Partial<VisualizationSuggestion>): Promise<void> {
     try {
-      const updateData: any = { ...updates }
-      delete updateData.id
-      delete updateData.tags
-      delete updateData.comments
-      delete updateData.implementation
-      delete updateData.dependencies
+      const updateData: any = {}
+      
+      if (updates.title !== undefined) updateData.title = updates.title
+      if (updates.description !== undefined) updateData.description = updates.description
+      if (updates.upvotes !== undefined) updateData.upvotes = updates.upvotes
+      if (updates.downvotes !== undefined) updateData.downvotes = updates.downvotes
+      if (updates.status !== undefined) updateData.status = this.mapStatus(updates.status)
+      if (updates.category !== undefined) updateData.category = updates.category
+      if (updates.complexity !== undefined) updateData.complexity = this.mapComplexity(updates.complexity)
+      if (updates.difficulty !== undefined) updateData.difficulty = this.mapDifficulty(updates.difficulty)
+      if (updates.estimatedDevTime !== undefined) updateData.estimatedDevTime = updates.estimatedDevTime
+      if (updates.views !== undefined) updateData.views = updates.views
+      if (updates.favorites !== undefined) updateData.favorites = updates.favorites
+      
+      updateData.lastModified = new Date()
 
       await this.prisma.suggestion.update({
         where: { id },
         data: updateData
       })
 
-      if (updates.tags) {
-        await this.save({ ...(await this.get(id))!, tags: updates.tags })
-      }
+      // Invalidate cache for this suggestion
+      suggestionsCache.delete(id)
+      cacheTimestamps.delete(id)
 
-      if (updates.implementation) {
-        await this.save({ ...(await this.get(id))!, implementation: updates.implementation })
-      }
-
-      if (updates.dependencies) {
-        await this.save({ ...(await this.get(id))!, dependencies: updates.dependencies })
-      }
+      await this.updateStatistics()
     } catch (error) {
       console.error('Failed to update suggestion:', error)
       throw error
@@ -371,6 +402,11 @@ export class PrismaProvider {
       await this.prisma.suggestion.delete({
         where: { id }
       })
+
+      // Remove from cache
+      suggestionsCache.delete(id)
+      cacheTimestamps.delete(id)
+
       await this.updateStatistics()
     } catch (error) {
       console.error('Failed to delete suggestion:', error)
@@ -381,42 +417,31 @@ export class PrismaProvider {
   // Get statistics
   async getStats(): Promise<SuggestionStats> {
     try {
-      const [
-        totalSuggestions,
-        pendingCount,
-        approvedCount,
-        implementedCount,
-        rejectedCount,
+      const [total, pending, approved, implemented, rejected] = await Promise.all([
+        this.prisma.suggestion.count(),
+        this.prisma.suggestion.count({ where: { status: 'PENDING' } }),
+        this.prisma.suggestion.count({ where: { status: 'APPROVED' } }),
+        this.prisma.suggestion.count({ where: { status: 'IMPLEMENTED' } }),
+        this.prisma.suggestion.count({ where: { status: 'REJECTED' } })
+      ])
+
+      const categoryStats = await this.getCategoryStats()
+      const complexityStats = await this.getComplexityStats()
+      const topRated = await this.getTopRatedSuggestions()
+      const mostViewed = await this.getMostViewedSuggestions()
+      const recentlyAdded = await this.getRecentlyAddedSuggestions()
+
+      return {
+        total,
+        pending,
+        approved,
+        implemented,
+        rejected,
         categoryStats,
         complexityStats,
         topRated,
         mostViewed,
         recentlyAdded
-      ] = await Promise.all([
-        this.prisma.suggestion.count(),
-        this.prisma.suggestion.count({ where: { status: 'PENDING' } }),
-        this.prisma.suggestion.count({ where: { status: 'APPROVED' } }),
-        this.prisma.suggestion.count({ where: { status: 'IMPLEMENTED' } }),
-        this.prisma.suggestion.count({ where: { status: 'REJECTED' } }),
-        this.getCategoryStats(),
-        this.getComplexityStats(),
-        this.getTopRatedSuggestions(),
-        this.getMostViewedSuggestions(),
-        this.getRecentlyAddedSuggestions()
-      ])
-
-      return {
-        totalSuggestions,
-        pendingCount,
-        approvedCount,
-        implementedCount,
-        rejectedCount,
-        categoryStats,
-        complexityStats,
-        topRated,
-        mostViewed,
-        recentlyAdded,
-        lastUpdated: new Date()
       }
     } catch (error) {
       console.error('Failed to get statistics:', error)
@@ -428,49 +453,30 @@ export class PrismaProvider {
   async clearAll(): Promise<void> {
     try {
       await this.prisma.$transaction([
-        this.prisma.userInteraction.deleteMany(),
+        this.prisma.suggestionTag.deleteMany(),
         this.prisma.dependency.deleteMany(),
         this.prisma.implementation.deleteMany(),
         this.prisma.comment.deleteMany(),
-        this.prisma.suggestionTag.deleteMany(),
         this.prisma.suggestion.deleteMany(),
         this.prisma.tag.deleteMany(),
         this.prisma.statistics.deleteMany()
       ])
+
+      // Clear cache
+      suggestionsCache.clear()
+      cacheTimestamps.clear()
     } catch (error) {
       console.error('Failed to clear all data:', error)
       throw error
     }
   }
 
-  // Private helper methods
+  // Update statistics
   private async updateStatistics(): Promise<SuggestionStats> {
-    const stats = await this.getStats()
-    
-    await this.prisma.statistics.upsert({
-      where: { id: 'main' },
-      update: {
-        totalSuggestions: stats.totalSuggestions,
-        pendingCount: stats.pendingCount,
-        approvedCount: stats.approvedCount,
-        implementedCount: stats.implementedCount,
-        rejectedCount: stats.rejectedCount,
-        lastUpdated: stats.lastUpdated
-      },
-      create: {
-        id: 'main',
-        totalSuggestions: stats.totalSuggestions,
-        pendingCount: stats.pendingCount,
-        approvedCount: stats.approvedCount,
-        implementedCount: stats.implementedCount,
-        rejectedCount: stats.rejectedCount,
-        lastUpdated: stats.lastUpdated
-      }
-    })
-
-    return stats
+    return this.getStats()
   }
 
+  // Get category statistics
   private async getCategoryStats(): Promise<Record<string, number>> {
     const stats = await this.prisma.suggestion.groupBy({
       by: ['category'],
@@ -485,6 +491,7 @@ export class PrismaProvider {
     }, {} as Record<string, number>)
   }
 
+  // Get complexity statistics
   private async getComplexityStats(): Promise<Record<string, number>> {
     const stats = await this.prisma.suggestion.groupBy({
       by: ['complexity'],
@@ -499,24 +506,24 @@ export class PrismaProvider {
     }, {} as Record<string, number>)
   }
 
+  // Get top rated suggestions
   private async getTopRatedSuggestions(): Promise<VisualizationSuggestion[]> {
     const suggestions = await this.prisma.suggestion.findMany({
-      where: { status: { not: 'REJECTED' } },
-      include: {
-        tags: {
-          include: {
-            tag: true
-          }
-        },
-        comments: true,
-        implementation: true,
-        dependencies: true
-      },
+      take: 5,
       orderBy: [
         { upvotes: 'desc' },
-        { downvotes: 'asc' }
+        { timestamp: 'desc' }
       ],
-      take: 10
+      include: {
+        tags: {
+          include: {
+            tag: true
+          }
+        },
+        comments: true,
+        implementation: true,
+        dependencies: true
+      }
     })
 
     return suggestions.map(suggestion => ({
@@ -558,8 +565,14 @@ export class PrismaProvider {
     }))
   }
 
+  // Get most viewed suggestions
   private async getMostViewedSuggestions(): Promise<VisualizationSuggestion[]> {
     const suggestions = await this.prisma.suggestion.findMany({
+      take: 5,
+      orderBy: [
+        { views: 'desc' },
+        { timestamp: 'desc' }
+      ],
       include: {
         tags: {
           include: {
@@ -569,9 +582,7 @@ export class PrismaProvider {
         comments: true,
         implementation: true,
         dependencies: true
-      },
-      orderBy: { views: 'desc' },
-      take: 10
+      }
     })
 
     return suggestions.map(suggestion => ({
@@ -613,8 +624,13 @@ export class PrismaProvider {
     }))
   }
 
+  // Get recently added suggestions
   private async getRecentlyAddedSuggestions(): Promise<VisualizationSuggestion[]> {
     const suggestions = await this.prisma.suggestion.findMany({
+      take: 5,
+      orderBy: {
+        timestamp: 'desc'
+      },
       include: {
         tags: {
           include: {
@@ -624,9 +640,7 @@ export class PrismaProvider {
         comments: true,
         implementation: true,
         dependencies: true
-      },
-      orderBy: { timestamp: 'desc' },
-      take: 10
+      }
     })
 
     return suggestions.map(suggestion => ({

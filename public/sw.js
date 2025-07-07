@@ -19,15 +19,12 @@ const DYNAMIC_URLS = [
 
 // Install event - cache static resources
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installing...')
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
-        console.log('Caching static resources')
         return cache.addAll(STATIC_URLS)
       })
       .then(() => {
-        console.log('Static resources cached successfully')
         return self.skipWaiting()
       })
       .catch((error) => {
@@ -38,20 +35,17 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches and take control
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating...')
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
-            console.log('Deleting old cache:', cacheName)
             return caches.delete(cacheName)
           }
         })
       )
     })
     .then(() => {
-      console.log('Service Worker activated')
       return self.clients.claim()
     })
   )
@@ -161,7 +155,6 @@ self.addEventListener('sync', (event) => {
 })
 
 async function doBackgroundSync() {
-  console.log('Performing background sync...')
   // Implement background sync logic here
 }
 

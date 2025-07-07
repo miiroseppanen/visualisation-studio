@@ -26,13 +26,8 @@ function mapDifficulty(frontendValue: string): 'beginner' | 'intermediate' | 'ad
 
 export async function GET() {
   try {
-    console.log('=== Prisma Debug Info ===')
-    console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL)
-    console.log('DATABASE_URL starts with:', process.env.DATABASE_URL?.substring(0, 20) + '...')
-    
     await prismaProvider.init()
     const suggestions = await prismaProvider.getAll()
-    console.log('Found suggestions count:', suggestions.length)
     
     await prismaProvider.close()
     return NextResponse.json(suggestions)

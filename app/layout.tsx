@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/ui/ThemeProvider'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import { I18nProvider } from '@/components/I18nProvider'
+import { PerformanceMonitor } from '@/components/PerformanceMonitor'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://visualization-studio.com'),
@@ -117,6 +118,7 @@ export default function RootLayout({
           <ThemeProvider>
             {children}
             <ServiceWorkerRegistration />
+            <PerformanceMonitor />
           </ThemeProvider>
         </I18nProvider>
       </body>

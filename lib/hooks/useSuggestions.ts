@@ -17,7 +17,6 @@ export function useSuggestions() {
     setError(null)
     try {
       const data = await fetchSuggestions()
-      console.log('Loaded suggestions:', data)
       setSuggestions(data)
     } catch (err: any) {
       console.error('Error loading suggestions:', err)

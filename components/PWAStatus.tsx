@@ -27,7 +27,6 @@ export default function PWAStatus() {
         <button
           onClick={() => {
             // You can add a modal or navigation to PWA settings here
-            console.log('PWA Settings clicked')
           }}
           className="p-2 bg-background/80 backdrop-blur-sm border border-border rounded-lg hover:bg-background transition-colors"
           title="PWA Settings"

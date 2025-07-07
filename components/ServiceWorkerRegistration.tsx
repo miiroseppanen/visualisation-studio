@@ -12,7 +12,6 @@ export default function ServiceWorkerRegistration() {
       const registerSW = async () => {
         try {
           const registration = await navigator.serviceWorker.register('/sw.js')
-          console.log('Service Worker registered successfully:', registration)
 
           // Check for updates
           registration.addEventListener('updatefound', () => {

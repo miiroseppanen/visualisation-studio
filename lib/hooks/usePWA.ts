@@ -83,12 +83,11 @@ export function usePWA(): PWAState {
     if (installPrompt) {
       try {
         const result = await installPrompt.prompt()
-        console.log('Install prompt result:', result)
         
         if (result.outcome === 'accepted') {
-          console.log('User accepted the install prompt')
+          // User accepted the install prompt
         } else {
-          console.log('User dismissed the install prompt')
+          // User dismissed the install prompt
         }
         
         setInstallPrompt(null)
