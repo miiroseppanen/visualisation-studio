@@ -1,5 +1,5 @@
 {
-  "/page": "app/page.js",
-  "/grid-field/page": "app/grid-field/page.js",
-  "/_not-found/page": "app/_not-found/page.js"
+  "/api/suggestions/route": "app/api/suggestions/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js"
 }

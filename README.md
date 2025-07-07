@@ -1,21 +1,30 @@
-# Magnetic Field Studio
+# Visualization Studio
 
-A modern, interactive web application for creating and visualizing magnetic field patterns using SVG graphics. Built with Next.js, TypeScript, and Tailwind CSS, following Dieter Rams' design principles.
+A professional pattern generation toolkit for creative branding and packaging design. Create unique geometric patterns, flowing textures, and dynamic visual systems with precision control. Built with Next.js, TypeScript, and Tailwind CSS, following Dieter Rams' design principles.
 
 ## Features
 
 - **Grid Field Visualization**: Create interactive grid patterns that respond to magnetic poles
 - **Flow Field Visualization**: Design magnetic field illustrations with custom poles and particle systems
+- **Circular Field Visualization**: Visualize circular field lines around magnetic poles
+- **Wave Interference**: Explore wave interference patterns with multiple sources
+- **Particle Swarm**: Watch particles flock and swarm with emergent behavior
+- **Neural Network**: Interactive neural network with animated connections and learning
+- **Cellular Automata**: Conway's Game of Life with custom rules and patterns
+- **Sound Wave**: Real-time audio waveform with frequency analysis
+- **Topography**: Generate topographic contour lines from elevation points
+- **Turbulence**: Explore turbulent flow fields with vortices and noise
 - **Real-time Preview**: See changes instantly as you adjust parameters
 - **SVG Export**: Export illustrations as scalable vector graphics
 - **Minimal Design**: Clean, functional interface following "Less, but better" philosophy
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 with App Router
+- **Framework**: Next.js 15 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS with shadcn/ui components
 - **Icons**: Lucide React
+- **Database**: Neon PostgreSQL with Prisma ORM
 - **Design**: Dieter Rams-inspired minimal design
 
 ## Getting Started

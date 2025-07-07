@@ -1,5 +1,5 @@
 import { VisualizationSuggestion, SuggestionFilters, SuggestionStats } from '../types'
-import { SQLiteProvider } from '../database/sqlite-provider'
+import { PrismaProvider } from '../database/prisma-provider'
 
 // Storage interfaces for different backends
 interface StorageProvider {
@@ -10,6 +10,78 @@ interface StorageProvider {
   delete(id: string): Promise<void>
   getStats(): Promise<SuggestionStats>
   clearAll(): Promise<void>
+}
+
+// Prisma Database Provider Implementation
+class PrismaStorageProvider implements StorageProvider {
+  private prismaProvider: PrismaProvider
+
+  constructor() {
+    this.prismaProvider = new PrismaProvider()
+  }
+
+  async save(suggestion: VisualizationSuggestion): Promise<void> {
+    await this.prismaProvider.init()
+    try {
+      await this.prismaProvider.save(suggestion)
+    } finally {
+      await this.prismaProvider.close()
+    }
+  }
+
+  async get(id: string): Promise<VisualizationSuggestion | null> {
+    await this.prismaProvider.init()
+    try {
+      return await this.prismaProvider.get(id)
+    } finally {
+      await this.prismaProvider.close()
+    }
+  }
+
+  async getAll(filters?: SuggestionFilters): Promise<VisualizationSuggestion[]> {
+    await this.prismaProvider.init()
+    try {
+      return await this.prismaProvider.getAll(filters)
+    } finally {
+      await this.prismaProvider.close()
+    }
+  }
+
+  async update(id: string, updates: Partial<VisualizationSuggestion>): Promise<void> {
+    await this.prismaProvider.init()
+    try {
+      await this.prismaProvider.update(id, updates)
+    } finally {
+      await this.prismaProvider.close()
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prismaProvider.init()
+    try {
+      await this.prismaProvider.delete(id)
+    } finally {
+      await this.prismaProvider.close()
+    }
+  }
+
+  async getStats(): Promise<SuggestionStats> {
+    await this.prismaProvider.init()
+    try {
+      return await this.prismaProvider.getStats()
+    } finally {
+      await this.prismaProvider.close()
+    }
+  }
+
+  async clearAll(): Promise<void> {
+    await this.prismaProvider.init()
+    try {
+      await this.prismaProvider.clearAll()
+    } finally {
+      await this.prismaProvider.close()
+    }
+  }
 }
 
 // Local Storage Implementation
@@ -452,7 +524,7 @@ export class SuggestionsService {
 export const suggestionsService = new SuggestionsService()
 
 // Factory function to create service with different providers
-export function createSuggestionsService(providerType: 'local' | 'api' | 'file' | 'sqlite' = 'local', config?: any): SuggestionsService {
+export function createSuggestionsService(providerType: 'local' | 'api' | 'file' | 'prisma' = 'local', config?: any): SuggestionsService {
   let provider: StorageProvider
   
   switch (providerType) {
@@ -462,8 +534,8 @@ export function createSuggestionsService(providerType: 'local' | 'api' | 'file' 
     case 'file':
       provider = new FileSystemProvider(config?.filePath)
       break
-    case 'sqlite':
-      provider = new SQLiteProvider(config?.dbPath)
+    case 'prisma':
+      provider = new PrismaStorageProvider()
       break
     case 'local':
     default:

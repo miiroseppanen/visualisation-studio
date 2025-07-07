@@ -1,43 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MongoClient, ObjectId } from 'mongodb'
+import { PrismaProvider } from '@/lib/database/prisma-provider'
 
-const uri = process.env.MONGODB_URI || ''
-const dbName = process.env.MONGODB_DB || 'visualisation-studio'
-
-async function getCollection() {
-  const client = new MongoClient(uri)
-  await client.connect()
-  const db = client.db(dbName)
-  return db.collection('suggestions')
-}
+const prismaProvider = new PrismaProvider()
 
 export async function GET() {
   try {
-    console.log('=== MongoDB Debug Info ===')
-    console.log('MongoDB URI exists:', !!process.env.MONGODB_URI)
-    console.log('MongoDB URI starts with:', process.env.MONGODB_URI?.substring(0, 20) + '...')
-    console.log('MongoDB DB:', process.env.MONGODB_DB || 'visualisation-studio')
-    console.log('Environment variables:', Object.keys(process.env).filter(key => key.includes('MONGODB')))
+    console.log('=== Prisma Debug Info ===')
+    console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL)
+    console.log('DATABASE_URL starts with:', process.env.DATABASE_URL?.substring(0, 20) + '...')
     
-    const collection = await getCollection()
-    console.log('Collection obtained successfully')
-    const suggestions = await collection.find({}).sort({ timestamp: -1 }).toArray()
+    await prismaProvider.init()
+    const suggestions = await prismaProvider.getAll()
     console.log('Found suggestions count:', suggestions.length)
+    
+    await prismaProvider.close()
     return NextResponse.json(suggestions)
   } catch (error) {
-    console.error('=== MongoDB Error Details ===')
+    console.error('=== Prisma Error Details ===')
     console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error)
     console.error('Error message:', error instanceof Error ? error.message : String(error))
-    console.error('Error code:', (error as any)?.code)
-    console.error('Error codeName:', (error as any)?.codeName)
     console.error('Full error:', JSON.stringify(error, null, 2))
     
     return NextResponse.json({ 
       error: 'Failed to fetch suggestions', 
       details: error instanceof Error ? error.message : String(error),
-      code: (error as any)?.code,
-      codeName: (error as any)?.codeName,
-      uri: process.env.MONGODB_URI ? 'Set' : 'Not set'
+      databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
     }, { status: 500 })
   }
 }
@@ -45,23 +32,43 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json()
-    const collection = await getCollection()
+    await prismaProvider.init()
+    
     const now = new Date()
     const suggestion = {
-      ...data,
+      id: data.id || `suggestion-${Date.now()}`,
+      title: data.title,
+      description: data.description,
+      author: data.author,
+      timestamp: now,
+      lastModified: now,
       upvotes: 0,
       downvotes: 0,
-      status: 'pending',
-      timestamp: now,
+      status: 'pending' as const,
+      category: data.category || 'general',
+      complexity: data.complexity || 'medium' as const,
+      difficulty: data.difficulty || 'intermediate' as const,
+      estimatedDevTime: data.estimatedDevTime || 0,
+      version: '1.0.0',
+      createdBy: data.author,
+      views: 0,
+      favorites: 0,
+      tags: data.tags || [],
+      comments: [],
+      implementation: data.implementation,
+      dependencies: data.dependencies || []
     }
-    const result = await collection.insertOne(suggestion)
-    return NextResponse.json({ ...suggestion, _id: result.insertedId })
+    
+    await prismaProvider.save(suggestion)
+    await prismaProvider.close()
+    
+    return NextResponse.json(suggestion)
   } catch (error) {
-    console.error('MongoDB POST error:', error)
+    console.error('Prisma POST error:', error)
     return NextResponse.json({ 
       error: 'Failed to create suggestion', 
       details: error instanceof Error ? error.message : String(error),
-      uri: process.env.MONGODB_URI ? 'Set' : 'Not set'
+      databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
     }, { status: 500 })
   }
 } 
