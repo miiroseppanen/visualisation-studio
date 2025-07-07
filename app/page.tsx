@@ -188,7 +188,7 @@ const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
       )
     }
 
-        // Animation loop
+    // Animation loop
     const animate = () => {
       time += 0.016
       const currentTheme = getCurrentTheme()
@@ -309,227 +309,229 @@ export default function HomePage() {
   }, [])
 
   return (
-    <AppLayout showNavigation={true} navigationVariant="header">
-      {/* Hero Section - Golden ratio proportions */}
-      <section ref={heroRef} className="relative min-h-screen transition-colors duration-500">
-        {/* Animated Background */}
-        <MathematicalBackground opacity={heroOpacity} />
-        
-        <div className="container mx-auto px-8 py-24 relative z-10">
-        
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start relative z-10">
-          {/* Main content - 3/5 of width (golden ratio) */}
-          <div className="lg:col-span-3">
-            <h2 className="text-6xl md:text-7xl font-normal tracking-tight mb-8 text-foreground leading-none">
-              {t('hero.title')}
-              <span className="block text-muted-foreground font-light mt-2">{t('hero.subtitle')}</span>
-            </h2>
-            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              {t('hero.description')}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="group w-fit text-base px-8 py-3">
-                <Link href="/grid-field">
-                  {t('hero.startCreating')}
-                  <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild className="w-fit text-base px-8 py-3">
-                <Link href="#tools">
-                  {t('hero.exploreTools')}
-                </Link>
-              </Button>
-            </div>
-          </div>
+    <div style={{ filter: 'grayscale(100%)' }}>
+      <AppLayout showNavigation={true} navigationVariant="header">
+        {/* Hero Section - Golden ratio proportions */}
+        <section ref={heroRef} className="relative min-h-screen transition-colors duration-500">
+          {/* Animated Background */}
+          <MathematicalBackground opacity={heroOpacity} />
           
-          {/* Side content - 2/5 of width */}
-          <div className="lg:col-span-2">
-          </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Tools Section - Structured grid */}
-      <section id="tools" className="bg-background border-t border-border/20">
-        <div className="container mx-auto px-8 py-24">
-          <div className="mb-12">
-            <h3 className="text-3xl font-normal mb-4 text-foreground">{t('tools.title')}</h3>
-            <p className="text-muted-foreground max-w-2xl">
-              {t('tools.description')}
-            </p>
-          </div>
+          <div className="container mx-auto px-8 py-24 relative z-10">
           
-          {/* Verified Visualizations */}
-          {verifiedVisualizations.length > 0 && (
-            <div className="mb-16">
-              <div className="flex items-center space-x-3 mb-8">
-                <CheckCircle className="w-6 h-6 text-foreground/60" />
-                <h4 className="text-2xl font-normal text-foreground">Verified</h4>
-                <span className="text-sm text-muted-foreground">Production-ready visualizations</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {verifiedVisualizations.map((viz: any) => (
-                  <Link key={viz.path} href={viz.path} className="block group">
-                    <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02] rounded-none bg-background">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-foreground/10 flex items-center justify-center transition-colors duration-200 group-hover:bg-accent">
-                            <viz.icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-                          </div>
-                          <CardTitle className="text-lg group-hover:text-accent-foreground transition-colors duration-200">{viz.title}</CardTitle>
-                        </div>
-                        <CardDescription className="text-sm text-muted-foreground leading-relaxed">
-                          {viz.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        {/* Icon Preview */}
-                        <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 transition-all duration-200">
-                          <viz.icon className="w-24 h-24 text-foreground/60 group-hover:text-foreground/80 group-hover:scale-110 transition-all duration-200" />
-                        </div>
-                        <ul className="space-y-2 mb-4">
-                          {viz.features.map((feature: string, index: number) => (
-                            <li key={index} className="flex items-center text-sm text-muted-foreground">
-                              <Sparkles className="w-3 h-3 mr-2 text-foreground/40 flex-shrink-0" />
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="opacity-60 group-hover:opacity-100 group-hover:bg-foreground group-hover:text-background group-hover:border-foreground transition-all duration-200 rounded-none"
-                        >
-                          <Play className="w-3 h-3 mr-2" />
-                          {t('tools.tryNow')}
-                        </Button>
-                      </CardContent>
-                    </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start relative z-10">
+            {/* Main content - 3/5 of width (golden ratio) */}
+            <div className="lg:col-span-3">
+              <h2 className="text-6xl md:text-7xl font-normal tracking-tight mb-8 text-foreground leading-none">
+                {t('hero.title')}
+                <span className="block text-muted-foreground font-light mt-2">{t('hero.subtitle')}</span>
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+                {t('hero.description')}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button asChild size="lg" className="group w-fit text-base px-8 py-3">
+                  <Link href="/grid-field">
+                    {t('hero.startCreating')}
+                    <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* In Progress Visualizations */}
-          {inProgressVisualizations.length > 0 && (
-            <div>
-              <div className="flex items-center space-x-3 mb-8">
-                <Clock className="w-6 h-6 text-foreground/60" />
-                <h4 className="text-2xl font-normal text-foreground">In Progress</h4>
-                <span className="text-sm text-muted-foreground">Experimental visualizations</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {inProgressVisualizations.map((viz: any) => (
-                  <Link key={viz.path} href={viz.path} className="block group">
-                    <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02] opacity-80 rounded-none bg-background">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-foreground/10 flex items-center justify-center transition-colors duration-200 group-hover:bg-accent">
-                            <viz.icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-                          </div>
-                          <CardTitle className="text-lg group-hover:text-accent-foreground transition-colors duration-200">{viz.title}</CardTitle>
-                        </div>
-                        <CardDescription className="text-sm text-muted-foreground leading-relaxed">
-                          {viz.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        {/* Icon Preview */}
-                        <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 transition-all duration-200">
-                          <viz.icon className="w-24 h-24 text-foreground/60 group-hover:text-foreground/80 group-hover:scale-110 transition-all duration-200" />
-                        </div>
-                        <ul className="space-y-2 mb-4">
-                          {viz.features.map((feature: string, index: number) => (
-                            <li key={index} className="flex items-center text-sm text-muted-foreground">
-                              <Sparkles className="w-3 h-3 mr-2 text-foreground/40 flex-shrink-0" />
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="opacity-60 group-hover:opacity-100 group-hover:bg-foreground group-hover:text-background group-hover:border-foreground transition-all duration-200 rounded-none"
-                        >
-                          <Play className="w-3 h-3 mr-2" />
-                          {t('tools.tryNow')}
-                        </Button>
-                      </CardContent>
-                    </Card>
+                </Button>
+                <Button variant="outline" size="lg" asChild className="w-fit text-base px-8 py-3">
+                  <Link href="#tools">
+                    {t('hero.exploreTools')}
                   </Link>
-                ))}
+                </Button>
               </div>
             </div>
-          )}
-        </div>
-      </section>
+            
+            {/* Side content - 2/5 of width */}
+            <div className="lg:col-span-2">
+            </div>
+            </div>
+          </div>
+        </section>
 
-      {/* Suggestions Section - Structured layout */}
-      <section id="suggestions" className="container mx-auto px-8 py-24 bg-muted/30">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-          <div className="lg:col-span-2">
-            <div className="flex items-start space-x-3 mb-4">
-              <Lightbulb className="w-8 h-8 text-primary mt-1" />
+        {/* Tools Section - Structured grid */}
+        <section id="tools" className="bg-background border-t border-border/20">
+          <div className="container mx-auto px-8 py-24">
+            <div className="mb-12">
+              <h3 className="text-3xl font-normal mb-4 text-foreground">{t('tools.title')}</h3>
+              <p className="text-muted-foreground max-w-2xl">
+                {t('tools.description')}
+              </p>
+            </div>
+            
+            {/* Verified Visualizations */}
+            {verifiedVisualizations.length > 0 && (
+              <div className="mb-16">
+                <div className="flex items-center space-x-3 mb-8">
+                  <CheckCircle className="w-6 h-6 text-foreground/60" />
+                  <h4 className="text-2xl font-normal text-foreground">Verified</h4>
+                  <span className="text-sm text-muted-foreground">Production-ready visualizations</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {verifiedVisualizations.map((viz: any) => (
+                    <Link key={viz.path} href={viz.path} className="block group">
+                      <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02] rounded-none bg-background">
+                        <CardHeader className="pb-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-foreground/10 flex items-center justify-center transition-colors duration-200 group-hover:bg-accent">
+                              <viz.icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+                            </div>
+                            <CardTitle className="text-lg group-hover:text-accent-foreground transition-colors duration-200">{viz.title}</CardTitle>
+                          </div>
+                          <CardDescription className="text-sm text-muted-foreground leading-relaxed">
+                            {viz.description}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          {/* Icon Preview */}
+                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 transition-all duration-200">
+                            <viz.icon className="w-24 h-24 text-foreground/60 group-hover:text-foreground/80 group-hover:scale-110 transition-all duration-200" />
+                          </div>
+                          <ul className="space-y-2 mb-4">
+                            {viz.features.map((feature: string, index: number) => (
+                              <li key={index} className="flex items-center text-sm text-muted-foreground">
+                                <Sparkles className="w-3 h-3 mr-2 text-foreground/40 flex-shrink-0" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="opacity-60 group-hover:opacity-100 group-hover:bg-foreground group-hover:text-background group-hover:border-foreground transition-all duration-200 rounded-none"
+                          >
+                            <Play className="w-3 h-3 mr-2" />
+                            {t('tools.tryNow')}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* In Progress Visualizations */}
+            {inProgressVisualizations.length > 0 && (
               <div>
-                <h3 className="text-3xl font-normal text-foreground">
-                  {t('suggestions.title')}
-                </h3>
+                <div className="flex items-center space-x-3 mb-8">
+                  <Clock className="w-6 h-6 text-foreground/60" />
+                  <h4 className="text-2xl font-normal text-foreground">In Progress</h4>
+                  <span className="text-sm text-muted-foreground">Experimental visualizations</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {inProgressVisualizations.map((viz: any) => (
+                    <Link key={viz.path} href={viz.path} className="block group">
+                      <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02] opacity-80 rounded-none bg-background">
+                        <CardHeader className="pb-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-foreground/10 flex items-center justify-center transition-colors duration-200 group-hover:bg-accent">
+                              <viz.icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+                            </div>
+                            <CardTitle className="text-lg group-hover:text-accent-foreground transition-colors duration-200">{viz.title}</CardTitle>
+                          </div>
+                          <CardDescription className="text-sm text-muted-foreground leading-relaxed">
+                            {viz.description}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          {/* Icon Preview */}
+                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 transition-all duration-200">
+                            <viz.icon className="w-24 h-24 text-foreground/60 group-hover:text-foreground/80 group-hover:scale-110 transition-all duration-200" />
+                          </div>
+                          <ul className="space-y-2 mb-4">
+                            {viz.features.map((feature: string, index: number) => (
+                              <li key={index} className="flex items-center text-sm text-muted-foreground">
+                                <Sparkles className="w-3 h-3 mr-2 text-foreground/40 flex-shrink-0" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="opacity-60 group-hover:opacity-100 group-hover:bg-foreground group-hover:text-background group-hover:border-foreground transition-all duration-200 rounded-none"
+                          >
+                            <Play className="w-3 h-3 mr-2" />
+                            {t('tools.tryNow')}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Suggestions Section - Structured layout */}
+        <section id="suggestions" className="container mx-auto px-8 py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            <div className="lg:col-span-2">
+              <div className="flex items-start space-x-3 mb-4">
+                <Lightbulb className="w-8 h-8 text-primary mt-1" />
+                <div>
+                  <h3 className="text-3xl font-normal text-foreground">
+                    {t('suggestions.title')}
+                  </h3>
+                </div>
+              </div>
+              <p className="text-lg text-muted-foreground mb-6">
+                {t('suggestions.description')}
+              </p>
+            </div>
+            
+            <div className="lg:col-span-2">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button asChild size="lg" className="px-8 py-3">
+                  <Link href="/suggestions">
+                    {t('suggestions.viewSuggestions')}
+                  </Link>
+                </Button>
+                <Button variant="outline" size="lg" asChild className="px-8 py-3">
+                  <Link href="/suggestions/new">
+                    {t('suggestions.submitIdea')}
+                  </Link>
+                </Button>
               </div>
             </div>
-            <p className="text-lg text-muted-foreground mb-6">
-              {t('suggestions.description')}
-            </p>
           </div>
-          
-          <div className="lg:col-span-2">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="px-8 py-3">
-                <Link href="/suggestions">
-                  {t('suggestions.viewSuggestions')}
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild className="px-8 py-3">
-                <Link href="/suggestions/new">
-                  {t('suggestions.submitIdea')}
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* About Section - Asymmetrical layout */}
-      <section id="about" className="container mx-auto px-8 py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2">
-            <h3 className="text-3xl font-normal mb-6 text-foreground">
-              {t('about.title')}
-            </h3>
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-xl font-medium mb-3 text-foreground">{t('about.professionalGeneration.title')}</h4>
+        {/* About Section - Asymmetrical layout */}
+        <section id="about" className="container mx-auto px-8 py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="lg:col-span-2">
+              <h3 className="text-3xl font-normal mb-6 text-foreground">
+                {t('about.title')}
+              </h3>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-xl font-medium mb-3 text-foreground">{t('about.professionalGeneration.title')}</h4>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {t('about.professionalGeneration.description')}
+                  </p>
+                </div>
                 <p className="text-muted-foreground leading-relaxed">
-                  {t('about.professionalGeneration.description')}
+                  {t('about.additionalInfo')}
                 </p>
               </div>
+            </div>
+            
+            <div>
+              <h4 className="text-xl font-medium mb-4 text-foreground">{t('about.poweredBy.title')}</h4>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                {t('about.poweredBy.description')} <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>.
+              </p>
               <p className="text-muted-foreground leading-relaxed">
-                {t('about.additionalInfo')}
+                {t('about.poweredBy.expertise')}
               </p>
             </div>
           </div>
-          
-          <div>
-            <h4 className="text-xl font-medium mb-4 text-foreground">{t('about.poweredBy.title')}</h4>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              {t('about.poweredBy.description')} <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>.
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
-              {t('about.poweredBy.expertise')}
-            </p>
-          </div>
-        </div>
-      </section>
-    </AppLayout>
+        </section>
+      </AppLayout>
+    </div>
   )
 } 
