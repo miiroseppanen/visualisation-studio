@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/ui/ThemeProvider'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
-import PWAStatus from '@/components/PWAStatus'
 import { I18nProvider } from '@/components/I18nProvider'
 
 export const metadata: Metadata = {
@@ -117,7 +116,6 @@ export default function RootLayout({
           <ThemeProvider>
             {children}
             <ServiceWorkerRegistration />
-            <PWAStatus />
           </ThemeProvider>
         </I18nProvider>
       </body>

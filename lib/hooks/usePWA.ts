@@ -5,18 +5,19 @@ import { useState, useEffect } from 'react'
 interface PWAState {
   canInstall: boolean
   isInstalled: boolean
-  isOnline: boolean
-  hasUpdate: boolean
+  isOffline: boolean
+  isUpdateAvailable: boolean
   installPrompt: any
   installApp: () => Promise<void>
-  showInstallToast: () => void
+  updateApp: () => void
+  setUpdateAvailable: (available: boolean) => void
 }
 
 export function usePWA(): PWAState {
   const [canInstall, setCanInstall] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
-  const [isOnline, setIsOnline] = useState(true)
-  const [hasUpdate, setHasUpdate] = useState(false)
+  const [isOffline, setIsOffline] = useState(false)
+  const [isUpdateAvailable, setIsUpdateAvailable] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<any>(null)
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export function usePWA(): PWAState {
 
     // Check online status
     const updateOnlineStatus = () => {
-      setIsOnline(navigator.onLine)
+      setIsOffline(!navigator.onLine)
     }
 
     // Listen for install prompt
@@ -48,7 +49,7 @@ export function usePWA(): PWAState {
 
     // Listen for service worker updates
     const handleServiceWorkerUpdate = () => {
-      setHasUpdate(true)
+      setIsUpdateAvailable(true)
     }
 
     // Check initial state
@@ -99,18 +100,23 @@ export function usePWA(): PWAState {
     }
   }
 
-  const showInstallToast = () => {
-    // This will be handled by the parent component
-    // The hook just provides the function interface
+  const updateApp = () => {
+    // Reload the page to apply the update
+    window.location.reload()
+  }
+
+  const setUpdateAvailable = (available: boolean) => {
+    setIsUpdateAvailable(available)
   }
 
   return {
     canInstall,
     isInstalled,
-    isOnline,
-    hasUpdate,
+    isOffline,
+    isUpdateAvailable,
     installPrompt,
     installApp,
-    showInstallToast
+    updateApp,
+    setUpdateAvailable
   }
 } 

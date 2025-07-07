@@ -4,12 +4,8 @@ import { useState, useEffect } from 'react'
 import { usePWA } from '@/lib/hooks/usePWA'
 import { Download, X } from 'lucide-react'
 
-interface PWAInstallToastProps {
-  onOpenModal: () => void
-}
-
-export default function PWAInstallToast({ onOpenModal }: PWAInstallToastProps) {
-  const { canInstall, isInstalled } = usePWA()
+export default function PWAInstallToast() {
+  const { canInstall, isInstalled, installApp } = usePWA()
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
 
@@ -41,9 +37,14 @@ export default function PWAInstallToast({ onOpenModal }: PWAInstallToastProps) {
     localStorage.setItem('pwa-toast-dismissed', 'true')
   }
 
-  const handleInstall = () => {
-    onOpenModal()
-    handleDismiss()
+  const handleInstall = async () => {
+    try {
+      await installApp()
+      handleDismiss()
+    } catch (error) {
+      console.error('Installation failed:', error)
+      // Don't dismiss if installation fails
+    }
   }
 
   if (!isVisible || isDismissed) {
@@ -72,6 +73,7 @@ export default function PWAInstallToast({ onOpenModal }: PWAInstallToastProps) {
           <button
             onClick={handleDismiss}
             className="p-1 hover:bg-muted rounded-md transition-colors"
+            aria-label="Close"
           >
             <X className="w-3 h-3 text-muted-foreground" />
           </button>

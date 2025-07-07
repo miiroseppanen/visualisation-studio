@@ -9,7 +9,6 @@ import AppLayout from '@/components/layout/AppLayout'
 import { useTheme } from '@/components/ui/ThemeProvider'
 import { useTranslation } from 'react-i18next'
 import { useHomePageVisualizations } from '@/lib/hooks/useHomePageVisualizations'
-import PWAInstallModal from '@/components/PWAInstallModal'
 import PWAInstallToast from '@/components/PWAInstallToast'
 
 // Interactive Mathematical Line-Based Background Animation
@@ -323,7 +322,6 @@ export default function HomePage() {
   const { allVisualizations, verifiedVisualizations, inProgressVisualizations } = useHomePageVisualizations()
   const [heroOpacity, setHeroOpacity] = React.useState(1)
   const heroRef = React.useRef<HTMLDivElement>(null)
-  const [isPWAModalOpen, setIsPWAModalOpen] = React.useState(false)
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -571,13 +569,7 @@ export default function HomePage() {
       </AppLayout>
       
       {/* PWA Install Toast */}
-      <PWAInstallToast onOpenModal={() => setIsPWAModalOpen(true)} />
-      
-      {/* PWA Install Modal */}
-      <PWAInstallModal 
-        isOpen={isPWAModalOpen} 
-        onClose={() => setIsPWAModalOpen(false)} 
-      />
+      <PWAInstallToast />
     </div>
   )
 } 
