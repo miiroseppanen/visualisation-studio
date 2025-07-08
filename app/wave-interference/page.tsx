@@ -246,8 +246,8 @@ export default function WaveInterferencePage() {
     const drawImmersiveInterference = useCallback((ctx: CanvasRenderingContext2D, fields: InterferenceField[], width: number, height: number) => {
       const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
       
-      // Create solid black background
-      ctx.fillStyle = '#000000'
+      // Create background based on theme
+      ctx.fillStyle = isDark ? '#000000' : '#ffffff'
       ctx.fillRect(0, 0, width, height)
       
       // Apply zoom transformation
@@ -266,7 +266,7 @@ export default function WaveInterferencePage() {
         const alpha = 0.2 + adjustedIntensity * 0.6 // Higher alpha range for black and white
         
         // Pure black and white - no colors
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines on black background
+        ctx.strokeStyle = isDark ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 0, 0, ${alpha})` // White lines on dark, black lines on light
         ctx.lineWidth = 0.8 + adjustedIntensity * 1.2 // More stable line width
         
         // Draw lines to represent interference patterns
@@ -286,7 +286,7 @@ export default function WaveInterferencePage() {
           const perpEndX = field.x + Math.cos(perpAngle) * perpLength
           const perpEndY = field.y + Math.sin(perpAngle) * perpLength
           
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // Slightly more transparent white
+          ctx.strokeStyle = isDark ? `rgba(255, 255, 255, ${alpha * 0.6})` : `rgba(0, 0, 0, ${alpha * 0.6})` // Slightly more transparent lines
           ctx.lineWidth = 0.5 + adjustedIntensity * 0.3 // More stable perpendicular line width
           ctx.beginPath()
           ctx.moveTo(field.x, field.y)
@@ -328,7 +328,7 @@ export default function WaveInterferencePage() {
         const alpha = Math.min(0.7, adjustedAmplitude / 100) // Higher alpha for black and white
         
         // Pure black and white - no colors
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})` // White lines on black background
+        ctx.strokeStyle = isDark ? `rgba(255, 255, 255, ${alpha})` : `rgba(0, 0, 0, ${alpha})` // White lines on dark, black lines on light
         ctx.lineWidth = 1.2 * interferenceContrast // Apply contrast to line width
         
         // Draw interference cross patterns
@@ -349,7 +349,7 @@ export default function WaveInterferencePage() {
         // Diagonal lines for more detail
         if (adjustedAmplitude > 50) { // Higher threshold for diagonal lines
           ctx.lineWidth = 0.8 * interferenceContrast
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})` // Slightly more transparent white
+          ctx.strokeStyle = isDark ? `rgba(255, 255, 255, ${alpha * 0.6})` : `rgba(0, 0, 0, ${alpha * 0.6})` // Slightly more transparent lines
           
           // Diagonal line 1
           ctx.beginPath()
@@ -792,14 +792,22 @@ export default function WaveInterferencePage() {
           />
 
           <WaveSettings
-            resolution={smoothness}
-            lineDensity={lineDensity}
+            showWaveFunctions={showWavefronts}
+            onShowWaveFunctionsChange={setShowWavefronts}
+            showInterference={showInterference}
+            onShowInterferenceChange={setShowInterference}
+            showCollapse={false}
+            onShowCollapseChange={() => {}}
+            fieldDensity={lineDensity}
+            onFieldDensityChange={setLineDensity}
             interferenceContrast={interferenceContrast}
+            onInterferenceContrastChange={setInterferenceContrast}
+            resolution={smoothness}
+            onSetResolution={setSmoothness}
+            lineDensity={lineDensity}
+            onSetLineDensity={setLineDensity}
             expanded={panelState.waveSettingsExpanded}
             onToggleExpanded={() => setPanelState(prev => ({ ...prev, waveSettingsExpanded: !prev.waveSettingsExpanded }))}
-            onSetResolution={setSmoothness}
-            onSetLineDensity={setLineDensity}
-            onSetInterferenceContrast={setInterferenceContrast}
           />
 
           <AnimationControls
