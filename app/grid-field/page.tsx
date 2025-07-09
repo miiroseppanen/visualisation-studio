@@ -11,6 +11,7 @@ import { calculateFieldAt, isPoleClicked, generatePoleId, generatePoleName } fro
 import type { GridLine } from '@/lib/types'
 import { POLE_CLICK_RADIUS, ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL, FRAME_TIME } from '@/lib/constants'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
+import dynamic from 'next/dynamic'
 
 // Grid generation functions
 function generateRectangularGrid(width: number, height: number, spacing: number): { x: number; y: number }[] {
@@ -150,7 +151,7 @@ function generateSpiralGrid(width: number, height: number, spacing: number): { x
   return points
 }
 
-export default function GridFieldPage() {
+function GridFieldPage() {
   const rendererRef = useRef<GridRenderer | null>(null)
   // Store random grid points in a ref so they persist
   const randomGridPointsRef = useRef<{ x: number; y: number }[] | null>(null)
@@ -574,3 +575,6 @@ export default function GridFieldPage() {
     </VisualizationLayout>
   )
 }
+
+const GridFieldPageComponent = GridFieldPage;
+export default dynamic(() => Promise.resolve(GridFieldPageComponent), { ssr: false });

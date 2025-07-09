@@ -12,6 +12,7 @@ import { FullScreenLoader } from '@/components/ui/loader'
 import type { SoundWaveAnimationSettings, SoundWavePanelState } from '@/lib/types'
 import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
 import { useTheme } from '@/components/ui/ThemeProvider'
+import dynamic from 'next/dynamic'
 
 interface WavePoint {
   x: number
@@ -27,7 +28,7 @@ interface FrequencyBin {
   phase: number
 }
 
-export default function SoundWavePage() {
+function SoundWavePage() {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
@@ -479,4 +480,7 @@ export default function SoundWavePage() {
       />
     </VisualizationLayout>
   )
-} 
+}
+
+const SoundWavePageComponent = SoundWavePage;
+export default dynamic(() => Promise.resolve(SoundWavePageComponent), { ssr: false }); 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Download, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ import { registerAnimationFrame, unregisterAnimationFrame, updateTrailEfficientl
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { useTheme } from '@/components/ui/ThemeProvider'
+import dynamic from 'next/dynamic'
 
 interface QuantumPole {
   id: string
@@ -55,7 +56,7 @@ interface WaveFunction {
   decay: number
 }
 
-export default function FlowFieldPage() {
+function FlowFieldPage() {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
@@ -137,7 +138,7 @@ export default function FlowFieldPage() {
   }, [isClient])
 
   // Calculate quantum field at a point
-  const calculateQuantumField = (x: number, y: number, time: number): { x: number; y: number; magnitude: number; phase: number } => {
+  const calculateQuantumField = useCallback((x: number, y: number, time: number): { x: number; y: number; magnitude: number; phase: number } => {
     let fieldX = 0
     let fieldY = 0
     let totalPhase = 0
@@ -205,7 +206,7 @@ export default function FlowFieldPage() {
       magnitude: Math.sqrt(adjustedFieldX * adjustedFieldX + adjustedFieldY * adjustedFieldY),
       phase: totalPhase
     }
-  }
+  }, [poles, animationSettings.flowIntensity]);
 
   // Generate quantum particles
   useEffect(() => {
@@ -437,7 +438,7 @@ export default function FlowFieldPage() {
         animationRef.current = undefined
       }
     }
-  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, isClient])
+  }, [animationSettings.isAnimating, animationSettings.particleSpeed, animationSettings.flowIntensity, isClient, animationSettings.particleLife, animationSettings.time, calculateQuantumField, particleCount])
 
   // Handle pause all animations
   useEffect(() => {
@@ -685,7 +686,7 @@ export default function FlowFieldPage() {
         }
       })
     }
-  }, [particles, waveFunctions, showPoles, showFieldLines, showParticleTrails, showWaveFunctions, showSuperposition, fieldLineDensity, animationSettings, poles, theme, isClient])
+  }, [particles, waveFunctions, showPoles, showFieldLines, showParticleTrails, showWaveFunctions, showSuperposition, fieldLineDensity, animationSettings, poles, theme, isClient, calculateQuantumField])
 
   // Handle canvas mouse down for adding/dragging poles
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -907,3 +908,6 @@ export default function FlowFieldPage() {
     </VisualizationLayout>
   )
 }
+
+const FlowFieldPageComponent = FlowFieldPage;
+export default dynamic(() => Promise.resolve(FlowFieldPageComponent), { ssr: false });

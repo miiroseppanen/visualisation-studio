@@ -10,6 +10,7 @@ import { useTheme } from '@/components/ui/ThemeProvider'
 import { useTranslation } from 'react-i18next'
 import { useHomePageVisualizations } from '@/lib/hooks/useHomePageVisualizations'
 import PWAInstallToast from '@/components/PWAInstallToast'
+import dynamic from 'next/dynamic'
 
 // Interactive Mathematical Line-Based Background Animation
 const MathematicalBackground = ({ opacity = 1 }: { opacity?: number }) => {
@@ -322,7 +323,7 @@ function isMobileDevice() {
   return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-export default function HomePage() {
+const Page = () => {
   const { t } = useTranslation()
   const { allVisualizations, verifiedVisualizations, inProgressVisualizations } = useHomePageVisualizations()
   const [heroOpacity, setHeroOpacity] = React.useState(1)
@@ -584,4 +585,6 @@ export default function HomePage() {
       {showPwaToast && <PWAInstallToast />}
     </div>
   )
-} 
+}
+
+export default dynamic(() => Promise.resolve(Page), { ssr: false }); 
