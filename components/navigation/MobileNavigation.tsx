@@ -7,6 +7,7 @@ import { useNavigation } from '@/lib/hooks/useNavigation'
 import { useVisualizationNavigation } from '@/lib/hooks/useVisualizationNavigation'
 import NavigationBackButton from './NavigationBackButton'
 import NavigationActionButtons from './NavigationActionButtons'
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface MobileNavigationProps {
   onReset?: () => void
@@ -36,6 +37,7 @@ export default function MobileNavigation({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { navigateHome } = useNavigation()
   const { currentVisualization, allVisualizations, verifiedVisualizations, inProgressVisualizations, navigateToVisualization } = useVisualizationNavigation()
+  useBodyScrollLock(isMenuOpen);
 
   const handleBackClick = () => {
     navigateHome()
