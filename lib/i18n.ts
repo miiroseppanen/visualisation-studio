@@ -1,58 +1,35 @@
-import i18n from 'i18next'
-import { initReactI18next } from 'react-i18next'
-import LanguageDetector from 'i18next-browser-languagedetector'
+import i18next, { i18n as I18nInstance } from 'i18next';
+import enTranslations from './locales/en.json';
+import fiTranslations from './locales/fi.json';
 
-// Import translation files
-import enTranslations from './locales/en.json'
-import fiTranslations from './locales/fi.json'
-
-// Define available languages
 export const languages = {
   en: 'English',
-  fi: 'Suomi'
-}
+  fi: 'Suomi',
+};
 
-// Initialize i18n
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
+export function createI18n(language: string): I18nInstance {
+  const instance = i18next.createInstance();
+  instance.init({
     resources: {
-      en: {
-        translation: enTranslations
-      },
-      fi: {
-        translation: fiTranslations
-      }
+      en: { translation: enTranslations },
+      fi: { translation: fiTranslations },
     },
+    lng: language,
     fallbackLng: 'en',
-    debug: false, // Disable debug mode to reduce console noise
-    
-    // Language detection options
+    debug: false,
+    interpolation: { escapeValue: false },
+    contextSeparator: '_',
+    pluralSeparator: '_',
+    ns: ['translation'],
+    defaultNS: 'translation',
+    supportedLngs: ['en', 'fi'],
+    keySeparator: '.',
+    nsSeparator: ':',
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag', 'path', 'subdomain'],
       caches: ['localStorage'],
-      lookupLocalStorage: 'i18nextLng'
+      lookupLocalStorage: 'i18nextLng',
     },
-
-    interpolation: {
-      escapeValue: false // React already does escaping
-    },
-
-    // Add support for context and plurals
-    contextSeparator: '_',
-    pluralSeparator: '_',
-    
-    // Namespace handling
-    ns: ['translation'],
-    defaultNS: 'translation',
-
-    // Language whitelist
-    supportedLngs: ['en', 'fi'],
-    
-    // Key handling
-    keySeparator: '.',
-    nsSeparator: ':'
-  })
-
-export default i18n
+  });
+  return instance;
+}

@@ -1,695 +1,462 @@
 'use client'
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
-import { Download, RotateCcw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import VisualizationLayout from '@/components/layout/VisualizationLayout'
-import AnimationControls from '@/components/wave-interference/AnimationControls'
-import WaveSourceControls2 from '@/components/wave-interference/WaveSourceControls2'
-import WaveSettings from '@/components/wave-interference/WaveSettings'
-import QuantumControls from '@/components/wave-interference/QuantumControls'
-import type { WaveInterferenceAnimationSettings, WaveInterferencePanelState } from '@/lib/types'
-import { ZOOM_SENSITIVITY, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL } from '@/lib/constants'
-import { registerAnimationFrame, unregisterAnimationFrame } from '@/lib/utils'
-import { useTheme } from '@/components/ui/ThemeProvider'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { Slider } from '@/components/ui/slider'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { FullScreenLoader } from '@/components/ui/loader'
-import { useTranslation } from 'react-i18next'
 
-interface QuantumParticle {
+interface WaveSource {
   id: string
   x: number
   y: number
-  vx: number
-  vy: number
   amplitude: number
+  frequency: number
   phase: number
   wavelength: number
-  energy: number
-  superposition: boolean
-  collapsed: boolean
-  waveFunction: 'gaussian' | 'plane' | 'spherical' | 'interfering' | 'harmonic' | 'chaotic'
-  color: string
-  life: number
-  maxLife: number
-  size: number
-  pulse: number
-  entanglement: string[]
-  spin: number
-}
-
-interface InterferencePoint {
-  x: number
-  y: number
-  amplitude: number
-  phase: number
-  energy: number
-  interference: number
-  collapse: number
-  chaos: number
-}
-
-interface MeasurementDevice {
-  id: string
-  x: number
-  y: number
-  radius: number
   active: boolean
-  measurementType: 'position' | 'momentum' | 'energy' | 'spin' | 'entanglement'
-  results: Array<{ x: number; y: number; value: number; time: number }>
-  pulse: number
-  influence: number
-}
-
-interface QuantumField {
-  x: number
-  y: number
-  value: number
-  type: 'interference' | 'collapse' | 'entanglement' | 'chaos'
-  intensity: number
+  type: 'sine' | 'cosine' | 'spiral' | 'radial' | 'interference'
+  color: string
+  rotation: number
+  rotationSpeed: number
 }
 
 export default function WaveInterference2Page() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number>()
-  const renderFrameRef = useRef<number>()
   const [isClient, setIsClient] = useState(false)
-  const [zoomLevel, setZoomLevel] = useState(1)
-  const { theme } = useTheme()
-  const { t } = useTranslation()
+  const [panelOpen, setPanelOpen] = useState(true)
 
-  // Canvas size state
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
+  // Use refs to store simulation state to avoid infinite re-renders
+  const waveSourcesRef = useRef<WaveSource[]>([])
+  const timeRef = useRef(0)
 
-  // Quantum particles state
-  const [particles, setParticles] = useState<QuantumParticle[]>([])
-
-  // Measurement devices
-  const [measurementDevices, setMeasurementDevices] = useState<MeasurementDevice[]>([])
-
-  // Quantum field
-  const [quantumField, setQuantumField] = useState<QuantumField[]>([])
-
-  // Settings state
-  const [showParticles, setShowParticles] = useState(true)
+  // Controls state
   const [showWaveFunctions, setShowWaveFunctions] = useState(true)
   const [showInterference, setShowInterference] = useState(true)
-  const [showMeasurementDevices, setShowMeasurementDevices] = useState(true)
-  const [showCollapse, setShowCollapse] = useState(true)
-  const [showEntanglement, setShowEntanglement] = useState(true)
-  const [showChaos, setShowChaos] = useState(true)
-  const [particleCount, setParticleCount] = useState(15)
-  const [deviceCount, setDeviceCount] = useState(8)
-  const [fieldDensity, setFieldDensity] = useState(20)
-  const [interferenceStrength, setInterferenceStrength] = useState(0.8)
-  const [collapseThreshold, setCollapseThreshold] = useState(0.6)
-  const [chaosLevel, setChaosLevel] = useState(0.3)
+  const [showWaveTrails, setShowWaveTrails] = useState(true)
+  const [animationSpeed, setAnimationSpeed] = useState(1)
+  const [waveAmplitude, setWaveAmplitude] = useState(50)
+  const [waveFrequency, setWaveFrequency] = useState(0.02)
+  const [waveWavelength, setWaveWavelength] = useState(60)
+  const [interferenceIntensity, setInterferenceIntensity] = useState(0.8)
+  const [colorMode, setColorMode] = useState<'rainbow' | 'monochrome' | 'thermal'>('rainbow')
 
-  // Animation settings
-  const [animationSettings, setAnimationSettings] = useState<WaveInterferenceAnimationSettings>({
-    isAnimating: true,
-    time: 0,
-    speed: 1.0,
-    waveSpeed: 2.0
-  })
+  // Display state (for UI updates)
+  const [displayTime, setDisplayTime] = useState(0)
 
-  // Panel state
-  const [panelState, setPanelState] = useState<WaveInterferencePanelState>({
-    isOpen: true,
-    waveSourcesExpanded: true,
-    waveSettingsExpanded: true,
-    animationExpanded: false
-  })
-
-  // Additional panel state for quantum controls
-  const [quantumControlsExpanded, setQuantumControlsExpanded] = useState(true)
-
-  // Initialize client-side rendering
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  // Canvas setup and resize handling
+  // Initialize simulation
   useEffect(() => {
     if (!isClient) return
 
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const resizeCanvas = () => {
-      const parent = canvas.parentElement
-      if (!parent) return
-      const rect = parent.getBoundingClientRect()
-      canvas.width = rect.width * window.devicePixelRatio
-      canvas.height = rect.height * window.devicePixelRatio
-      canvas.style.width = rect.width + 'px'
-      canvas.style.height = rect.height + 'px'
-      setCanvasSize({ width: rect.width, height: rect.height })
-    }
+    const rect = canvas.getBoundingClientRect()
+    const width = rect.width
+    const height = rect.height
 
-    resizeCanvas()
-    const resizeObserver = new ResizeObserver(resizeCanvas)
-    if (canvas.parentElement) resizeObserver.observe(canvas.parentElement)
-    window.addEventListener('resize', resizeCanvas)
-    
-    return () => {
-      resizeObserver.disconnect()
-      window.removeEventListener('resize', resizeCanvas)
-    }
-  }, [isClient])
-
-  // Initialize quantum system
-  useEffect(() => {
-    if (!isClient || canvasSize.width === 0 || canvasSize.height === 0) return
-
-    const width = canvasSize.width
-    const height = canvasSize.height
-
-    // Create quantum particles
-    const newParticles: QuantumParticle[] = []
-    const waveFunctions: Array<'gaussian' | 'plane' | 'spherical' | 'interfering' | 'harmonic' | 'chaotic'> = 
-      ['gaussian', 'plane', 'spherical', 'interfering', 'harmonic', 'chaotic']
-    
-    for (let i = 0; i < particleCount; i++) {
-      newParticles.push({
-        id: `particle-${i}`,
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 2,
-        vy: (Math.random() - 0.5) * 2,
-        amplitude: Math.random() * 60 + 40,
-        phase: Math.random() * Math.PI * 2,
-        wavelength: Math.random() * 100 + 80,
-        energy: Math.random() * 0.8 + 0.2,
-        superposition: true,
-        collapsed: false,
-        waveFunction: waveFunctions[Math.floor(Math.random() * waveFunctions.length)],
-        color: `hsl(${Math.random() * 360}, 70%, 60%)`,
-        life: 1,
-        maxLife: 1,
-        size: Math.random() * 3 + 2,
-        pulse: 0,
-        entanglement: [],
-        spin: Math.random() * 2 - 1
-      })
-    }
-
-    // Create measurement devices
-    const newDevices: MeasurementDevice[] = []
-    const deviceTypes: Array<'position' | 'momentum' | 'energy' | 'spin' | 'entanglement'> = 
-      ['position', 'momentum', 'energy', 'spin', 'entanglement']
-    
-    for (let i = 0; i < deviceCount; i++) {
-      newDevices.push({
-        id: `device-${i}`,
-        x: Math.random() * width,
-        y: Math.random() * height,
-        radius: Math.random() * 60 + 40,
+    // Initialize wave sources with different types
+    const newWaveSources: WaveSource[] = [
+      { 
+        id: 'w1', 
+        x: width * 0.3, 
+        y: height * 0.5, 
+        amplitude: waveAmplitude, 
+        frequency: waveFrequency, 
+        phase: 0, 
+        wavelength: waveWavelength, 
         active: true,
-        measurementType: deviceTypes[Math.floor(Math.random() * deviceTypes.length)],
-        results: [],
-        pulse: 0,
-        influence: Math.random() * 0.5 + 0.5
-      })
-    }
-
-    setParticles(newParticles)
-    setMeasurementDevices(newDevices)
-  }, [isClient, canvasSize, particleCount, deviceCount])
-
-  // Calculate wave function value based on type
-  const calculateWaveFunction = useCallback((x: number, y: number, particle: QuantumParticle, time: number): number => {
-    const dx = x - particle.x
-    const dy = y - particle.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
-    const phase = particle.phase + (time * particle.energy * animationSettings.waveSpeed)
-    
-    let value = 0
-    
-    switch (particle.waveFunction) {
-      case 'gaussian':
-        const sigma = particle.wavelength / 4
-        const gaussian = Math.exp(-(distance * distance) / (2 * sigma * sigma))
-        value = gaussian * Math.cos(phase + distance / particle.wavelength * 2 * Math.PI)
-        break
-        
-      case 'plane':
-        const kx = Math.cos(particle.vx) * 2 * Math.PI / particle.wavelength
-        const ky = Math.sin(particle.vy) * 2 * Math.PI / particle.wavelength
-        value = Math.cos(kx * x + ky * y + phase)
-        break
-        
-      case 'spherical':
-        const sphericalPhase = phase + distance / particle.wavelength * 2 * Math.PI
-        value = Math.cos(sphericalPhase) / (1 + distance / particle.wavelength)
-        break
-        
-      case 'interfering':
-        const interference1 = Math.cos(phase + distance / particle.wavelength * 2 * Math.PI)
-        const interference2 = Math.cos(phase + (distance + particle.wavelength/2) / particle.wavelength * 2 * Math.PI)
-        value = (interference1 + interference2) / 2
-        break
-
-      case 'harmonic':
-        const harmonic1 = Math.cos(phase + distance / particle.wavelength * 2 * Math.PI)
-        const harmonic2 = Math.cos(phase + distance / (particle.wavelength * 0.5) * 2 * Math.PI)
-        const harmonic3 = Math.cos(phase + distance / (particle.wavelength * 0.25) * 2 * Math.PI)
-        value = (harmonic1 + harmonic2 * 0.5 + harmonic3 * 0.25) / 1.75
-        break
-
-      case 'chaotic':
-        const chaotic1 = Math.cos(phase + distance / particle.wavelength * 2 * Math.PI)
-        const chaotic2 = Math.sin(phase + distance / (particle.wavelength * 1.618) * 2 * Math.PI)
-        const chaotic3 = Math.cos(phase + distance / (particle.wavelength * 0.618) * 2 * Math.PI)
-        value = (chaotic1 + chaotic2 * 0.7 + chaotic3 * 0.3) / 2
-        break
-    }
-    
-    return value * particle.amplitude
-  }, [animationSettings.waveSpeed])
-
-  // Calculate quantum interference field
-  const calculateInterferenceField = useCallback((width: number, height: number): InterferencePoint[] => {
-    const points: InterferencePoint[] = []
-    const step = Math.max(3, Math.min(6, 60 / fieldDensity))
-    
-    for (let x = 0; x < width; x += step) {
-      for (let y = 0; y < height; y += step) {
-        let totalAmplitude = 0
-        let totalPhase = 0
-        let totalEnergy = 0
-        let particleCount = 0
-        let chaos = 0
-        
-        particles.forEach(particle => {
-          if (particle.collapsed) return
-          
-          const waveValue = calculateWaveFunction(x, y, particle, animationSettings.time)
-          totalAmplitude += waveValue
-          totalPhase += particle.phase
-          totalEnergy += particle.energy
-          particleCount++
-          
-          if (particle.waveFunction === 'chaotic') {
-            chaos += Math.abs(waveValue) * chaosLevel
-          }
-        })
-        
-        if (particleCount > 0) {
-          const interference = Math.abs(totalAmplitude) * interferenceStrength
-          const collapse = interference > collapseThreshold ? interference : 0
-          
-          points.push({
-            x,
-            y,
-            amplitude: totalAmplitude,
-            phase: totalPhase / particleCount,
-            energy: totalEnergy / particleCount,
-            interference,
-            collapse,
-            chaos: Math.min(1, chaos)
-          })
-        }
+        type: 'sine',
+        color: '#ffffff',
+        rotation: 0,
+        rotationSpeed: 0.5
+      },
+      { 
+        id: 'w2', 
+        x: width * 0.7, 
+        y: height * 0.5, 
+        amplitude: waveAmplitude, 
+        frequency: waveFrequency, 
+        phase: Math.PI, 
+        wavelength: waveWavelength, 
+        active: true,
+        type: 'cosine',
+        color: '#cccccc',
+        rotation: 0,
+        rotationSpeed: -0.3
       }
-    }
-    
-    return points
-  }, [particles, calculateWaveFunction, animationSettings.time, fieldDensity, interferenceStrength, collapseThreshold, chaosLevel])
+    ]
 
-  // Animation loop
+    waveSourcesRef.current = newWaveSources
+  }, [isClient, waveAmplitude, waveFrequency, waveWavelength])
+
+  // Canvas setup
   useEffect(() => {
-    if (!isClient || !animationSettings.isAnimating || canvasSize.width === 0) return
+    if (!isClient || !canvasRef.current) return
 
     const canvas = canvasRef.current
-    if (!canvas) return
-
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const width = canvas.width / window.devicePixelRatio
-    const height = canvas.height / window.devicePixelRatio
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width * window.devicePixelRatio
+      canvas.height = rect.height * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+      ctx.canvas.style.width = rect.width + 'px'
+      ctx.canvas.style.height = rect.height + 'px'
+    }
 
-    const animate = () => {
-      if (!animationSettings.isAnimating) return
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+    return () => window.removeEventListener('resize', resizeCanvas)
+  }, [isClient])
 
-      // Clear canvas with fade effect
-      ctx.fillStyle = theme === 'dark' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+  // Calculate wave value at a point
+  const calculateWaveValue = useCallback((x: number, y: number, source: WaveSource, t: number): number => {
+    const dx = x - source.x
+    const dy = y - source.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    const angle = Math.atan2(dy, dx)
+    
+    switch (source.type) {
+      case 'sine':
+        return source.amplitude * Math.sin((distance / source.wavelength) * 2 * Math.PI + source.phase + t * source.frequency)
+      case 'cosine':
+        return source.amplitude * Math.cos((distance / source.wavelength) * 2 * Math.PI + source.phase + t * source.frequency)
+      case 'spiral':
+        return source.amplitude * Math.sin((distance / source.wavelength) * 2 * Math.PI + angle * 3 + source.phase + t * source.frequency)
+      case 'radial':
+        return source.amplitude * Math.sin(distance * 0.1 + source.phase + t * source.frequency) * Math.exp(-distance / 100)
+      case 'interference':
+        return source.amplitude * Math.sin((distance / source.wavelength) * 2 * Math.PI + source.phase + t * source.frequency) * Math.cos(angle * 2)
+      default:
+        return 0
+    }
+  }, [])
 
-      // Update particles
-      setParticles(prevParticles => {
-        return prevParticles.map(particle => {
-          // Update position
-          particle.x += particle.vx
-          particle.y += particle.vy
+  // Calculate total interference at a point
+  const calculateInterference = useCallback((x: number, y: number, t: number): number => {
+    let totalAmplitude = 0
 
-          // Wrap around edges
-          if (particle.x < 0) particle.x = width
-          if (particle.x > width) particle.x = 0
-          if (particle.y < 0) particle.y = height
-          if (particle.y > height) particle.y = 0
+    waveSourcesRef.current.forEach(source => {
+      if (!source.active) return
+      totalAmplitude += calculateWaveValue(x, y, source, t)
+    })
 
-          // Update phase
-          particle.phase += particle.energy * 0.02
+    return totalAmplitude
+  }, [calculateWaveValue])
 
-          // Update pulse
-          particle.pulse = (particle.pulse + 0.1) % (Math.PI * 2)
+  // Get color based on value and mode
+  const getColor = useCallback((value: number, maxValue: number): string => {
+    const normalized = (value + maxValue) / (2 * maxValue)
+    
+    switch (colorMode) {
+      case 'rainbow':
+        const hue = (normalized * 360) % 360
+        return `hsl(${hue}, 70%, 60%)`
+      case 'monochrome':
+        const intensity = Math.abs(normalized) * 255
+        return `rgb(${intensity}, ${intensity}, ${intensity})`
+      case 'thermal':
+        if (normalized < 0.5) {
+          const blue = normalized * 2 * 255
+          return `rgb(0, 0, ${blue})`
+        } else {
+          const red = (normalized - 0.5) * 2 * 255
+          return `rgb(${red}, 0, 255)`
+        }
+      default:
+        return '#ffffff'
+    }
+  }, [colorMode])
 
-          // Check for measurement device interactions
-          measurementDevices.forEach(device => {
-            if (!device.active) return
-            
-            const dx = device.x - particle.x
-            const dy = device.y - particle.y
-            const distance = Math.sqrt(dx * dx + dy * dy)
-            
-            if (distance < device.radius) {
-              const collapseProbability = (1 - distance / device.radius) * device.influence
-              if (Math.random() < collapseProbability && !particle.collapsed) {
-                particle.collapsed = true
-                particle.superposition = false
-                
-                // Record measurement
-                device.results.push({
-                  x: particle.x,
-                  y: particle.y,
-                  value: particle.energy,
-                  time: animationSettings.time
-                })
-                
-                // Keep only recent results
-                if (device.results.length > 20) {
-                  device.results.shift()
-                }
-              }
-            }
-          })
+  // Animation loop
+  useEffect(() => {
+    if (!isClient || !canvasRef.current) return
 
-          return particle
-        })
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let lastUpdateTime = 0
+    const updateInterval = 100 // Update display state every 100ms
+
+    const animate = (timestamp: number) => {
+      const rect = canvas.getBoundingClientRect()
+      const width = rect.width
+      const height = rect.height
+
+      // Clear canvas with black background
+      ctx.fillStyle = '#000000'
+      ctx.fillRect(0, 0, width, height)
+
+      // Update time in ref (no React state update)
+      timeRef.current += 0.016 * animationSpeed
+      const currentTimeValue = timeRef.current
+
+      // Update wave source rotations
+      waveSourcesRef.current.forEach(source => {
+        source.rotation += source.rotationSpeed * animationSpeed * 0.01
       })
 
-      // Update measurement devices
-      setMeasurementDevices(prevDevices => {
-        return prevDevices.map(device => {
-          device.pulse = (device.pulse + 0.05) % (Math.PI * 2)
-          return device
-        })
-      })
-
-      // Calculate interference field
-      const interferenceField = calculateInterferenceField(width, height)
-
-      // Draw interference field
+      // Draw interference pattern
       if (showInterference) {
-        interferenceField.forEach(point => {
-          const intensity = Math.abs(point.interference)
-          const alpha = Math.min(0.8, intensity * 0.5)
-          
-          if (intensity > 0.1) {
-            ctx.fillStyle = theme === 'dark' ? 
-              `rgba(255, 255, 255, ${alpha})` : 
-              `rgba(0, 0, 0, ${alpha})`
-            ctx.fillRect(point.x, point.y, 2, 2)
-          }
-        })
-      }
-
-      // Draw collapse effects
-      if (showCollapse) {
-        interferenceField.forEach(point => {
-          if (point.collapse > 0) {
-            const intensity = point.collapse
-            const size = intensity * 4 + 1
+        const gridSize = 4 // Smaller grid for more detail
+        const maxValue = waveAmplitude * 2
+        
+        for (let x = 0; x < width; x += gridSize) {
+          for (let y = 0; y < height; y += gridSize) {
+            const interference = calculateInterference(x, y, currentTimeValue)
+            const intensity = Math.abs(interference) / maxValue
+            const alpha = Math.min(intensity * interferenceIntensity, 0.8)
             
-            ctx.fillStyle = theme === 'dark' ? 
-              `rgba(255, 100, 100, ${intensity * 0.6})` : 
-              `rgba(255, 0, 0, ${intensity * 0.6})`
-            ctx.beginPath()
-            ctx.arc(point.x, point.y, size, 0, Math.PI * 2)
-            ctx.fill()
-          }
-        })
-      }
-
-      // Draw chaos effects
-      if (showChaos) {
-        interferenceField.forEach(point => {
-          if (point.chaos > 0.3) {
-            const intensity = point.chaos
-            const size = intensity * 3 + 1
-            
-            ctx.fillStyle = theme === 'dark' ? 
-              `rgba(255, 255, 0, ${intensity * 0.4})` : 
-              `rgba(255, 200, 0, ${intensity * 0.4})`
-            ctx.fillRect(point.x - size/2, point.y - size/2, size, size)
-          }
-        })
-      }
-
-      // Draw particles
-      if (showParticles) {
-        particles.forEach(particle => {
-          const pulseIntensity = Math.sin(particle.pulse) * 0.3 + 0.7
-          const size = particle.size * pulseIntensity
-          
-          if (particle.collapsed) {
-            ctx.fillStyle = theme === 'dark' ? '#ff4444' : '#cc0000'
-          } else {
-            ctx.fillStyle = particle.color
-          }
-          
-          ctx.globalAlpha = pulseIntensity
-          ctx.beginPath()
-          ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2)
-          ctx.fill()
-        })
-      }
-
-      // Draw measurement devices
-      if (showMeasurementDevices) {
-        measurementDevices.forEach(device => {
-          const pulseIntensity = Math.sin(device.pulse) * 0.3 + 0.7
-          
-          // Draw device circle
-          ctx.strokeStyle = theme === 'dark' ? '#ffffff' : '#000000'
-          ctx.lineWidth = 1
-          ctx.globalAlpha = 0.3
-          ctx.beginPath()
-          ctx.arc(device.x, device.y, device.radius, 0, Math.PI * 2)
-          ctx.stroke()
-          
-          // Draw device center
-          ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#000000'
-          ctx.globalAlpha = pulseIntensity * 0.6
-          ctx.beginPath()
-          ctx.arc(device.x, device.y, 4, 0, Math.PI * 2)
-          ctx.fill()
-          
-          // Draw measurement results
-          device.results.forEach((result, index) => {
-            const age = (animationSettings.time - result.time) / 1000
-            const alpha = Math.max(0, 1 - age * 2)
-            
-            if (alpha > 0) {
-              ctx.fillStyle = theme === 'dark' ? 
-                `rgba(255, 255, 255, ${alpha * 0.5})` : 
-                `rgba(0, 0, 0, ${alpha * 0.5})`
-              ctx.beginPath()
-              ctx.arc(result.x, result.y, 2, 0, Math.PI * 2)
-              ctx.fill()
+            if (alpha > 0.02) {
+              const color = getColor(interference, maxValue)
+              ctx.fillStyle = color.replace(')', `, ${alpha})`).replace('rgb', 'rgba').replace('hsl', 'hsla')
+              ctx.fillRect(x, y, gridSize, gridSize)
             }
-          })
+          }
+        }
+      }
+
+      // Draw wave functions
+      if (showWaveFunctions) {
+        waveSourcesRef.current.forEach(source => {
+          if (!source.active) return
+
+          ctx.save()
+          ctx.translate(source.x, source.y)
+          ctx.rotate(source.rotation)
+
+          // Draw wave rings
+          const numRings = 8
+          for (let i = 1; i <= numRings; i++) {
+            const radius = (source.wavelength / numRings) * i
+            const waveValue = calculateWaveValue(source.x + radius, source.y, source, currentTimeValue)
+            const alpha = Math.abs(waveValue) / (waveAmplitude * 2)
+            
+            if (alpha > 0.1) {
+              ctx.beginPath()
+              ctx.arc(0, 0, radius, 0, Math.PI * 2)
+              ctx.strokeStyle = source.color.replace(')', `, ${alpha * 0.6})`).replace('rgb', 'rgba').replace('hsl', 'hsla')
+              ctx.lineWidth = 2
+              ctx.stroke()
+            }
+          }
+
+          // Draw source center
+          ctx.beginPath()
+          ctx.arc(0, 0, 8, 0, Math.PI * 2)
+          ctx.fillStyle = source.color
+          ctx.fill()
+          ctx.strokeStyle = '#ffffff'
+          ctx.lineWidth = 2
+          ctx.stroke()
+
+          ctx.restore()
         })
       }
 
-      ctx.globalAlpha = 1
+      // Draw wave trails
+      if (showWaveTrails) {
+        waveSourcesRef.current.forEach(source => {
+          if (!source.active) return
+
+          ctx.beginPath()
+          ctx.strokeStyle = source.color.replace(')', ', 0.3)').replace('rgb', 'rgba').replace('hsl', 'hsla')
+          ctx.lineWidth = 1
+
+          // Draw spiral trail
+          for (let angle = 0; angle < Math.PI * 4; angle += 0.1) {
+            const radius = 20 + angle * 10
+            const x = source.x + Math.cos(angle + source.rotation) * radius
+            const y = source.y + Math.sin(angle + source.rotation) * radius
+            
+            if (angle === 0) {
+              ctx.moveTo(x, y)
+            } else {
+              ctx.lineTo(x, y)
+            }
+          }
+          ctx.stroke()
+        })
+      }
+
+      // Update display state periodically
+      if (timestamp - lastUpdateTime > updateInterval) {
+        setDisplayTime(currentTimeValue)
+        lastUpdateTime = timestamp
+      }
 
       animationRef.current = requestAnimationFrame(animate)
     }
 
-    animate()
+    animationRef.current = requestAnimationFrame(animate)
 
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [isClient, animationSettings.isAnimating, canvasSize, particles, measurementDevices, calculateInterferenceField, showParticles, showInterference, showCollapse, showChaos, showMeasurementDevices, theme])
-
-  // Handle zoom
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault()
-    const delta = e.deltaY > 0 ? -1 : 1
-    setZoomLevel(prev => {
-      const newZoom = prev * (1 + delta * ZOOM_SENSITIVITY)
-      return Math.max(MIN_ZOOM_LEVEL, Math.min(MAX_ZOOM_LEVEL, newZoom))
-    })
-  }, [])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    canvas.addEventListener('wheel', handleWheel, { passive: false })
-    return () => canvas.removeEventListener('wheel', handleWheel)
-  }, [handleWheel])
-
-  // Reset animation
-  const handleReset = useCallback(() => {
-    setAnimationSettings(prev => ({ ...prev, time: 0 }))
-    // Reinitialize quantum system
-    if (canvasSize.width > 0 && canvasSize.height > 0) {
-      const width = canvasSize.width
-      const height = canvasSize.height
-
-      const newParticles: QuantumParticle[] = []
-      const waveFunctions: Array<'gaussian' | 'plane' | 'spherical' | 'interfering' | 'harmonic' | 'chaotic'> = 
-        ['gaussian', 'plane', 'spherical', 'interfering', 'harmonic', 'chaotic']
-      
-      for (let i = 0; i < particleCount; i++) {
-        newParticles.push({
-          id: `particle-${i}`,
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 2,
-          vy: (Math.random() - 0.5) * 2,
-          amplitude: Math.random() * 60 + 40,
-          phase: Math.random() * Math.PI * 2,
-          wavelength: Math.random() * 100 + 80,
-          energy: Math.random() * 0.8 + 0.2,
-          superposition: true,
-          collapsed: false,
-          waveFunction: waveFunctions[Math.floor(Math.random() * waveFunctions.length)],
-          color: `hsl(${Math.random() * 360}, 70%, 60%)`,
-          life: 1,
-          maxLife: 1,
-          size: Math.random() * 3 + 2,
-          pulse: 0,
-          entanglement: [],
-          spin: Math.random() * 2 - 1
-        })
-      }
-
-      const newDevices: MeasurementDevice[] = []
-      const deviceTypes: Array<'position' | 'momentum' | 'energy' | 'spin' | 'entanglement'> = 
-        ['position', 'momentum', 'energy', 'spin', 'entanglement']
-      
-      for (let i = 0; i < deviceCount; i++) {
-        newDevices.push({
-          id: `device-${i}`,
-          x: Math.random() * width,
-          y: Math.random() * height,
-          radius: Math.random() * 60 + 40,
-          active: true,
-          measurementType: deviceTypes[Math.floor(Math.random() * deviceTypes.length)],
-          results: [],
-          pulse: 0,
-          influence: Math.random() * 0.5 + 0.5
-        })
-      }
-
-      setParticles(newParticles)
-      setMeasurementDevices(newDevices)
-    }
-  }, [canvasSize, particleCount, deviceCount])
-
-  // Download canvas
-  const handleDownload = useCallback(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const link = document.createElement('a')
-    link.download = 'wave-interference-2.png'
-    link.href = canvas.toDataURL()
-    link.click()
-  }, [])
+  }, [isClient, showWaveFunctions, showInterference, showWaveTrails, animationSpeed, calculateInterference, waveAmplitude, interferenceIntensity, getColor])
 
   if (!isClient) {
-    return <FullScreenLoader text={t('common.preparing')} />
+    return <FullScreenLoader text="Preparing..." />
   }
 
   return (
     <VisualizationLayout
-      title="Wave Interference 2"
-      description="Quantum physics inspired wave interference with particle-wave duality"
-      canvasRef={canvasRef}
-      controls={
-        <>
-          <AnimationControls
-            settings={animationSettings}
-            onSettingsChange={(updates) => setAnimationSettings(prev => ({ ...prev, ...updates }))}
-            onReset={handleReset}
-            expanded={panelState.animationExpanded}
-            onToggleExpanded={() => setPanelState(prev => ({ ...prev, animationExpanded: !prev.animationExpanded }))}
-          />
-          <WaveSourceControls2
-            particleCount={particleCount}
-            onParticleCountChange={setParticleCount}
-            deviceCount={deviceCount}
-            onDeviceCountChange={setDeviceCount}
-            showParticles={showParticles}
-            onShowParticlesChange={setShowParticles}
-            showMeasurementDevices={showMeasurementDevices}
-            onShowMeasurementDevicesChange={setShowMeasurementDevices}
-            isExpanded={panelState.waveSourcesExpanded}
-            onToggleExpanded={(expanded) => 
-              setPanelState(prev => ({ ...prev, waveSourcesExpanded: expanded }))
-            }
-          />
-          <WaveSettings
-            showWaveFunctions={showWaveFunctions}
-            onShowWaveFunctionsChange={setShowWaveFunctions}
-            showInterference={showInterference}
-            onShowInterferenceChange={setShowInterference}
-            showCollapse={showCollapse}
-            onShowCollapseChange={setShowCollapse}
-            fieldDensity={fieldDensity}
-            onFieldDensityChange={setFieldDensity}
-            interferenceStrength={interferenceStrength}
-            onInterferenceStrengthChange={setInterferenceStrength}
-            isExpanded={panelState.waveSettingsExpanded}
-            onToggleExpanded={(expanded) => 
-              setPanelState(prev => ({ ...prev, waveSettingsExpanded: expanded }))
-            }
-          />
-          <QuantumControls
-            showEntanglement={showEntanglement}
-            onShowEntanglementChange={setShowEntanglement}
-            showChaos={showChaos}
-            onShowChaosChange={setShowChaos}
-            collapseThreshold={collapseThreshold}
-            onCollapseThresholdChange={setCollapseThreshold}
-            chaosLevel={chaosLevel}
-            onChaosLevelChange={setChaosLevel}
-            isExpanded={quantumControlsExpanded}
-            onToggleExpanded={setQuantumControlsExpanded}
-          />
-        </>
+      panelOpen={panelOpen}
+      onPanelToggle={() => setPanelOpen((v) => !v)}
+      statusContent={<>
+        Wave Sources: {waveSourcesRef.current.filter(w => w.active).length} | Time: {Math.round(displayTime * 100) / 100}s
+      </>}
+      helpText="Watch beautiful wave interference patterns emerge from two dynamic wave sources. Adjust parameters to create different visual effects."
+      settingsContent={
+        <div className="space-y-6">
+          <CollapsibleSection title="Wave Properties" defaultOpen>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="wave-amplitude">Wave Amplitude: {waveAmplitude}</Label>
+                <Slider
+                  id="wave-amplitude"
+                  min={20}
+                  max={150}
+                  step={5}
+                  value={[waveAmplitude]}
+                  onValueChange={([v]) => setWaveAmplitude(v)}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wave-frequency">Wave Frequency: {waveFrequency.toFixed(3)}</Label>
+                <Slider
+                  id="wave-frequency"
+                  min={0.001}
+                  max={0.1}
+                  step={0.001}
+                  value={[waveFrequency]}
+                  onValueChange={([v]) => setWaveFrequency(v)}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wave-wavelength">Wave Wavelength: {waveWavelength}</Label>
+                <Slider
+                  id="wave-wavelength"
+                  min={20}
+                  max={200}
+                  step={5}
+                  value={[waveWavelength]}
+                  onValueChange={([v]) => setWaveWavelength(v)}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="interference-intensity">Interference Intensity: {interferenceIntensity.toFixed(1)}</Label>
+                <Slider
+                  id="interference-intensity"
+                  min={0.1}
+                  max={2.0}
+                  step={0.1}
+                  value={[interferenceIntensity]}
+                  onValueChange={([v]) => setInterferenceIntensity(v)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Animation" defaultOpen>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="animation-speed">Animation Speed: {animationSpeed.toFixed(1)}x</Label>
+                <Slider
+                  id="animation-speed"
+                  min={0.1}
+                  max={3}
+                  step={0.1}
+                  value={[animationSpeed]}
+                  onValueChange={([v]) => setAnimationSpeed(v)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Visualisation" defaultOpen>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="show-wave-functions"
+                  checked={showWaveFunctions}
+                  onCheckedChange={v => setShowWaveFunctions(v === true)}
+                />
+                <Label htmlFor="show-wave-functions">Show Wave Functions</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="show-interference"
+                  checked={showInterference}
+                  onCheckedChange={v => setShowInterference(v === true)}
+                />
+                <Label htmlFor="show-interference">Show Interference Pattern</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="show-wave-trails"
+                  checked={showWaveTrails}
+                  onCheckedChange={v => setShowWaveTrails(v === true)}
+                />
+                <Label htmlFor="show-wave-trails">Show Wave Trails</Label>
+              </div>
+            </div>
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Color Mode" defaultOpen>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="color-rainbow"
+                  checked={colorMode === 'rainbow'}
+                  onCheckedChange={v => v === true && setColorMode('rainbow')}
+                />
+                <Label htmlFor="color-rainbow">Rainbow</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="color-monochrome"
+                  checked={colorMode === 'monochrome'}
+                  onCheckedChange={v => v === true && setColorMode('monochrome')}
+                />
+                <Label htmlFor="color-monochrome">Monochrome</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="color-thermal"
+                  checked={colorMode === 'thermal'}
+                  onCheckedChange={v => v === true && setColorMode('thermal')}
+                />
+                <Label htmlFor="color-thermal">Thermal</Label>
+              </div>
+            </div>
+          </CollapsibleSection>
+        </div>
       }
-      actionButtons={
-        <>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleReset}
-            className="flex items-center gap-2"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Reset
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownload}
-            className="flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Download
-          </Button>
-        </>
-      }
-      isPanelOpen={panelState.isOpen}
-      onPanelToggle={(isOpen) => setPanelState(prev => ({ ...prev, isOpen }))}
-    />
+    >
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full bg-black"
+        style={{ minHeight: 400 }}
+      />
+    </VisualizationLayout>
   )
-} 
+} dk

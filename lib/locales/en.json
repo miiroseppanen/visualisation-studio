@@ -198,6 +198,9 @@
     "markAsImplemented": "Mark as implemented",
     "deleteSuggestion": "Delete suggestion",
     "deleteVisualisationIdea": "Delete idea",
+    "visualizationSettings": {
+      "resetToDefaults": "Reset to Defaults"
+    },
     "newVisual": "New Visual",
     "bugFix": "Bug Fix",
     "improvement": "Improvement",

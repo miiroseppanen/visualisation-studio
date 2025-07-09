@@ -1,22 +1,6 @@
 {
-  "/api/suggestions/[id]/route": "app/api/suggestions/[id]/route.js",
   "/api/suggestions/route": "app/api/suggestions/route.js",
-  "/api/test-database/route": "app/api/test-database/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/cellular-automata/page": "app/cellular-automata/page.js",
-  "/flow-field/page": "app/flow-field/page.js",
-  "/neural-network/page": "app/neural-network/page.js",
-  "/page": "app/page.js",
-  "/particle-swarm/page": "app/particle-swarm/page.js",
-  "/grid-field/page": "app/grid-field/page.js",
-  "/sound-wave/page": "app/sound-wave/page.js",
   "/suggestions/page": "app/suggestions/page.js",
-  "/suggestions/new/page": "app/suggestions/new/page.js",
-  "/topography/page": "app/topography/page.js",
-  "/turbulence/page": "app/turbulence/page.js",
-  "/test-loader/page": "app/test-loader/page.js",
-  "/wave-interference/page": "app/wave-interference/page.js",
-  "/wave-interference-2/page": "app/wave-interference-2/page.js",
-  "/circular-field/page": "app/circular-field/page.js",
-  "/offline/page": "app/offline/page.js"
+  "/page": "app/page.js",
+  "/_not-found/page": "app/_not-found/page.js"
 }

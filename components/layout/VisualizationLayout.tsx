@@ -38,7 +38,6 @@ export default function VisualizationLayout({
   showVisualizationNav = true,
   visualizationNavProps = {}
 }: VisualizationLayoutProps) {
-  const { t } = useTranslation()
   const { isUIVisible, isMobile, showUI } = useMobileUI()
 
   const handleCanvasClick = () => {
@@ -114,7 +113,7 @@ export default function VisualizationLayout({
         )}>
           {settingsContent && (
             <ControlsPanel 
-              title={t('navigation.settings')} 
+              title="Settings" 
               isOpen={panelOpen} 
               onToggle={onPanelToggle}
             >

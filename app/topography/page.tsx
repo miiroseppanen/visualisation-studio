@@ -146,7 +146,7 @@ export default function TopographyPage() {
   }
 
   if (!isClient) {
-    return <FullScreenLoader text={t('common.preparing')} />
+    return <FullScreenLoader text="Preparing..." />
   }
 
   return (

@@ -1,62 +1,26 @@
 'use client'
 
-import React, { useEffect, useState, createContext, useContext } from 'react'
-import { useTranslation } from 'react-i18next'
-import { FullScreenLoader } from '@/components/ui/loader'
-import '@/lib/i18n' // Initialize i18n
+import React from 'react'
+import i18n, { initI18n } from '@/lib/i18n-client';
+import { useSyncExternalStore } from 'react';
 
 interface I18nProviderProps {
-  children: React.ReactNode
+  children: React.ReactNode;
+  initialLanguage: string;
 }
 
-const I18nInitializedContext = createContext(false)
+export function I18nProvider({ children, initialLanguage }: I18nProviderProps) {
+  initI18n(initialLanguage);
+  return <>{children}</>;
+}
+
 export function useI18nInitialized() {
-  return useContext(I18nInitializedContext)
-}
-
-export function I18nProvider({ children }: I18nProviderProps) {
-  const { i18n } = useTranslation()
-  const [isInitialized, setIsInitialized] = useState(false)
-
-  useEffect(() => {
-    // Wait for i18n to be initialized
-    if (i18n.isInitialized) {
-      setIsInitialized(true)
-    } else {
-      i18n.on('initialized', () => {
-        setIsInitialized(true)
-      })
-    }
-
-    // Update document language attribute when language changes
-    const handleLanguageChange = (lng: string) => {
-      if (typeof document !== 'undefined') {
-        document.documentElement.setAttribute('lang', lng)
-      }
-    }
-
-    // Set initial language
-    handleLanguageChange(i18n.language)
-
-    // Listen for language changes
-    i18n.on('languageChanged', handleLanguageChange)
-
-    return () => {
-      i18n.off('languageChanged', handleLanguageChange)
-      i18n.off('initialized', () => {
-        setIsInitialized(true)
-      })
-    }
-  }, [i18n])
-
-  // Show loading state while i18n is initializing
-  if (!isInitialized) {
-    return <FullScreenLoader text="Initialising..." />
-  }
-
-  return (
-    <I18nInitializedContext.Provider value={isInitialized}>
-      {children}
-    </I18nInitializedContext.Provider>
-  )
+  return useSyncExternalStore(
+    (cb) => {
+      i18n.on('initialized', cb);
+      return () => i18n.off('initialized', cb);
+    },
+    () => i18n.isInitialized,
+    () => true // Assume initialized on the server to avoid SSR error
+  );
 }
