@@ -49,8 +49,8 @@ export default function MathematicalLinesSettings({
             <Slider
               value={[settings.lineCount]}
               onValueChange={([value]) => onUpdateSettings({ lineCount: value })}
-              max={100}
-              min={10}
+              max={500}
+              min={5}
               step={5}
               className="w-full"
             />
@@ -113,7 +113,7 @@ export default function MathematicalLinesSettings({
             <Slider
               value={[settings.generationFrequency]}
               onValueChange={([value]) => onUpdateSettings({ generationFrequency: value })}
-              max={10}
+              max={50}
               min={1}
               step={1}
               className="w-full"

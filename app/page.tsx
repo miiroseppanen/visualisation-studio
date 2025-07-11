@@ -6,6 +6,7 @@ import { ArrowRight, Sparkles, Play, Lightbulb, CheckCircle, Clock } from 'lucid
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import AppLayout from '@/components/layout/AppLayout'
+import Footer from '@/components/layout/Footer'
 import { useTheme } from '@/components/ui/ThemeProvider'
 import { useTranslation } from 'react-i18next'
 import { useHomePageVisualizations } from '@/lib/hooks/useHomePageVisualizations'
@@ -426,7 +427,7 @@ const Page = () => {
                         </CardHeader>
                         <CardContent className="pt-0">
                           {/* Icon Preview */}
-                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 theme-pastel:from-blue-50 theme-pastel:to-purple-100 dark.theme-pastel:from-blue-900 dark.theme-pastel:to-purple-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 theme-pastel:group-hover:from-blue-100 theme-pastel:group-hover:to-purple-200 dark.theme-pastel:group-hover:from-blue-800 dark.theme-pastel:group-hover:to-purple-700 transition-all duration-200">
+                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-950 dark:to-neutral-900 theme-pastel:from-blue-50 theme-pastel:to-purple-100 dark.theme-pastel:from-blue-900 dark.theme-pastel:to-purple-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-neutral-900 dark:group-hover:to-neutral-800 theme-pastel:group-hover:from-blue-100 theme-pastel:group-hover:to-purple-200 dark.theme-pastel:group-hover:from-blue-800 dark.theme-pastel:group-hover:to-purple-700 transition-all duration-200">
                             <viz.icon className="w-24 h-24 text-foreground group-hover:text-foreground group-hover:scale-110 transition-all duration-200" />
                           </div>
                           <ul className="space-y-2 mb-4">
@@ -478,7 +479,7 @@ const Page = () => {
                         </CardHeader>
                         <CardContent className="pt-0">
                           {/* Icon Preview */}
-                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 theme-pastel:from-blue-50 theme-pastel:to-purple-100 dark.theme-pastel:from-blue-900 dark.theme-pastel:to-purple-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-gray-800 dark:group-hover:to-gray-700 theme-pastel:group-hover:from-blue-100 theme-pastel:group-hover:to-purple-200 dark.theme-pastel:group-hover:from-blue-800 dark.theme-pastel:group-hover:to-purple-700 transition-all duration-200">
+                          <div className="mb-6 aspect-[3/2] border border-border/50 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-950 dark:to-neutral-900 theme-pastel:from-blue-50 theme-pastel:to-purple-100 dark.theme-pastel:from-blue-900 dark.theme-pastel:to-purple-800 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 dark:group-hover:from-neutral-900 dark:group-hover:to-neutral-800 theme-pastel:group-hover:from-blue-100 theme-pastel:group-hover:to-purple-200 dark.theme-pastel:group-hover:from-blue-800 dark.theme-pastel:group-hover:to-purple-700 transition-all duration-200">
                             <viz.icon className="w-24 h-24 text-foreground group-hover:text-foreground group-hover:scale-110 transition-all duration-200" />
                           </div>
                           <ul className="space-y-2 mb-4">
@@ -548,30 +549,78 @@ const Page = () => {
               <h3 className="text-2xl sm:text-3xl font-normal mb-6 text-foreground">
                 {t('about.title')}
               </h3>
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div>
-                  <h4 className="text-lg sm:text-xl font-medium mb-3 text-foreground">{t('about.professionalGeneration.title')}</h4>
+                  <h4 className="text-lg sm:text-xl font-medium mb-3 text-foreground">{t('about.creativeControl.title')}</h4>
                   <p className="text-muted-foreground leading-relaxed">
-                    {t('about.professionalGeneration.description')}
+                    {t('about.creativeControl.description')}
                   </p>
                 </div>
-                <p className="text-muted-foreground leading-relaxed">
-                  {t('about.additionalInfo')}
-                </p>
+                <div>
+                  <h4 className="text-lg sm:text-xl font-medium mb-3 text-foreground">{t('about.originStory.title')}</h4>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {t('about.originStory.description')}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-lg sm:text-xl font-medium mb-3 text-foreground">{t('about.philosophy.title')}</h4>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {t('about.philosophy.description')}
+                  </p>
+                </div>
               </div>
             </div>
             
             <div>
               <h4 className="text-lg sm:text-xl font-medium mb-4 text-foreground">{t('about.poweredBy.title')}</h4>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                {t('about.poweredBy.description')} <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>.
+                {t('about.poweredBy.description').split('Miiro Seppänen').map((part, index, array) => {
+                  if (index === array.length - 1) {
+                    return part.split('H23').map((subPart, subIndex, subArray) => {
+                      if (subIndex === subArray.length - 1) {
+                        return subPart;
+                      }
+                      return (
+                        <React.Fragment key={subIndex}>
+                          {subPart}
+                          <a href="https://h23.fi/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">
+                            H23
+                          </a>
+                        </React.Fragment>
+                      );
+                    });
+                  }
+                  return (
+                    <React.Fragment key={index}>
+                      {part}
+                      <a href="https://www.linkedin.com/in/miiroseppanen/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">
+                        Miiro Seppänen
+                      </a>
+                    </React.Fragment>
+                  );
+                })}
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                {t('about.poweredBy.expertise')}
+                {t('about.poweredBy.expertise').split('h23.fi').map((part, index, array) => {
+                  if (index === array.length - 1) {
+                    return part;
+                  }
+                  return (
+                    <React.Fragment key={index}>
+                      {part}
+                      <a href="https://h23.fi/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">
+                        h23.fi
+                      </a>
+                    </React.Fragment>
+                  );
+                })}
               </p>
             </div>
           </div>
         </section>
+
+        {/* Footer */}
+        <Footer />
       </AppLayout>
       
       {/* PWA Install Toast - only show on mobile */}

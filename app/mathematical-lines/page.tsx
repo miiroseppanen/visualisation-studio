@@ -33,10 +33,10 @@ interface MathematicalSettings {
 }
 
 const defaultSettings: MathematicalSettings = {
-  lineCount: 40,
+  lineCount: 80,
   lineLength: 60,
   fadeSpeed: 0.008,
-  generationFrequency: 4,
+  generationFrequency: 8,
   harmonicIntensity: 1.0,
   fractalIntensity: 1.0,
   spiralIntensity: 1.0,
