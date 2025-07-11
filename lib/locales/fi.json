@@ -153,7 +153,7 @@
     }
   },
   "suggestions": {
-    "title": "Yhteisön Ideat",
+    "title": "Uusia ideoita?",
     "description": "Jaa ideasi ja palautteesi auttaaksesi parantamaan Visualisointi Studiota. Äänestä olemassa olevia konsepteja ja osallistu omilla luovilla ehdotuksillasi uusille ominaisuuksille.",
     "viewSuggestions": "Katso Ideat",
     "submitIdea": "Lähetä uusi idea",
@@ -429,15 +429,22 @@
   },
   "about": {
     "title": "Tietoja Visualisointi Studiosta",
-    "professionalGeneration": {
-      "title": "Ammattimainen kuviogenerointi",
-      "description": "Visualisointi Studio tarjoaa kattavan työkalupaketin kehittyneiden kuvioiden ja tekstuurien luomiseen. Suunniteletpa pakkauksia, brändäysmateriaaleja tai digitaalisia resursseja, työkalumme tarjoavat ammattimaisiin tuloksiin tarvittavan tarkkuuden ja joustavuuden."
+    "creativeControl": {
+      "title": "Luovaa hallintaa kuviogenerointiin",
+      "description": "Visualisointi Studio on suunniteltu luovien ammattilaisten tarpeisiin – työkalu kehittyneiden kuvioiden ja tekstuurien luomiseen, jossa yhdistyvät tarkkuus, joustavuus ja esteettinen kontrolli. Olitpa suunnittelemassa pakkauksia, brändi-ilmeitä tai digitaalisia resursseja, Visualisointi Studio tarjoaa työkalut, joilla saavutat viimeistellyt ja ammattimaiset lopputulokset."
     },
-    "additionalInfo": "Jokainen visualisointityökalu on suunniteltu sekä luovan vapauden että teknisen tarkkuuden mielessä, mahdollistaen rajattomien mahdollisuuksien tutkimisen samalla kun säilytät hallinnan suunnittelusi jokaisesta osa-alueesta.",
+    "originStory": {
+      "title": "Alkuperä",
+      "description": "Palvelun taustalla on konkreettinen tarve: halusin luoda leipäpakkaukseen kuosin, joka yhdistäisi magneettikentän visuaalisuuden ja viljapellon, jossa tuuli käy. Kuvion piti olla luonteeltaan orgaaninen mutta vektoripohjainen, jotta sen pystyi viemään Illustratoriin ja käyttämään osana pakkauksen kuvitusta."
+    },
+    "philosophy": {
+      "title": "Filosofiamme",
+      "description": "Tästä syntyi ajatus työkalusta, jolla voi luoda hallittuja, SVG-muotoisia, muokattavia kuvioita – nopeasti, intuitiivisesti ja visuaalisesti rikkaasti. Jokainen Visualisointi Studion ominaisuus on suunniteltu sekä luovan vapauden että teknisen tarkkuuden näkökulmasta, jotta voit tutkia rajattomia mahdollisuuksia ilman, että menetät kontrollin yksityiskohdista."
+    },
     "poweredBy": {
-      "title": "Powered by H23",
-      "description": "Kehittänyt H23, luovan teknologian toimisto, joka erikoistuu digitaalisten työkalujen ja kokemusten rakentamiseen kunnianhimoisille brändeille.",
-      "expertise": "Osaamisemme luovassa teknologiassa, brändäyksessä ja interaktiivisissa kokemuksissa vaikuttaa Visualisointi Studion jokaiseen näkökohtaan, varmistaen että se vastaa ammattimaisten suunnittelijoiden ja luovien tiimien tarpeisiin."
+      "title": "Lähtöisin H23:sta",
+      "description": "Visualisointi Studion on kehittänyt Miiro Seppänen, suunnittelija ja luovan teknologian rakentaja. Työkalu on syntynyt H23:ssa – tamperelaisessa toimistossa, joka yhdistää muotoilun, teknologian ja brändiajattelun digitaalisiin palveluihin ja kokemuksiin.",
+      "expertise": "H23 tekee yhteistyötä kunnianhimoisten brändien kanssa rakentaen käyttökelpoisia, kauniita ja vaikuttavia ratkaisuja. Lue lisää meistä osoitteessa h23.fi."
     }
   },
   "navigation": {

@@ -158,7 +158,7 @@
     }
   },
   "suggestions": {
-    "title": "Community Ideas",
+    "title": "New Ideas?",
     "description": "Share your ideas and feedback to help improve Visualisation Studio. Vote on existing concepts and contribute your own creative suggestions for new features.",
     "viewSuggestions": "View Ideas",
     "submitIdea": "Submit New Idea",
@@ -451,16 +451,23 @@
     "noWaveSources": "No wave sources yet. Use the controls above to add wave sources."
   },
   "about": {
-    "title": "About Visualisation Studio",
-    "professionalGeneration": {
-      "title": "Professional Pattern Generation",
-      "description": "Visualisation Studio provides a comprehensive toolkit for creating sophisticated patterns and textures. Whether you're designing packaging, branding materials, or digital assets, our tools offer the precision and flexibility needed for professional results."
+    "title": "About Visualisointi Studio",
+    "creativeControl": {
+      "title": "Creative control for advanced pattern generation",
+      "description": "Visualisointi Studio is built for creative professionals who need precision, flexibility, and visual depth in their work. Whether you're designing packaging, branding materials, or digital assets, the toolset offers everything you need to create refined and professional patterns and textures."
     },
-    "additionalInfo": "Each visualisation tool is designed with both creative freedom and technical precision in mind, allowing you to explore endless possibilities while maintaining control over every aspect of your design.",
+    "originStory": {
+      "title": "The origin story",
+      "description": "The idea began with a real design challenge: I needed to create a pattern for a bread package—something that visually combined the flow of a magnetic field with the movement of wind across a grain field. The pattern had to be organic yet fully vector-based, ready to use in Illustrator as part of the packaging illustration."
+    },
+    "philosophy": {
+      "title": "Our philosophy",
+      "description": "From that need, Visualisointi Studio was born—a tool for generating editable, SVG-based visuals that are both expressive and technically solid. Every feature is designed with creative freedom and technical accuracy in mind, so you can explore endless possibilities without losing control over the details."
+    },
     "poweredBy": {
-      "title": "Powered by H23",
-      "description": "Developed by H23, a creative technology agency that specializes in building digital tools and experiences for ambitious brands.",
-      "expertise": "Our expertise in creative technology, branding, and interactive experiences informs every aspect of Visualisation Studio, ensuring it meets the needs of professional designers and creative teams."
+      "title": "Developed by H23",
+      "description": "Visualisation Studio was developed by Miiro Seppänen, a designer and creative technology builder. The tool was born at H23 – a Tampere-based office that combines design, technology, and brand thinking into digital services and experiences.",
+      "expertise": "H23 collaborates with ambitious brands to build usable, beautiful, and impactful solutions. Learn more about us at h23.fi."
     }
   },
   "navigation": {
