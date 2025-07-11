@@ -74,6 +74,7 @@ interface AppNavigationProps {
   showPageSections?: boolean
 }
 
+// eslint-disable-next-line react/display-name
 export default function AppNavigation({ 
   variant = 'header', 
   className = '',

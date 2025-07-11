@@ -137,7 +137,7 @@ export default function CircularFieldPage() {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
     return () => window.removeEventListener('resize', resizeCanvas)
-  }, [setCanvasSize, isMobile])
+  }, [setCanvasSize, isMobile, canvasRef])
 
   // Render the visualization
   useEffect(() => {
@@ -145,7 +145,7 @@ export default function CircularFieldPage() {
     if (!canvas || !rendererRef.current) return
 
     rendererRef.current.renderCircularField(poles, fieldLines, displaySettings, theme)
-  }, [poles, fieldLines, displaySettings, theme])
+  }, [poles, fieldLines, displaySettings, theme, canvasRef])
 
   // Wheel event handler (direct DOM listener to avoid passive event issues)
   useEffect(() => {
@@ -167,7 +167,7 @@ export default function CircularFieldPage() {
     return () => {
       canvas.removeEventListener('wheel', handleWheel)
     }
-  }, [zoomLevel])
+  }, [zoomLevel, canvasRef])
 
   // Mouse event handlers
   const handleCanvasMouseDown = (e: React.MouseEvent) => {

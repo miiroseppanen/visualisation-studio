@@ -144,6 +144,16 @@
         "harmonicVisualisation": "Harmonic visualisation",
         "frequencySpectrum": "Frequency spectrum"
       }
+    },
+    "mathematicalLines": {
+      "title": "Mathematical Lines",
+      "description": "Interactive mathematical line patterns with harmonic, fractal, and spiral functions.",
+      "features": {
+        "harmonicPatterns": "Harmonic patterns",
+        "fractalGeometry": "Fractal geometry",
+        "spiralCompositions": "Spiral compositions",
+        "interactiveResponse": "Interactive response"
+      }
     }
   },
   "suggestions": {

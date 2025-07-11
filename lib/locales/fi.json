@@ -140,6 +140,16 @@
         "harmonicVisualization": "Harmoninen visualisointi",
         "frequencySpectrum": "Taajuusspektri"
       }
+    },
+    "mathematicalLines": {
+      "title": "Matemaattiset Viivat",
+      "description": "Interaktiiviset matemaattiset viivakuvioita harmonisilla, fraktaali- ja spiraalifunktioilla.",
+      "features": {
+        "harmonicPatterns": "Harmoniset kuvioita",
+        "fractalGeometry": "Fraktaaligeometria",
+        "spiralCompositions": "Spiraalikompositiot",
+        "interactiveResponse": "Interaktiivinen vastaus"
+      }
     }
   },
   "suggestions": {

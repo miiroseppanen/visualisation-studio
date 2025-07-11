@@ -10,7 +10,22 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ children, initialLanguage }: I18nProviderProps) {
-  initI18n(initialLanguage);
+  const [initialized, setInitialized] = React.useState(false);
+
+  React.useEffect(() => {
+    initI18n(initialLanguage);
+    if (i18n.isInitialized) {
+      setInitialized(true);
+    } else {
+      i18n.on('initialized', () => setInitialized(true));
+    }
+    // Cleanup listener on unmount
+    return () => {
+      i18n.off('initialized', () => setInitialized(true));
+    };
+  }, [initialLanguage]);
+
+  if (!initialized) return null;
   return <>{children}</>;
 }
 

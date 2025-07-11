@@ -1,4 +1,4 @@
-import { Grid3X3, Magnet, Wind, Mountain, Radio, Waves, Users, Brain, Grid, Volume2 } from 'lucide-react'
+import { Grid3X3, Magnet, Wind, Mountain, Radio, Waves, Users, Brain, Grid, Volume2, Zap } from 'lucide-react'
 
 export interface VisualizationOption {
   id: string
@@ -16,6 +16,19 @@ export interface VisualizationOption {
 }
 
 export const visualizationOptions: VisualizationOption[] = [
+  {
+    id: 'mathematical-lines',
+    name: 'Mathematical Lines',
+    path: '/mathematical-lines',
+    icon: Zap,
+    description: 'Interactive mathematical line patterns with harmonic, fractal, and spiral functions',
+    category: 'field',
+    translationKey: 'mathematicalLines',
+    features: ['harmonicPatterns', 'fractalGeometry', 'spiralCompositions', 'interactiveResponse'],
+    enabled: true,
+    order: 12,
+    status: 'verified'
+  },
   {
     id: 'grid-field',
     name: 'Grid Field',
