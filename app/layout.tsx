@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/ui/ThemeProvider'
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import { I18nProvider } from '@/components/I18nProvider'
 import { PerformanceMonitor } from '@/components/PerformanceMonitor'
+import PWAInstallBanner from '@/components/PWAInstallBanner'
 import { cookies } from 'next/headers';
 import { createI18n } from '@/lib/i18n';
 
@@ -118,6 +119,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-sans antialiased bg-background text-foreground">
         <ThemeProvider>
           <I18nProvider initialLanguage={locale}>
+            <PWAInstallBanner />
             {children}
           </I18nProvider>
           <ServiceWorkerRegistration />
