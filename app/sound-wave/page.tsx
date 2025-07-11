@@ -480,7 +480,7 @@ function SoundWavePage() {
       />
     </VisualizationLayout>
   )
-}
+} 
 
 const SoundWavePageComponent = SoundWavePage;
 export default dynamic(() => Promise.resolve(SoundWavePageComponent), { ssr: false }); 

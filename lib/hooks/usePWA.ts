@@ -35,6 +35,7 @@ export function usePWA(): PWAState {
 
     // Listen for install prompt
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log('PWA: beforeinstallprompt event received')
       e.preventDefault()
       setInstallPrompt(e)
       setCanInstall(true)
@@ -55,6 +56,12 @@ export function usePWA(): PWAState {
     // Check initial state
     checkIfInstalled()
     updateOnlineStatus()
+    
+    console.log('PWA Hook: Initial state check', {
+      canInstall,
+      isInstalled: window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true,
+      userAgent: navigator.userAgent
+    })
 
     // Add event listeners
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)

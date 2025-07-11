@@ -69,18 +69,18 @@ export default function MobileNavigation({
           <div className="flex items-center justify-between px-2 py-1.5 min-h-10" style={{minHeight: '2.5rem'}}>
             <div className="flex items-center space-x-2 min-w-0">
               {showBackButton && (
-                <NavigationBackButton 
-                  onBack={handleBackClick}
-                  text=""
-                  className="p-2 min-w-0"
-                />
-              )}
+              <NavigationBackButton 
+                onBack={handleBackClick}
+                text=""
+                className="p-2 min-w-0"
+              />
+            )}
               {currentVisualization?.icon && (
                 <currentVisualization.icon className="w-5 h-5 flex-shrink-0" />
               )}
               <span className="text-base font-medium leading-tight truncate">
                 {currentVisualization?.name || 'Visualisation'}
-              </span>
+                </span>
             </div>
             <div className="flex items-center space-x-1">
               <NavigationActionButtons

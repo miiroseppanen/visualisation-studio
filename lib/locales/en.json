@@ -17,7 +17,8 @@
     "light": "Light",
     "dark": "Dark",
     "pastel": "Pastel",
-    "system": "System"
+    "system": "System",
+    "gotIt": "Got it"
   },
   "navigation": {
     "home": "Home",
@@ -538,7 +539,11 @@
     "iosStep3": "Tap 'Add' to confirm",
     "androidStep1": "Tap the menu button (⋮)",
     "androidStep2": "Select 'Add to Home screen'",
-    "androidStep3": "Tap 'Add' to confirm"
+    "androidStep3": "Tap 'Add' to confirm",
+    "installInstructions": "Installation Instructions",
+    "previous": "Previous",
+    "next": "Next",
+    "gotIt": "Got it"
   },
   "cellular": {
     "patternsAndControls": "Patterns & Controls",
