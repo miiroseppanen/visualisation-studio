@@ -14,13 +14,13 @@ export default function PWAInstallToast() {
   const { t } = useTranslation()
 
   useEffect(() => {
-    // TEMPORARY: Ignore dismissed state for testing
-    // const dismissed = localStorage.getItem('pwa-toast-dismissed')
-    // if (dismissed) {
-    //   setIsDismissed(true)
-    //   console.log('PWA Toast: User has dismissed before')
-    //   return
-    // }
+    // Check if user has previously dismissed the toast
+    const dismissed = localStorage.getItem('pwa-toast-dismissed')
+    if (dismissed) {
+      setIsDismissed(true)
+      console.log('PWA Toast: User has dismissed before')
+      return
+    }
 
     // Show toast for mobile devices that haven't installed the app
     const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -30,16 +30,9 @@ export default function PWAInstallToast() {
       isMobile,
       isInstalled,
       shouldShow,
-      dismissed: false, // Temporarily always false
+      dismissed: !!dismissed,
       userAgent: navigator.userAgent
     })
-
-    // TEMPORARY: Force show for testing
-    if (isMobile) {
-      setIsVisible(true)
-      console.log('PWA Toast: Forcing visible for testing')
-      return
-    }
 
     if (shouldShow) {
       // Show the toast instantly for mobile users
@@ -77,8 +70,8 @@ export default function PWAInstallToast() {
 
   console.log('PWA Toast Render:', { isVisible, isDismissed })
 
-  // TEMPORARY: Only check isVisible, ignore isDismissed for testing
-  if (!isVisible) {
+  // Don't show if dismissed or not visible
+  if (isDismissed || !isVisible) {
     console.log('PWA Toast: Returning null because', { isVisible, isDismissed })
     return null
   }

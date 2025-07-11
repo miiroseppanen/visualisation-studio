@@ -357,26 +357,26 @@ const Page = () => {
           {/* Animated Background */}
           <MathematicalBackground opacity={heroOpacity} />
           
-          <div className="container mx-auto px-8 py-24 relative z-10">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
           
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-start relative z-10">
             {/* Main content - 3/5 of width (golden ratio) */}
             <div className="lg:col-span-3">
-              <h2 className="text-6xl md:text-7xl font-normal tracking-tight mb-8 text-foreground leading-none">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight mb-6 lg:mb-8 text-foreground leading-none">
                 {t('hero.title')}
                 <span className="block text-muted-foreground font-light mt-2">{t('hero.subtitle')}</span>
               </h2>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-lg sm:text-xl text-muted-foreground mb-6 lg:mb-8 leading-relaxed">
                 {t('hero.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="group w-fit text-base px-8 py-3">
+                <Button asChild size="lg" className="group w-fit text-base px-6 sm:px-8 py-3">
                   <Link href="/grid-field">
                     {t('hero.startCreating')}
                     <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
-                <Button variant="outline" size="lg" asChild className="w-fit text-base px-8 py-3">
+                <Button variant="outline" size="lg" asChild className="w-fit text-base px-6 sm:px-8 py-3">
                   <Link href="#tools">
                     {t('hero.exploreTools')}
                   </Link>
@@ -393,9 +393,9 @@ const Page = () => {
 
         {/* Tools Section - Structured grid */}
         <section id="tools" className="bg-background border-t border-border/20">
-          <div className="container mx-auto px-8 py-24">
-            <div className="mb-12">
-              <h3 className="text-3xl font-normal mb-4 text-foreground">{t('tools.title')}</h3>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+            <div className="mb-8 sm:mb-12">
+              <h3 className="text-2xl sm:text-3xl font-normal mb-4 text-foreground">{t('tools.title')}</h3>
               <p className="text-muted-foreground max-w-2xl">
                 {t('tools.description')}
               </p>
@@ -403,13 +403,13 @@ const Page = () => {
             
             {/* Verified Visualizations */}
             {verifiedVisualizations.length > 0 && (
-              <div className="mb-16">
-                <div className="flex items-center space-x-3 mb-8">
-                  <CheckCircle className="w-6 h-6 text-foreground/60" />
-                  <h4 className="text-2xl font-normal text-foreground">Verified</h4>
-                  <span className="text-sm text-muted-foreground">Production-ready visualizations</span>
+              <div className="mb-12 sm:mb-16">
+                <div className="flex items-center space-x-3 mb-6 sm:mb-8">
+                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-foreground/60" />
+                  <h4 className="text-xl sm:text-2xl font-normal text-foreground">Verified</h4>
+                  <span className="text-sm text-muted-foreground">Production-ready visualisations</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                   {verifiedVisualizations.map((viz: any) => (
                     <Link key={viz.path} href={viz.path} className="block group">
                       <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02] rounded-none bg-background">
@@ -456,12 +456,12 @@ const Page = () => {
             {/* In Progress Visualizations */}
             {inProgressVisualizations.length > 0 && (
               <div>
-                <div className="flex items-center space-x-3 mb-8">
-                  <Clock className="w-6 h-6 text-foreground/60" />
-                  <h4 className="text-2xl font-normal text-foreground">In Progress</h4>
-                  <span className="text-sm text-muted-foreground">Experimental visualizations</span>
+                <div className="flex items-center space-x-3 mb-6 sm:mb-8">
+                  <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-foreground/60" />
+                  <h4 className="text-xl sm:text-2xl font-normal text-foreground">In Progress</h4>
+                  <span className="text-sm text-muted-foreground">Experimental visualisations</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                   {inProgressVisualizations.map((viz: any) => (
                     <Link key={viz.path} href={viz.path} className="block group">
                       <Card className="h-full hover:shadow-lg hover:shadow-black/5 transition-all duration-200 cursor-pointer border-2 hover:border-accent group-hover:scale-[1.02] opacity-80 rounded-none bg-background">
@@ -508,30 +508,30 @@ const Page = () => {
         </section>
 
         {/* Suggestions Section - Structured layout */}
-        <section id="suggestions" className="container mx-auto px-8 py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+        <section id="suggestions" className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8 items-start">
             <div className="lg:col-span-2">
               <div className="flex items-start space-x-3 mb-4">
-                <Lightbulb className="w-8 h-8 text-primary mt-1" />
+                <Lightbulb className="w-6 h-6 sm:w-8 sm:h-8 text-primary mt-1" />
                 <div>
-                  <h3 className="text-3xl font-normal text-foreground">
+                  <h3 className="text-2xl sm:text-3xl font-normal text-foreground">
                     {t('suggestions.title')}
                   </h3>
                 </div>
               </div>
-              <p className="text-lg text-muted-foreground mb-6">
+              <p className="text-base sm:text-lg text-muted-foreground mb-6">
                 {t('suggestions.description')}
               </p>
             </div>
             
             <div className="lg:col-span-2">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="px-8 py-3">
+                <Button asChild size="lg" className="px-6 sm:px-8 py-3">
                   <Link href="/suggestions">
                     {t('suggestions.viewSuggestions')}
                   </Link>
                 </Button>
-                <Button variant="outline" size="lg" asChild className="px-8 py-3">
+                <Button variant="outline" size="lg" asChild className="px-6 sm:px-8 py-3">
                   <Link href="/suggestions/new">
                     {t('suggestions.submitIdea')}
                   </Link>
@@ -542,15 +542,15 @@ const Page = () => {
         </section>
 
         {/* About Section - Asymmetrical layout */}
-        <section id="about" className="container mx-auto px-8 py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <section id="about" className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-12">
             <div className="lg:col-span-2">
-              <h3 className="text-3xl font-normal mb-6 text-foreground">
+              <h3 className="text-2xl sm:text-3xl font-normal mb-6 text-foreground">
                 {t('about.title')}
               </h3>
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-xl font-medium mb-3 text-foreground">{t('about.professionalGeneration.title')}</h4>
+                  <h4 className="text-lg sm:text-xl font-medium mb-3 text-foreground">{t('about.professionalGeneration.title')}</h4>
                   <p className="text-muted-foreground leading-relaxed">
                     {t('about.professionalGeneration.description')}
                   </p>
@@ -562,7 +562,7 @@ const Page = () => {
             </div>
             
             <div>
-              <h4 className="text-xl font-medium mb-4 text-foreground">{t('about.poweredBy.title')}</h4>
+              <h4 className="text-lg sm:text-xl font-medium mb-4 text-foreground">{t('about.poweredBy.title')}</h4>
               <p className="text-muted-foreground leading-relaxed mb-4">
                 {t('about.poweredBy.description')} <a href="https://h23.fi" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent transition-colors font-medium">H23</a>.
               </p>
