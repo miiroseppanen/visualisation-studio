@@ -10,11 +10,39 @@ test.describe('Grid Field Translation Tests', () => {
     await page.goto('/grid-field');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000); // Wait for canvas and controls to load
+    
+    // Wait for i18n to be ready - check that translations are loaded
+    await page.waitForFunction(() => {
+      const bodyText = document.body.innerText || '';
+      // Check that we don't see raw translation keys
+      return !bodyText.includes('visualizationSettings.gridSettings') || 
+             bodyText.includes('Grid Settings') || 
+             bodyText.includes('Ruudukon asetukset');
+    }, { timeout: 10000 }).catch(() => {
+      // If check fails, just wait a bit more
+      return page.waitForTimeout(2000);
+    });
+    
+    // Open the controls panel if it's closed
+    const settingsButton = page.locator('button:has-text("Settings"), button:has-text("Asetukset"), button:has-text("Controls"), button:has-text("Ohjaimet")').first();
+    if (await settingsButton.count() > 0) {
+      const isVisible = await settingsButton.isVisible().catch(() => false);
+      if (isVisible) {
+        await settingsButton.click();
+        await page.waitForTimeout(500);
+      }
+    }
   });
 
   test('should not display translation keys in English', async ({ page }) => {
     await setLanguage(page, 'en');
     await page.waitForTimeout(2000);
+    
+    // Wait for translations to be applied
+    await page.waitForFunction(() => {
+      const bodyText = document.body.innerText || '';
+      return bodyText.includes('Grid Settings') || bodyText.includes('Grid Type');
+    }, { timeout: 10000 }).catch(() => {});
     
     const missingTranslations = await checkForMissingTranslations(page);
     
@@ -30,6 +58,12 @@ test.describe('Grid Field Translation Tests', () => {
   test('should not display translation keys in Finnish', async ({ page }) => {
     await setLanguage(page, 'fi');
     await page.waitForTimeout(2000);
+    
+    // Wait for translations to be applied
+    await page.waitForFunction(() => {
+      const bodyText = document.body.innerText || '';
+      return bodyText.includes('Ruudukon asetukset') || bodyText.includes('Ruudukon tyyppi');
+    }, { timeout: 10000 }).catch(() => {});
     
     const missingTranslations = await checkForMissingTranslations(page);
     

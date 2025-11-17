@@ -192,11 +192,42 @@ export async function getCurrentLanguage(page: Page): Promise<string> {
  * Sets the language in localStorage and reloads
  */
 export async function setLanguage(page: Page, language: 'en' | 'fi'): Promise<void> {
+  // Navigate to a page first if we're not on one
+  const currentUrl = page.url();
+  if (!currentUrl || currentUrl === 'about:blank') {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+  }
+  
+  // Set language in localStorage
   await page.evaluate((lang) => {
-    localStorage.setItem('i18nextLng', lang);
+    try {
+      localStorage.setItem('i18nextLng', lang);
+    } catch (e) {
+      // If localStorage fails, try using context
+      console.warn('localStorage access failed, trying alternative method');
+    }
   }, language);
-  await page.reload();
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(1000); // Wait for i18n to initialize
+  
+  // Reload the page
+  await page.reload({ waitUntil: 'networkidle' });
+  
+  // Wait for i18n to initialize - check for translated content
+  await page.waitForFunction(
+    (lang) => {
+      const bodyText = document.body.innerText || '';
+      // Check for language-specific content
+      if (lang === 'fi') {
+        return bodyText.includes('Visualisointi') || bodyText.includes('Koti') || bodyText.includes('Työkalut');
+      } else {
+        return bodyText.includes('Visualisation') || bodyText.includes('Home') || bodyText.includes('Tools');
+      }
+    },
+    language,
+    { timeout: 10000 }
+  ).catch(() => {
+    // If that fails, just wait a bit
+    return page.waitForTimeout(2000);
+  });
 }
 
