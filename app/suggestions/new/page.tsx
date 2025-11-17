@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import AppLayout from '@/components/layout/AppLayout'
+import Footer from '@/components/layout/Footer'
 import { NewSuggestionNavigation, NewSuggestionMobileNavigation } from '@/components/navigation/PageNavigation'
 import { useSuggestions } from '@/lib/hooks/useSuggestions'
 import Link from 'next/link'
@@ -214,6 +215,9 @@ export default function NewSuggestionPage() {
             </form>
           </div>
         </div>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </AppLayout>
   )

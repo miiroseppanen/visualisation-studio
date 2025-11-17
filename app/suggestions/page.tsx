@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import AppLayout from '@/components/layout/AppLayout'
 import EnhancedNavigation from '@/components/navigation/EnhancedNavigation'
+import Footer from '@/components/layout/Footer'
 import { useSuggestions } from '@/lib/hooks/useSuggestions'
 import { useTranslation } from 'react-i18next'
 import Link from 'next/link'
@@ -791,6 +792,9 @@ export default function SuggestionsPage() {
             </div>
           </div>
         )}
+
+        {/* Footer */}
+        <Footer />
       </div>
     </AppLayout>
   )

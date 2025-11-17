@@ -85,7 +85,7 @@ class PrismaStorageProvider implements StorageProvider {
 }
 
 // Local Storage Implementation
-class LocalStorageProvider implements StorageProvider {
+export class LocalStorageProvider implements StorageProvider {
   private readonly STORAGE_KEY = 'visualization-suggestions'
   private readonly STATS_KEY = 'visualization-suggestions-stats'
 

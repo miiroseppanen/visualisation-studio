@@ -99,3 +99,8 @@ jspm_packages/
 .tern-port
 
 /generated/prisma
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
